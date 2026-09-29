@@ -32,7 +32,7 @@
       </p>
 
       <form id="admin-login-form" style="max-width: 320px; margin: 0 auto;">
-        <input type="password" id="admin-pin-input" class="admin-input" placeholder="관리자 코드 입력 (기본: 654321)" required style="text-align: center; margin-bottom: 10px;">
+        <input type="text" id="admin-pin-input" class="admin-input" placeholder="관리자 코드 입력 (기본: 654321)" required autocomplete="off" inputmode="numeric" style="-webkit-text-security: disc; text-align: center; margin-bottom: 10px;">
         <div id="admin-auth-error" style="color: #E74C3C; font-size: 12px; margin-bottom: 10px; display: none;">
           관리자 코드가 올바르지 않습니다.
         </div>
