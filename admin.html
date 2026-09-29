@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Charles' Bible - 관리자 콘솔</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <div class="admin-wrapper">
+    
+    <!-- 관리자 콘솔 헤더 -->
+    <header class="admin-header">
+      <div class="admin-title">
+        <span>👑</span>
+        <span>CHARLES' BIBLE ADMIN</span>
+      </div>
+      <div>
+        <a href="index.html" class="admin-btn">
+          ⬅ 메인 앱 (index.html)
+        </a>
+      </div>
+    </header>
+
+    <!-- 관리자 인증 잠금 화면 -->
+    <div id="admin-auth-lock" class="admin-card" style="text-align: center; padding: 40px 20px;">
+      <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
+      <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">ADMIN AUTHENTICATION</h2>
+      <p style="color: var(--admin-muted); font-size: 13px; margin-bottom: 20px;">
+        관리자 코드(ADMIN CODE)를 입력하여 콘솔에 로그인하세요.
+      </p>
+
+      <form id="admin-login-form" style="max-width: 320px; margin: 0 auto;">
+        <input type="password" id="admin-pin-input" class="admin-input" placeholder="관리자 코드 입력 (기본: 654321)" required style="text-align: center; margin-bottom: 10px;">
+        <div id="admin-auth-error" style="color: #E74C3C; font-size: 12px; margin-bottom: 10px; display: none;">
+          관리자 코드가 올바르지 않습니다.
+        </div>
+        <button type="submit" class="admin-btn admin-btn-primary" style="width: 100%;">
+          관리자 로그인 ➔
+        </button>
+      </form>
+    </div>
+
+    <!-- 관리자 메인 대시보드 (로그인 후 표시) -->
+    <div id="admin-main-content" style="display: none;">
+
+      <!-- 1. 일반 회원 가입코드 관리 -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span>🔑</span> 일반 회원 가입코드(SIGNUP CODE) 관리
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 14px;">
+          성도들이 앱에 신규 회원가입할 때 입력해야 하는 초대 가입코드입니다.
+        </p>
+
+        <div style="background: #F7F7F7; border: 1.5px solid #111; padding: 12px; margin-bottom: 14px;">
+          현재 활성화된 가입코드: <span id="disp-current-key" style="font-size: 18px; font-weight: 800; color: #2E7D32;">123456</span>
+        </div>
+
+        <form id="form-change-key" style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="text" id="input-new-key" class="admin-input" placeholder="새로운 6자리 가입코드 입력" required maxlength="10">
+          <button type="submit" class="admin-btn admin-btn-primary" style="white-space: nowrap;">
+            가입코드 변경
+          </button>
+        </form>
+
+        <button type="button" id="btn-reset-key-default" class="admin-btn" style="font-size: 11px;">
+          기본 가입코드(123456)로 재설정
+        </button>
+      </div>
+
+      <!-- 2. 관리자 보안코드 관리 -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span>🛡️</span> 관리자 코드(ADMIN CODE) 관리
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 14px;">
+          관리자 콘솔(admin.html)에 접근할 때 필요한 최고 관리자 비밀코드입니다.
+        </p>
+
+        <div style="background: #F7F7F7; border: 1.5px solid #111; padding: 12px; margin-bottom: 14px;">
+          현재 활성화된 관리자 코드: <span id="disp-current-admin-key" style="font-size: 18px; font-weight: 800; color: #C0392B;">654321</span>
+        </div>
+
+        <form id="form-change-admin-key" style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="text" id="input-new-admin-key" class="admin-input" placeholder="새로운 관리자 코드 입력" required maxlength="10">
+          <button type="submit" class="admin-btn admin-btn-primary" style="white-space: nowrap;">
+            관리자 코드 변경
+          </button>
+        </form>
+
+        <button type="button" id="btn-reset-admin-key-default" class="admin-btn" style="font-size: 11px;">
+          기본 관리자 코드(654321)로 재설정
+        </button>
+      </div>
+
+      <!-- 2. 가입 사용자 관리 -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span>👥</span> 등록된 성도 명부
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
+          가입코드를 인증하고 등록된 사용자 목록입니다.
+        </p>
+
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>아이디</th>
+              <th>성도 이름</th>
+              <th>닉네임</th>
+              <th>소속 셀</th>
+              <th>가입 시각</th>
+              <th>최근 접속</th>
+            </tr>
+          </thead>
+          <tbody id="admin-user-tbody">
+            <!-- 사용자 목록 주입 -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 3. 찰스 상태 시뮬레이션 및 테스트 도구 -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span>🐑</span> 찰스 성장 시뮬레이터 (개발/관리자용)
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
+          원클릭으로 찰스의 상태(1~5단계)를 테스트해 볼 수 있습니다.
+        </p>
+
+        <div id="admin-stats-summary" style="font-size: 12px; margin-bottom: 14px; padding: 10px; background: #FFF9C4; border: 1px solid #111;">
+          <!-- 통독 요약 -->
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+          <button class="admin-btn btn-sim-stage" data-stage="1">1단계: 배고픈 찰스 (0%)</button>
+          <button class="admin-btn btn-sim-stage" data-stage="2">2단계: 풀 먹는 찰스 (10장)</button>
+          <button class="admin-btn btn-sim-stage" data-stage="3">3단계: 복슬 찰스 (25%)</button>
+          <button class="admin-btn btn-sim-stage" data-stage="4">4단계: 활기찬 찰스 (60%)</button>
+          <button class="admin-btn btn-sim-stage" data-stage="5">5단계: 천사 찰스 (100% 완독)</button>
+        </div>
+
+        <button id="btn-admin-clear-progress" class="admin-btn admin-btn-danger" style="font-size: 12px;">
+          ⚠️ 통독 진도 완전 초기화
+        </button>
+      </div>
+
+      <!-- 4. Supabase DB 연동 설정 안내 (user_reading_state) -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span>☁️</span> Supabase 유저별 통독/찰스 DB 동기화 SQL 안내
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 10px;">
+          각 유저의 고유 찰스 단계 및 날짜별 통독 장수를 Supabase 클라우드에 영구 저장하기 위해, Supabase SQL Editor에서 아래 쿼리를 1회 실행해 주세요. (미실행 시 브라우저 로컬 저장소로 안전하게 작동합니다.)
+        </p>
+        <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 유저별 통독 상태 및 찰스 육성 기록 테이블 생성
+CREATE TABLE IF NOT EXISTS public.user_reading_state (
+  user_id text PRIMARY KEY,
+  charles_stage integer DEFAULT 1,
+  read_progress jsonb DEFAULT '{}'::jsonb,
+  daily_counts jsonb DEFAULT '{}'::jsonb,
+  read_history jsonb DEFAULT '[]'::jsonb,
+  streak_count integer DEFAULT 0,
+  max_streak integer DEFAULT 0,
+  last_evaluated_date text,
+  last_read_date text,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
+
+-- RLS 활성화 및 권한 설정
+ALTER TABLE public.user_reading_state ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable all access for user_reading_state" 
+ON public.user_reading_state
+FOR ALL 
+USING (true)
+WITH CHECK (true);</pre>
+        <button id="btn-copy-sql" class="admin-btn admin-btn-primary" style="font-size: 12px;">
+          📋 SQL 쿼리 복사하기
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Supabase SDK & Config -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+
+  <!-- 스크립트 로드 -->
+  <script src="js/bible-data.js"></script>
+  <script src="js/charles-pixel.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/admin.js"></script>
+
+</body>
+</html>

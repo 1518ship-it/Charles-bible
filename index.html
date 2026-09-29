@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FAFAFA">
+  <meta name="description" content="Charles' Bible - 말씀양 찰스와 함께하는 성경 읽기">
+  <title>Charles' Bible - 말씀양 찰스</title>
+
+  <!-- Pretendard & Minimal Theme -->
+  <link rel="stylesheet" href="css/pixel-theme.css">
+</head>
+<body>
+
+  <!-- 모바일 쉘 컨테이너 -->
+  <div id="app-container">
+    
+    <!-- 최상단 헤더 (왼쪽 비움, 오른쪽 메시지 로고 배치) -->
+    <header class="app-header">
+      <div class="header-left"></div>
+      <div class="header-actions">
+        <button id="btn-open-messages" class="btn-msg-icon" title="메시지 및 알림">
+          <span style="font-size: 20px;">💬</span>
+          <span class="msg-unread-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 메인 스크롤 뷰포트 -->
+    <main class="app-main">
+
+      <!-- ==================== 1. TAB: SOCIAL (서원경 청년부 양떼목장 화면) ==================== -->
+      <section id="tab-social" class="tab-content">
+        <div class="section-heading">서원경 청년부 양떼목장 🐑</div>
+        <div id="social-friends-list" class="friend-list">
+          <!-- js에서 동적으로 로드 -->
+        </div>
+      </section>
+
+      <!-- ==================== 2. TAB: BIBLE (성경 목록 & 본문 읽기) ==================== -->
+      <section id="tab-bible" class="tab-content">
+        <!-- 신약 / 구약 필터 탭 ('전체' 제거) -->
+        <div class="bible-filter-bar">
+          <button class="testament-tab-btn active" data-testament="NT">신약 (27)</button>
+          <button class="testament-tab-btn" data-testament="OT">구약 (39) 🔒</button>
+          <span style="margin-left: auto; font-size: 11px; font-weight: 600; color: var(--text-muted); align-self: center; padding-right: 4px;">개역개정 4판</span>
+        </div>
+
+        <!-- 검색창 -->
+        <input type="text" id="bible-search-input" class="bible-search-input" placeholder="🔍 성경 검색 (예: 창세기, 마태, 시편)...">
+
+        <!-- 성경 권 목록 -->
+        <div id="bible-books-list">
+          <!-- js에서 렌더링 -->
+        </div>
+      </section>
+
+      <!-- ==================== 3. TAB: HOME (화면 중앙 대형 찰스 & Charles is____) ==================== -->
+      <section id="tab-home" class="tab-content active">
+        <div class="charles-home-centered">
+          <!-- 찰스 위: 오늘 읽은 말씀 게이지 (최대 5장) -->
+          <div class="today-reading-gauge-wrap">
+            <div class="today-gauge-header">
+              <span class="today-gauge-title">오늘 읽은 말씀</span>
+              <span id="today-gauge-count" class="today-gauge-count">0 / 5장</span>
+            </div>
+            <div id="today-gauge-bar" class="today-gauge-bar" title="오늘 읽은 성경 말씀 게이지 (최대 5장)">
+              <div class="gauge-slot" data-index="1"></div>
+              <div class="gauge-slot" data-index="2"></div>
+              <div class="gauge-slot" data-index="3"></div>
+              <div class="gauge-slot" data-index="4"></div>
+              <div class="gauge-slot" data-index="5"></div>
+            </div>
+          </div>
+
+          <!-- 화면 중앙의 대형 찰스 캐릭터 -->
+          <div id="charles-display" class="charles-display-box" title="찰스를 터치해 보세요!">
+            <div id="charles-graphic-slot">
+              <!-- SVG 그래픽 주입 -->
+            </div>
+          </div>
+
+          <!-- 양 아래의 Charles is ____ 문구 & 물음표 버튼 -->
+          <div class="charles-status-wrap">
+            <div id="charles-status-title" class="charles-status-title">
+              <span id="charles-status-text">Charles is starving...</span>
+              <button id="btn-charles-help" class="btn-charles-help" type="button" title="찰스 성장 조건 알아보기">?</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 4. TAB: STATS (통계) ==================== -->
+      <section id="tab-stats" class="tab-content">
+        <div class="section-heading">통독 현황 📊</div>
+
+        <div class="stats-clean-group">
+          <div class="stats-row">
+            <div class="stats-labels">
+              <span>전체 성경 (1,189장)</span>
+              <span id="stats-total-read">0 / 1189 장 (0%)</span>
+            </div>
+            <div class="stats-bar-track">
+              <div id="stats-progress-fill" class="stats-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stats-labels">
+              <span>구약 성경 (929장)</span>
+              <span id="stats-ot-label">0 / 929 (0%)</span>
+            </div>
+            <div class="stats-bar-track">
+              <div id="stats-ot-fill" class="stats-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stats-labels">
+              <span>신약 성경 (260장)</span>
+              <span id="stats-nt-label">0 / 260 (0%)</span>
+            </div>
+            <div class="stats-bar-track">
+              <div id="stats-nt-fill" class="stats-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="setting-item-row" style="margin-top: 10px;">
+            <span style="font-size: 13px; font-weight: 600;">연속 통독</span>
+            <span id="stats-streak-val" style="font-size: 13px; font-weight: 700;">0일 연속 🔥</span>
+          </div>
+        </div>
+
+        <div class="section-heading" style="margin-top: 20px;">업적 뱃지 🏆</div>
+        <div id="stats-badge-list" class="badge-grid-clean">
+          <!-- 업적 뱃지 렌더링 -->
+        </div>
+      </section>
+
+      <!-- ==================== 5. TAB: PROFILE (내 정보 / 잔디 달력) ==================== -->
+      <section id="tab-profile" class="tab-content">
+        <!-- 상단 헤더: 좌측 톱니바퀴(설정) 버튼 + 타이틀 -->
+        <div class="profile-top-bar">
+          <button id="btn-open-settings" class="btn-gear-settings" type="button" title="환경설정 열기">
+            ⚙️
+          </button>
+          <div class="profile-header-title">내 정보 👤</div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- 유저 프로필 및 내 찰스 요약 카드 -->
+        <div class="profile-user-card">
+          <div class="profile-user-info">
+            <div class="profile-user-avatar">🐑</div>
+            <div class="profile-user-names">
+              <div class="profile-user-nickname" id="profile-user-nickname">-</div>
+              <div class="profile-user-sub" id="profile-user-sub">-</div>
+            </div>
+          </div>
+          <div class="profile-charles-badge" id="profile-charles-badge">
+            1단계 · starving 🌾
+          </div>
+        </div>
+
+        <!-- 3대 통독 지표 카드 -->
+        <div class="profile-stats-grid">
+          <div class="profile-stat-box">
+            <span class="profile-stat-num" id="profile-stat-today">0</span>
+            <span class="profile-stat-label">오늘 읽은 장</span>
+          </div>
+          <div class="profile-stat-box">
+            <span class="profile-stat-num" id="profile-stat-streak">0일</span>
+            <span class="profile-stat-label">연속 통독 🔥</span>
+          </div>
+          <div class="profile-stat-box">
+            <span class="profile-stat-num" id="profile-stat-total">0장</span>
+            <span class="profile-stat-label">신약 완독 📖</span>
+          </div>
+        </div>
+
+        <!-- 월간 성경 읽기 달력 (Calendar) -->
+        <div class="calendar-container">
+          <div class="calendar-nav-bar">
+            <button id="calendar-btn-prev" class="calendar-nav-btn" type="button" title="이전 달">◀</button>
+            <span id="calendar-month-title" class="calendar-month-title">2026년 9월</span>
+            <button id="calendar-btn-next" class="calendar-nav-btn" type="button" title="다음 달">▶</button>
+            <button id="calendar-btn-today" class="calendar-btn-today" type="button">오늘</button>
+          </div>
+
+          <div class="calendar-weekdays">
+            <span class="sun">일</span>
+            <span>월</span>
+            <span>화</span>
+            <span>수</span>
+            <span>목</span>
+            <span>금</span>
+            <span class="sat">토</span>
+          </div>
+
+          <div id="calendar-days-grid" class="calendar-days-grid">
+            <!-- JS로 날짜 셀 렌더링 -->
+          </div>
+
+          <!-- 달력 잔디 범례 -->
+          <div class="calendar-legend">
+            <span>적게 읽음</span>
+            <div class="legend-cell level-0" title="0장"></div>
+            <div class="legend-cell level-1" title="1~2장 (유지)"></div>
+            <div class="legend-cell level-2" title="3~4장 (성장)"></div>
+            <div class="legend-cell level-3" title="5장+ (최고유지)"></div>
+            <span>많이 읽음</span>
+          </div>
+
+          <!-- 선택한 날짜 통독 상세 안내 -->
+          <div id="calendar-selected-info" class="calendar-selected-info">
+            날짜를 터치하면 그날의 통독 장수를 확인할 수 있어요 🌿
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ==================== 성경 본문 읽기 뷰어 (BIBLE READER) ==================== -->
+    <div id="bible-reader-view" class="reader-view">
+      <header class="reader-header">
+        <button id="reader-btn-back" class="btn-icon-ghost" style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600;">
+          <span>⬅</span> <span>목록</span>
+        </button>
+
+        <div class="reader-title-wrap">
+          <button id="reader-btn-prev" class="reader-nav-arrow" title="이전 장">◀</button>
+          <div style="display: flex; flex-direction: column; align-items: center; line-height: 1.2;">
+            <span id="reader-current-title" class="reader-title">창세기 1장</span>
+            <span style="font-size: 10px; color: var(--text-muted); font-weight: 500;">개역개정 4판</span>
+          </div>
+          <button id="reader-btn-next" class="reader-nav-arrow" title="다음 장">▶</button>
+        </div>
+
+        <div style="display: flex; gap: 4px;">
+          <button id="reader-btn-font-down" class="reader-nav-arrow" title="글자 작게">A-</button>
+          <button id="reader-btn-font-up" class="reader-nav-arrow" title="글자 크게">A+</button>
+        </div>
+      </header>
+
+      <div class="reader-body" id="reader-body">
+        <div id="reader-verses-container" class="reader-verses">
+          <!-- 절 본문 텍스트 주입 -->
+        </div>
+      </div>
+
+      <div class="reader-bottom-bar">
+        <button id="reader-btn-complete-next" class="btn-complete-chapter" style="width: 100%;">
+          ✓ 다 읽고 다음 장으로 ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== 하단 5대 메뉴 (아이콘만 표시) ==================== -->
+    <!-- 순서: [소셜(친구)] - [bible] - [home] - [stats] - [setting] -->
+    <nav class="app-nav">
+      <button class="nav-tab-btn" data-tab="social" title="서원경 청년부 양떼목장">
+        <span class="nav-tab-icon">🐑</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="bible" title="성경">
+        <span class="nav-tab-icon">📖</span>
+      </button>
+      <button class="nav-tab-btn active" data-tab="home" title="홈 (찰스)">
+        <span class="nav-tab-icon">🏠</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="stats" title="통계">
+        <span class="nav-tab-icon">📊</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="profile" title="내 정보">
+        <span class="nav-tab-icon">👤</span>
+      </button>
+    </nav>
+
+    <!-- ==================== 로그인 및 회원가입 게이트 모달 ==================== -->
+    <div id="gate-overlay" class="gate-overlay" style="display: none;">
+      <div class="gate-modal">
+
+        <!-- 1. 로그인 화면 (기본 활성화) -->
+        <div id="gate-view-login" class="gate-view active">
+          <div class="gate-title">
+            <span>🐑</span>
+            <span>Charles' Bible</span>
+          </div>
+          <p class="gate-desc">
+            말씀양 찰스와 함께하는 성경 읽기<br>
+            아이디와 비밀번호를 입력해 로그인하세요.
+          </p>
+
+          <form id="gate-login-form">
+            <div class="form-group">
+              <label class="form-label" for="login-id-input">아이디</label>
+              <input type="text" id="login-id-input" class="pixel-input" placeholder="아이디 입력" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="login-pw-input">비밀번호</label>
+              <input type="password" id="login-pw-input" class="pixel-input" placeholder="비밀번호 입력" required autocomplete="current-password">
+            </div>
+
+            <div id="login-error-text" class="error-text">
+              아이디 또는 비밀번호가 올바르지 않습니다.
+            </div>
+
+            <div style="margin-top: 18px;">
+              <button type="submit" class="btn-complete-chapter" style="width: 100%;">
+                로그인
+              </button>
+            </div>
+
+            <div class="gate-switch-link">
+              <span>아직 계정이 없으신가요?</span>
+              <button type="button" id="btn-switch-to-signup" class="btn-link-action">
+                회원가입
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 2. 회원가입 화면 -->
+        <div id="gate-view-signup" class="gate-view">
+          <div class="gate-title">
+            <span>✨</span>
+            <span>새 가족 회원가입</span>
+          </div>
+          <p class="gate-desc">
+            말씀 공동체에 오신 것을 환영합니다.<br>
+            아래 정보를 입력하여 가입하세요.
+          </p>
+
+          <form id="gate-signup-form">
+            <!-- 아이디 (중복확인) -->
+            <div class="form-group">
+              <label class="form-label" for="signup-id-input">아이디</label>
+              <div class="input-with-button">
+                <input type="text" id="signup-id-input" class="pixel-input" placeholder="영문/숫자 (3자 이상)" required maxlength="20" autocomplete="username">
+                <button type="button" id="btn-check-duplicate-id" class="btn-sub-action">중복확인</button>
+              </div>
+              <div id="signup-id-msg" class="field-feedback"></div>
+            </div>
+
+            <!-- 패스워드 (8자 이상) -->
+            <div class="form-group">
+              <label class="form-label" for="signup-pw-input">패스워드 (8자 이상)</label>
+              <input type="password" id="signup-pw-input" class="pixel-input" placeholder="8자 이상 입력" required minlength="8" autocomplete="new-password">
+              <div id="signup-pw-msg" class="field-feedback"></div>
+            </div>
+
+            <!-- 소속 셀 -->
+            <div class="form-group">
+              <label class="form-label" for="signup-cell-input">소속 셀</label>
+              <input type="text" id="signup-cell-input" class="pixel-input" placeholder="예: 예진셀, 승영셀" required maxlength="20">
+            </div>
+
+            <!-- 이름 -->
+            <div class="form-group">
+              <label class="form-label" for="signup-name-input">이름 (성도명)</label>
+              <input type="text" id="signup-name-input" class="pixel-input" placeholder="예: 김성경, 박은혜" required maxlength="12" autocomplete="name">
+            </div>
+
+            <!-- 닉네임 (중복확인) -->
+            <div class="form-group">
+              <label class="form-label" for="signup-nickname-input">닉네임</label>
+              <div class="input-with-button">
+                <input type="text" id="signup-nickname-input" class="pixel-input" placeholder="예: 말씀양, 은혜바라기, 순종이" required maxlength="12">
+                <button type="button" id="btn-check-duplicate-nick" class="btn-sub-action">중복확인</button>
+              </div>
+              <div id="signup-nick-msg" class="field-feedback"></div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">
+                앱에서 성도님을 부를 때 고유하게 사용됩니다.
+              </div>
+            </div>
+
+            <!-- 가입코드 -->
+            <div class="form-group">
+              <label class="form-label" for="signup-code-input">가입코드 (6자리)</label>
+              <input type="password" id="signup-code-input" class="pixel-input" placeholder="가입코드 6자리 입력" required maxlength="10">
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                초대받은 6자리 가입코드를 입력하세요.
+              </div>
+            </div>
+
+            <div id="signup-error-text" class="error-text"></div>
+
+            <div style="margin-top: 18px;">
+              <button type="submit" class="btn-complete-chapter" style="width: 100%;">
+                회원가입 완료
+              </button>
+            </div>
+
+            <div class="gate-switch-link">
+              <span>이미 계정이 있으신가요?</span>
+              <button type="button" id="btn-switch-to-login" class="btn-link-action">
+                로그인으로 돌아가기
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== 소식 및 알림 모달 ==================== -->
+    <div id="message-modal-overlay" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+            <span>🔔</span> <span>소식 및 알림</span>
+          </div>
+          <button id="btn-close-messages" class="btn-icon-close">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div id="section-notifications" class="modal-section-content active">
+            <div id="notifications-list" class="notif-list">
+              <!-- 알림 리스트 렌더링 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 찰스 육성 가이드 모달 ==================== -->
+    <!-- ==================== 찰스 육성 가이드 모달 (한눈에 보는 컴팩트 뷰) ==================== -->
+    <div id="charles-help-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet charles-help-sheet">
+        <div class="modal-header" style="margin-bottom: 8px;">
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+            <span>🐑</span> <span>찰스 성장 가이드</span>
+          </div>
+          <button id="btn-close-charles-help" class="btn-icon-close" type="button" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="modal-body" style="padding: 0;">
+          <!-- 1. 한 줄 핵심 요약 -->
+          <div class="help-compact-notice">
+            매일 밤 12시(자정) 기준 하루 동안 읽은 장수로 평가됩니다.
+          </div>
+
+          <!-- 2. 5단계 진화 5열 한눈에 프리뷰 (노 스크롤) -->
+          <div class="evolution-row-5col">
+            <div class="evolution-col">
+              <div class="evolution-mini-graphic" id="evolution-slot-1"></div>
+              <span class="evolution-col-stage">1단계</span>
+              <span class="evolution-col-name">배고픔</span>
+            </div>
+            <div class="evolution-col-arrow">➔</div>
+            <div class="evolution-col">
+              <div class="evolution-mini-graphic" id="evolution-slot-2"></div>
+              <span class="evolution-col-stage">2단계</span>
+              <span class="evolution-col-name">풀먹음</span>
+            </div>
+            <div class="evolution-col-arrow">➔</div>
+            <div class="evolution-col">
+              <div class="evolution-mini-graphic" id="evolution-slot-3"></div>
+              <span class="evolution-col-stage">3단계</span>
+              <span class="evolution-col-name">행복</span>
+            </div>
+            <div class="evolution-col-arrow">➔</div>
+            <div class="evolution-col">
+              <div class="evolution-mini-graphic" id="evolution-slot-4"></div>
+              <span class="evolution-col-stage">4단계</span>
+              <span class="evolution-col-name">복슬</span>
+            </div>
+            <div class="evolution-col-arrow">➔</div>
+            <div class="evolution-col gold">
+              <div class="evolution-mini-graphic" id="evolution-slot-5"></div>
+              <span class="evolution-col-stage gold">5단계 👑</span>
+              <span class="evolution-col-name gold">천사</span>
+            </div>
+          </div>
+
+          <!-- 3. 간소화된 4가지 규칙 리스트 (초슬림 한눈에 보기) -->
+          <div class="help-rules-compact-list">
+            <div class="rule-compact-row down">
+              <span class="rule-compact-badge">0장</span>
+              <span class="rule-compact-text">이전 단계로 <strong>1단계 하락</strong> (최하 1단계)</span>
+            </div>
+            <div class="rule-compact-row maintain">
+              <span class="rule-compact-badge">1 ~ 2장</span>
+              <span class="rule-compact-text">현재 단계 <strong>유지</strong> (단, 5단계 제외)</span>
+            </div>
+            <div class="rule-compact-row up">
+              <span class="rule-compact-badge">3 ~ 4장</span>
+              <span class="rule-compact-text">다음 단계로 <strong>1단계 성장!</strong> 🌱 (1~4단계)</span>
+            </div>
+            <div class="rule-compact-row gold">
+              <span class="rule-compact-badge gold">5장 이상</span>
+              <span class="rule-compact-text">최고 <strong>5단계 유지 및 승급</strong> 👑 (5단계에서 5장 미만 시 4단계 하락)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 설정 모달 (기존 설정 메뉴 이관) ==================== -->
+    <div id="settings-modal-overlay" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet" style="max-height: 90vh;">
+        <div class="modal-header">
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+            <span>⚙️</span> <span>환경 설정</span>
+          </div>
+          <button id="btn-close-settings" class="btn-icon-close">✕</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 8px;">
+          <div class="setting-item-row">
+            <span style="font-size: 13px; font-weight: 600;">아이디</span>
+            <span id="settings-user-id" style="font-weight: 700; color: var(--text-muted);">-</span>
+          </div>
+
+          <div class="setting-item-row">
+            <span style="font-size: 13px; font-weight: 600;">성도 이름</span>
+            <span id="settings-user-name" style="font-weight: 700;">찰스</span>
+          </div>
+
+          <div class="setting-item-row">
+            <span style="font-size: 13px; font-weight: 600;">닉네임</span>
+            <span id="settings-user-nickname" style="font-weight: 700; color: #2E7D32;">-</span>
+          </div>
+
+          <div class="setting-item-row">
+            <span style="font-size: 13px; font-weight: 600;">소속 셀</span>
+            <span id="settings-user-cell" style="font-weight: 700; color: var(--text-muted);">-</span>
+          </div>
+
+          <div class="setting-item-row">
+            <span style="font-size: 13px; font-weight: 600;">가입 일자</span>
+            <span id="settings-reg-date" style="color: var(--text-muted);">-</span>
+          </div>
+
+          <div class="setting-item-row">
+            <span style="font-size: 13px; font-weight: 600;">테마 모드</span>
+            <select id="theme-select" class="pixel-input" style="width: auto; padding: 4px 8px; font-size: 12px;">
+              <option value="classic">클래식 라이트</option>
+              <option value="gameboy">게임보이 그린</option>
+              <option value="dark">다크 모드</option>
+            </select>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+            <button id="btn-export-backup" class="setting-btn-link">
+              💾 통독 데이터 백업 (JSON 다운로드)
+            </button>
+
+            <label class="setting-btn-link" style="cursor: pointer;">
+              📂 통독 데이터 복원 (JSON 업로드)
+              <input type="file" id="file-import-backup" accept=".json" style="display: none;">
+            </label>
+
+            <a href="admin.html" class="setting-btn-link" style="background: var(--color-badge-bg);" target="_blank">
+              👑 관리자 사이트 바로가기 (admin.html) ➔
+            </a>
+
+            <button id="btn-logout" class="setting-btn-link" style="margin-top: 8px;">
+              🚪 로그아웃
+            </button>
+
+            <button id="btn-reset-data" class="setting-btn-link" style="color: #E74C3C; border-color: #E74C3C;">
+              ⚠️ 통독 기록 전체 초기화
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 친구 정보 모달 (간단한 창) ==================== -->
+    <div id="friend-detail-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet" style="max-height: 85vh;">
+        <div class="modal-header">
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+            <span>🐑</span> <span>양떼목장 친구 정보</span>
+          </div>
+          <button id="btn-close-friend-modal" class="btn-icon-close">✕</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 6px;">
+          <!-- 친구 기본 프로필 -->
+          <div class="friend-modal-profile-box">
+            <div id="friend-modal-nickname" class="friend-modal-nickname">닉네임</div>
+            <div id="friend-modal-sub" class="friend-modal-sub">예진셀 · 성도명</div>
+          </div>
+
+          <!-- 현재 양의 모습 (도트 그래픽) -->
+          <div class="friend-modal-charles-slot">
+            <div id="friend-modal-graphic" class="friend-modal-graphic">
+              <!-- SVG 그래픽 주입 -->
+            </div>
+            <div id="friend-modal-charles-title" class="friend-modal-charles-title">Charles is ...</div>
+            <div id="friend-modal-charles-stage" class="friend-modal-charles-stage">1단계 찰스</div>
+          </div>
+
+          <!-- 통독 정보 (연속 통독일수, 오늘 읽은 말씀) -->
+          <div class="friend-modal-stats-grid">
+            <div class="friend-modal-stat-card">
+              <span class="friend-modal-stat-label">🔥 연속 통독</span>
+              <span id="friend-modal-stat-streak" class="friend-modal-stat-val">0일</span>
+            </div>
+            <div class="friend-modal-stat-card">
+              <span class="friend-modal-stat-label">📖 오늘 읽은 말씀</span>
+              <span id="friend-modal-stat-today" class="friend-modal-stat-val">0장</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Supabase SDK & Config -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+
+  <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 앱 제어 -->
+  <script src="data/bible-nt-bundle.js"></script>
+  <script src="js/bible-data.js"></script>
+  <script src="js/charles-pixel.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

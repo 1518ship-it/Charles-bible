@@ -1,0 +1,1608 @@
+/**
+ * Charles' Bible - 메인 애플리케이션 제어 로직 (App Controller with In-App Bible Reader)
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
+
+const App = {
+  activeTab: 'home',
+  currentTestament: 'NT', // 이번 테스트 버전 기본 신약
+  searchKeyword: '',
+  
+  // 성경 본문 읽기 상태
+  currentReadingBookId: 'MAT', // 기본 신약(마태복음)
+  currentReadingChapter: 1,
+  readerFontSize: 16,
+  hasAutoMarkedThisSession: false,
+
+  // 내 정보 달력 상태
+  calendarYear: new Date().getFullYear(),
+  calendarMonth: new Date().getMonth() + 1,
+  selectedDateStr: null,
+
+  init() {
+    this.selectedDateStr = StorageService.getTodayDateStr();
+    this.initAuth();
+    this.loadSavedFontSize();
+    this.bindEvents();
+    this.applySavedTheme();
+    this.renderAll();
+    this.updateUnreadNotificationDot();
+  },
+
+  loadSavedFontSize() {
+    const saved = localStorage.getItem('charles_reader_font_size');
+    if (saved) {
+      this.readerFontSize = parseInt(saved, 10) || 16;
+      document.documentElement.style.setProperty('--reader-font-size', `${this.readerFontSize}px`);
+    }
+  },
+
+  // ==================== 인증 및 게이트웨이 (로그인 / 회원가입) ====================
+  initAuth() {
+    const gateOverlay = document.getElementById('gate-overlay');
+    if (!AuthService.isAuthenticated()) {
+      gateOverlay.style.display = 'flex';
+    } else {
+      gateOverlay.style.display = 'none';
+    }
+
+    const viewLogin = document.getElementById('gate-view-login');
+    const viewSignup = document.getElementById('gate-view-signup');
+    const btnSwitchToSignup = document.getElementById('btn-switch-to-signup');
+    const btnSwitchToLogin = document.getElementById('btn-switch-to-login');
+
+    const loginForm = document.getElementById('gate-login-form');
+    const signupForm = document.getElementById('gate-signup-form');
+    const loginErrText = document.getElementById('login-error-text');
+    const signupErrText = document.getElementById('signup-error-text');
+    const gateModal = document.querySelector('.gate-modal');
+
+    // 로그인 <-> 회원가입 화면 전환
+    if (btnSwitchToSignup) {
+      btnSwitchToSignup.addEventListener('click', () => {
+        if (loginErrText) loginErrText.classList.remove('active');
+        if (viewLogin) viewLogin.classList.remove('active');
+        if (viewSignup) viewSignup.classList.add('active');
+      });
+    }
+
+    if (btnSwitchToLogin) {
+      btnSwitchToLogin.addEventListener('click', () => {
+        if (signupErrText) signupErrText.classList.remove('active');
+        if (viewSignup) viewSignup.classList.remove('active');
+        if (viewLogin) viewLogin.classList.add('active');
+      });
+    }
+
+    // 아이디 중복확인 버튼 및 상태 관리
+    let isIdChecked = false;
+    let checkedIdValue = '';
+    const signupIdInput = document.getElementById('signup-id-input');
+    const btnCheckDupId = document.getElementById('btn-check-duplicate-id');
+    const signupIdMsg = document.getElementById('signup-id-msg');
+
+    if (signupIdInput) {
+      signupIdInput.addEventListener('input', () => {
+        isIdChecked = false;
+        if (signupIdMsg) {
+          signupIdMsg.className = 'field-feedback';
+          signupIdMsg.textContent = '';
+        }
+      });
+    }
+
+    if (btnCheckDupId) {
+      btnCheckDupId.addEventListener('click', async () => {
+        const idVal = signupIdInput ? signupIdInput.value.trim() : '';
+        btnCheckDupId.disabled = true;
+        btnCheckDupId.textContent = '확인중...';
+        try {
+          const check = await AuthService.checkIdAvailability(idVal);
+          if (signupIdMsg) {
+            if (check.available) {
+              signupIdMsg.className = 'field-feedback success active';
+              signupIdMsg.textContent = check.message;
+              isIdChecked = true;
+              checkedIdValue = idVal;
+            } else {
+              signupIdMsg.className = 'field-feedback error active';
+              signupIdMsg.textContent = check.error;
+              isIdChecked = false;
+            }
+          }
+        } finally {
+          btnCheckDupId.disabled = false;
+          btnCheckDupId.textContent = '중복확인';
+        }
+      });
+    }
+
+    // 닉네임 중복확인 버튼 및 상태 관리
+    let isNickChecked = false;
+    let checkedNickValue = '';
+    const signupNickInput = document.getElementById('signup-nickname-input');
+    const btnCheckDupNick = document.getElementById('btn-check-duplicate-nick');
+    const signupNickMsg = document.getElementById('signup-nick-msg');
+
+    if (signupNickInput) {
+      signupNickInput.addEventListener('input', () => {
+        isNickChecked = false;
+        if (signupNickMsg) {
+          signupNickMsg.className = 'field-feedback';
+          signupNickMsg.textContent = '';
+        }
+      });
+    }
+
+    if (btnCheckDupNick) {
+      btnCheckDupNick.addEventListener('click', async () => {
+        const nickVal = signupNickInput ? signupNickInput.value.trim() : '';
+        btnCheckDupNick.disabled = true;
+        btnCheckDupNick.textContent = '확인중...';
+        try {
+          const check = await AuthService.checkNicknameAvailability(nickVal);
+          if (signupNickMsg) {
+            if (check.available) {
+              signupNickMsg.className = 'field-feedback success active';
+              signupNickMsg.textContent = check.message;
+              isNickChecked = true;
+              checkedNickValue = nickVal;
+            } else {
+              signupNickMsg.className = 'field-feedback error active';
+              signupNickMsg.textContent = check.error;
+              isNickChecked = false;
+            }
+          }
+        } finally {
+          btnCheckDupNick.disabled = false;
+          btnCheckDupNick.textContent = '중복확인';
+        }
+      });
+    }
+
+    // 패스워드 8자 이상 실시간 체크
+    const signupPwInput = document.getElementById('signup-pw-input');
+    const signupPwMsg = document.getElementById('signup-pw-msg');
+    if (signupPwInput && signupPwMsg) {
+      signupPwInput.addEventListener('input', () => {
+        const pwVal = signupPwInput.value;
+        if (!pwVal) {
+          signupPwMsg.className = 'field-feedback';
+          signupPwMsg.textContent = '';
+        } else if (pwVal.length < 8) {
+          signupPwMsg.className = 'field-feedback error active';
+          signupPwMsg.textContent = `패스워드는 8자 이상이어야 합니다. (현재 ${pwVal.length}자)`;
+        } else {
+          signupPwMsg.className = 'field-feedback success active';
+          signupPwMsg.textContent = '✓ 8자 이상 충족되었습니다.';
+        }
+      });
+    }
+
+    // 로그인 폼 제출
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const idInput = document.getElementById('login-id-input');
+        const pwInput = document.getElementById('login-pw-input');
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '로그인 중...';
+        }
+
+        try {
+          const result = await AuthService.login(idInput.value, pwInput.value);
+          if (result.success) {
+            if (loginErrText) loginErrText.classList.remove('active');
+            gateOverlay.style.display = 'none';
+            this.renderAll();
+            const callName = AuthService.getUserCallName(result.user);
+            this.showToast(`환영합니다, ${callName}!`);
+          } else {
+            if (loginErrText) {
+              loginErrText.textContent = result.error;
+              loginErrText.classList.add('active');
+            }
+            if (gateModal) {
+              gateModal.classList.remove('shake');
+              void gateModal.offsetWidth;
+              gateModal.classList.add('shake');
+            }
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '로그인';
+          }
+        }
+      });
+    }
+
+    // 회원가입 폼 제출
+    if (signupForm) {
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const idVal = signupIdInput ? signupIdInput.value.trim() : '';
+        const pwVal = signupPwInput ? signupPwInput.value : '';
+        const cellInput = document.getElementById('signup-cell-input');
+        const nameInput = document.getElementById('signup-name-input');
+        const nicknameInput = document.getElementById('signup-nickname-input');
+        const codeInput = document.getElementById('signup-code-input');
+        const submitBtn = signupForm.querySelector('button[type="submit"]');
+
+        // 아이디 중복확인 미수행 체크
+        if (!isIdChecked || checkedIdValue !== idVal) {
+          const check = await AuthService.checkIdAvailability(idVal);
+          if (!check.available) {
+            if (signupErrText) {
+              signupErrText.textContent = check.error;
+              signupErrText.classList.add('active');
+            }
+            if (gateModal) {
+              gateModal.classList.remove('shake');
+              void gateModal.offsetWidth;
+              gateModal.classList.add('shake');
+            }
+            return;
+          }
+        }
+
+        // 닉네임 중복확인 미수행 체크
+        const nickVal = nicknameInput ? nicknameInput.value.trim() : '';
+        if (!isNickChecked || checkedNickValue !== nickVal) {
+          const check = await AuthService.checkNicknameAvailability(nickVal);
+          if (!check.available) {
+            if (signupErrText) {
+              signupErrText.textContent = check.error;
+              signupErrText.classList.add('active');
+            }
+            if (gateModal) {
+              gateModal.classList.remove('shake');
+              void gateModal.offsetWidth;
+              gateModal.classList.add('shake');
+            }
+            return;
+          }
+        }
+
+        // 비밀번호 8자 이상 검증
+        if (!pwVal || pwVal.length < 8) {
+          if (signupErrText) {
+            signupErrText.textContent = '패스워드는 8자 이상이어야 합니다.';
+            signupErrText.classList.add('active');
+          }
+          return;
+        }
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '회원가입 처리 중...';
+        }
+
+        try {
+          const result = await AuthService.register({
+            id: idVal,
+            password: pwVal,
+            cell: cellInput ? cellInput.value.trim() : '',
+            name: nameInput ? nameInput.value.trim() : '',
+            nickname: nicknameInput ? nicknameInput.value.trim() : '',
+            signupCode: codeInput ? codeInput.value.trim() : ''
+          });
+
+          if (result.success) {
+            if (signupErrText) signupErrText.classList.remove('active');
+            gateOverlay.style.display = 'none';
+            this.renderAll();
+            const callName = AuthService.getUserCallName(result.user);
+            this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
+          } else {
+            if (signupErrText) {
+              signupErrText.textContent = result.error;
+              signupErrText.classList.add('active');
+            }
+            if (gateModal) {
+              gateModal.classList.remove('shake');
+              void gateModal.offsetWidth;
+              gateModal.classList.add('shake');
+            }
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '회원가입 완료';
+          }
+        }
+      });
+    }
+  },
+
+  // ==================== 이벤트 바인딩 ====================
+  bindEvents() {
+    // 하단 탭 버튼 클릭
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        this.closeReader();
+        this.switchTab(tab);
+      });
+    });
+
+    // 상단 오른쪽 메시지 (친구추가 및 알림) 모달 열기/닫기
+    const msgBtn = document.getElementById('btn-open-messages');
+    const msgOverlay = document.getElementById('message-modal-overlay');
+    const msgCloseBtn = document.getElementById('btn-close-messages');
+
+    if (msgBtn && msgOverlay) {
+      msgBtn.addEventListener('click', () => {
+        msgOverlay.style.display = 'flex';
+        this.renderNotifications();
+      });
+    }
+
+    if (msgCloseBtn && msgOverlay) {
+      msgCloseBtn.addEventListener('click', () => {
+        msgOverlay.style.display = 'none';
+      });
+    }
+
+    if (msgOverlay) {
+      msgOverlay.addEventListener('click', (e) => {
+        if (e.target === msgOverlay) {
+          msgOverlay.style.display = 'none';
+        }
+      });
+    }
+
+    // 소식 및 알림 닫기는 msgCloseBtn 및 바깥 클릭으로 처리됨
+
+    // 찰스 육성 가이드 모달 열기/닫기
+    const charlesHelpBtn = document.getElementById('btn-charles-help');
+    const charlesHelpModal = document.getElementById('charles-help-modal');
+    const closeCharlesHelpBtn = document.getElementById('btn-close-charles-help');
+
+    if (charlesHelpBtn && charlesHelpModal) {
+      charlesHelpBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.renderCharlesEvolutionPreview();
+        charlesHelpModal.style.display = 'flex';
+      });
+    }
+    if (closeCharlesHelpBtn && charlesHelpModal) {
+      closeCharlesHelpBtn.addEventListener('click', () => {
+        charlesHelpModal.style.display = 'none';
+      });
+    }
+    if (charlesHelpModal) {
+      charlesHelpModal.addEventListener('click', (e) => {
+        if (e.target === charlesHelpModal) {
+          charlesHelpModal.style.display = 'none';
+        }
+      });
+    }
+
+    // 환경설정 모달 (내 정보 좌측 상단 톱니바퀴 버튼) 열기/닫기
+    const openSettingsBtn = document.getElementById('btn-open-settings');
+    const settingsModal = document.getElementById('settings-modal-overlay');
+    const closeSettingsBtn = document.getElementById('btn-close-settings');
+
+    if (openSettingsBtn && settingsModal) {
+      openSettingsBtn.addEventListener('click', () => {
+        this.renderSettings();
+        settingsModal.style.display = 'flex';
+      });
+    }
+    if (closeSettingsBtn && settingsModal) {
+      closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'none';
+      });
+    }
+    if (settingsModal) {
+      settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+          settingsModal.style.display = 'none';
+        }
+      });
+    }
+
+    // 친구 상세 정보 모달 닫기
+    const friendModal = document.getElementById('friend-detail-modal');
+    const closeFriendModalBtn = document.getElementById('btn-close-friend-modal');
+    if (closeFriendModalBtn && friendModal) {
+      closeFriendModalBtn.addEventListener('click', () => {
+        friendModal.style.display = 'none';
+      });
+    }
+    if (friendModal) {
+      friendModal.addEventListener('click', (e) => {
+        if (e.target === friendModal) {
+          friendModal.style.display = 'none';
+        }
+      });
+    }
+
+    // 달력 이전달/다음달/오늘 버튼
+    const calPrevBtn = document.getElementById('calendar-btn-prev');
+    const calNextBtn = document.getElementById('calendar-btn-next');
+    const calTodayBtn = document.getElementById('calendar-btn-today');
+
+    if (calPrevBtn) {
+      calPrevBtn.addEventListener('click', () => {
+        this.changeCalendarMonth(-1);
+      });
+    }
+    if (calNextBtn) {
+      calNextBtn.addEventListener('click', () => {
+        this.changeCalendarMonth(1);
+      });
+    }
+    if (calTodayBtn) {
+      calTodayBtn.addEventListener('click', () => {
+        this.resetCalendarToToday();
+      });
+    }
+
+    // 공동체 가입코드 복사
+    const copyKeyBtn = document.getElementById('btn-copy-key');
+    const myShareKeyEl = document.getElementById('my-share-key');
+    AuthService.getMasterKey().then(key => {
+      if (myShareKeyEl) myShareKeyEl.textContent = key;
+    });
+    if (copyKeyBtn) {
+      copyKeyBtn.addEventListener('click', async () => {
+        const key = await AuthService.getMasterKey();
+        if (myShareKeyEl) myShareKeyEl.textContent = key;
+        navigator.clipboard.writeText(key).then(() => {
+          this.showToast(`가입코드(${key})가 복사되었습니다 📋`);
+        }).catch(() => {
+          this.showToast(`가입코드: ${key}`);
+        });
+      });
+    }
+
+    // 성경 탭: 신약/구약 필터 ('전체' 제거됨)
+    document.querySelectorAll('.testament-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const test = btn.dataset.testament;
+        if (test === 'OT') {
+          this.showToast('아직 개발중이에요! 이번 테스트 버전에서는 신약만 읽을 수 있어요 🔒🐑');
+        }
+        document.querySelectorAll('.testament-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentTestament = test;
+        this.renderBibleList();
+      });
+    });
+
+    // 성경 검색창 입력
+    const searchInput = document.getElementById('bible-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.searchKeyword = e.target.value.trim().toLowerCase();
+        this.renderBibleList();
+      });
+    }
+
+    // 테마 셀렉트 변경
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+      themeSelect.addEventListener('change', (e) => {
+        this.setTheme(e.target.value);
+        RetroAudio.click();
+      });
+    }
+
+    // 데이터 백업 버튼
+    const backupBtn = document.getElementById('btn-export-backup');
+    if (backupBtn) {
+      backupBtn.addEventListener('click', () => {
+        StorageService.exportBackup();
+        this.showToast('통독 데이터 백업 파일이 다운로드되었습니다 💾');
+      });
+    }
+
+    // 데이터 복원 파일 선택
+    const restoreInput = document.getElementById('file-import-backup');
+    if (restoreInput) {
+      restoreInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const json = JSON.parse(event.target.result);
+            const res = StorageService.importBackup(json);
+            if (res.success) {
+              this.showToast('데이터 복원이 완료되었습니다! ✨');
+              setTimeout(() => window.location.reload(), 600);
+            } else {
+              alert('복원 실패: ' + res.error);
+            }
+          } catch (err) {
+            alert('유효하지 않은 백업 JSON 파일입니다.');
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    // 데이터 초기화 버튼
+    const resetBtn = document.getElementById('btn-reset-data');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        const confirm1 = confirm('⚠️ 주의: 모든 통독 기록과 찰스의 성장이 초기화됩니다. 계속하시겠습니까?');
+        if (confirm1) {
+          const pass = prompt('보안을 위해 보안키 6자리를 입력하세요:');
+          if (AuthService.isValidKey(pass)) {
+            StorageService.resetAll();
+            alert('데이터가 성공적으로 초기화되었습니다.');
+            window.location.reload();
+          } else {
+            alert('보안키가 일치하지 않아 초기화가 취소되었습니다.');
+          }
+        }
+      });
+    }
+
+    // 로그아웃 버튼
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        if (confirm('로그아웃하고 로그인 화면으로 돌아가시겠습니까?')) {
+          AuthService.logout();
+        }
+      });
+    }
+
+    // 찰스 클릭 시 인터랙션 (귀여운 소리와 점프)
+    const charlesDisplay = document.getElementById('charles-display');
+    if (charlesDisplay) {
+      charlesDisplay.addEventListener('click', () => {
+        this.triggerCharlesPoke();
+      });
+    }
+
+    // ==================== 성경 리더 이벤트 바인딩 ====================
+    const readerBackBtn = document.getElementById('reader-btn-back');
+    if (readerBackBtn) {
+      readerBackBtn.addEventListener('click', () => {
+        this.closeReader();
+      });
+    }
+
+    const readerPrevBtn = document.getElementById('reader-btn-prev');
+    if (readerPrevBtn) {
+      readerPrevBtn.addEventListener('click', () => {
+        this.prevChapter();
+      });
+    }
+
+    const readerNextBtn = document.getElementById('reader-btn-next');
+    if (readerNextBtn) {
+      readerNextBtn.addEventListener('click', () => {
+        this.nextChapter(true); // 다음 장으로 넘어가면서 자동 완독
+      });
+    }
+
+    const readerCompleteNextBtn = document.getElementById('reader-btn-complete-next');
+    if (readerCompleteNextBtn) {
+      readerCompleteNextBtn.addEventListener('click', () => {
+        this.handleCompleteAndNext();
+      });
+    }
+
+    const fontDownBtn = document.getElementById('reader-btn-font-down');
+    if (fontDownBtn) {
+      fontDownBtn.addEventListener('click', () => {
+        this.adjustFontSize(-1);
+      });
+    }
+
+    const fontUpBtn = document.getElementById('reader-btn-font-up');
+    if (fontUpBtn) {
+      fontUpBtn.addEventListener('click', () => {
+        this.adjustFontSize(1);
+      });
+    }
+
+    // 본문 스크롤 바닥 감지 (자동 완독 체크)
+    const readerScrollBody = document.getElementById('reader-body');
+    if (readerScrollBody) {
+      readerScrollBody.addEventListener('scroll', () => {
+        this.checkReaderScrollBottom();
+      });
+    }
+  },
+
+  triggerCharlesPoke() {
+    const slot = document.getElementById('charles-graphic-slot');
+    if (slot) {
+      slot.style.transform = 'scale(1.1)';
+      setTimeout(() => { slot.style.transform = 'scale(1)'; }, 150);
+    }
+  },
+
+  // ==================== 탭 전환 ====================
+  switchTab(tabId) {
+    this.activeTab = tabId;
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+
+    const target = document.getElementById(`tab-${tabId}`);
+    if (target) {
+      target.classList.add('active');
+    }
+
+    this.renderAll();
+  },
+
+  // ==================== 테마 관리 ====================
+  applySavedTheme() {
+    const saved = localStorage.getItem('charles_theme') || 'classic';
+    this.setTheme(saved);
+    const select = document.getElementById('theme-select');
+    if (select) select.value = saved;
+  },
+
+  setTheme(themeName) {
+    localStorage.setItem('charles_theme', themeName);
+    if (themeName === 'classic') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', themeName);
+    }
+  },
+
+  // ==================== 전체 렌더링 ====================
+  renderAll() {
+    this.renderHome();
+    this.renderSocial();
+    this.renderBibleList();
+    this.renderStats();
+    this.renderProfile();
+    this.renderSettings();
+  },
+
+  // ==================== 홈 화면 렌더링 (화면 중앙 대형 찰스 & Charles is____ & 오늘 말씀 게이지) ====================
+  renderHome() {
+    const stageNum = StorageService.getCharlesStage();
+    const visual = getCharlesVisual(stageNum);
+
+    // 1) 찰스 위: 오늘 읽은 말씀 게이지 (최대 5장)
+    const todayRead = StorageService.getTodayReadCount();
+    const gaugeCountEl = document.getElementById('today-gauge-count');
+    if (gaugeCountEl) {
+      if (todayRead >= 5) {
+        gaugeCountEl.textContent = `${todayRead} / 5장 (완독! 👑)`;
+      } else {
+        gaugeCountEl.textContent = `${todayRead} / 5장`;
+      }
+    }
+
+    const slots = document.querySelectorAll('.gauge-slot');
+    slots.forEach((slot, idx) => {
+      const slotNum = idx + 1;
+      if (todayRead >= slotNum) {
+        slot.classList.add('filled');
+      } else {
+        slot.classList.remove('filled');
+      }
+      slot.classList.remove('gold');
+    });
+
+    // 2) 화면 중앙 대형 찰스 SVG 그래픽
+    const visualBox = document.getElementById('charles-graphic-slot');
+    if (visualBox) {
+      visualBox.innerHTML = visual.svg;
+    }
+
+    // 3) 찰스 상태 제목 "Charles is ____"
+    const statusTextEl = document.getElementById('charles-status-text');
+    if (statusTextEl) {
+      statusTextEl.textContent = visual.info.title;
+    }
+
+    // 4) 성장 가이드 프리뷰 미리 렌더링
+    this.renderCharlesEvolutionPreview();
+  },
+
+  // ==================== 찰스 5단계 진화 프리뷰 렌더링 ====================
+  renderCharlesEvolutionPreview() {
+    for (let stage = 1; stage <= 5; stage++) {
+      const slot = document.getElementById(`evolution-slot-${stage}`);
+      if (slot && !slot.hasChildNodes()) {
+        const visual = getCharlesVisual(stage);
+        slot.innerHTML = visual.svg;
+      }
+    }
+  },
+
+  // ==================== 서원경 청년부 양떼목장 탭 렌더링 ====================
+  async renderSocial() {
+    const listEl = document.getElementById('social-friends-list');
+    if (!listEl) return;
+
+    const currentUser = AuthService.getCurrentUser();
+    const stats = StorageService.getStats();
+    const currentUserId = currentUser && currentUser.id ? String(currentUser.id).trim().toLowerCase() : '';
+
+    const isUserMe = (u) => {
+      if (!currentUserId || !u || !u.id) return false;
+      return String(u.id).trim().toLowerCase() === currentUserId;
+    };
+
+    const buildList = (users) => {
+      if (!Array.isArray(users)) users = [];
+
+      // 전체 등록 회원 목록 생성 (현재 사용자 포함)
+      let allMembers = [...users];
+      if (currentUser && currentUser.id && !allMembers.some(u => isUserMe(u))) {
+        allMembers.unshift(currentUser);
+      }
+
+      // 내 계정을 최상단으로 올리고 나머지는 닉네임/이름 순 정렬
+      allMembers.sort((a, b) => {
+        const aIsMe = isUserMe(a);
+        const bIsMe = isUserMe(b);
+        if (aIsMe) return -1;
+        if (bIsMe) return 1;
+        const nameA = a.nickname || a.name || '';
+        const nameB = b.nickname || b.name || '';
+        return nameA.localeCompare(nameB, 'ko');
+      });
+
+      return allMembers.map(u => {
+        const isMe = isUserMe(u);
+        const call = u.nickname || u.name || '청년부원';
+        const cellTag = u.cell ? ` (${u.cell})` : '';
+        const displayName = `${call}${cellTag}`;
+
+        let statusText = "Charles is chewing the Word 🌿";
+        if (isMe) {
+          statusText = stats.totalRead > 0 
+            ? `${stats.totalRead}장 통독 중 🌿 (나의 찰스)`
+            : "Charles is happy 🍀 (나의 찰스)";
+        }
+
+        return {
+          id: u.id || u.name,
+          callName: call,
+          displayName,
+          isMe,
+          status: statusText,
+          icon: isMe ? '👑' : '🐑'
+        };
+      });
+    };
+
+    const renderItems = (items) => {
+      if (!items || items.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-social-msg">
+            <div style="font-size: 32px; margin-bottom: 8px;">🐑✨</div>
+            서원경 청년부 지체들이 가입하면<br>
+            이곳 양떼목장에 자동으로 모두 함께 모입니다!
+          </div>
+        `;
+        return;
+      }
+
+      const otherMembersCount = items.filter(i => !i.isMe).length;
+
+      let html = items.map(f => `
+        <div class="friend-item" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
+          <div class="friend-info">
+            <div class="friend-avatar">${f.icon}</div>
+            <div class="friend-meta">
+              <span class="friend-name">
+                ${f.displayName}
+                ${f.isMe ? '<span class="badge-me">나</span>' : ''}
+              </span>
+              <span class="friend-status">${f.status}</span>
+            </div>
+          </div>
+          ${f.isMe ? `
+            <button class="btn-cheer" style="opacity: 0.6; cursor: default;" onclick="event.stopPropagation(); App.showToast('오늘도 말씀 안에서 파이팅! 💪✨')">
+              내 찰스 🌿
+            </button>
+          ` : `
+            <button class="btn-cheer" onclick="event.stopPropagation(); App.sendCheer('${f.callName}')">
+              응원 🐑
+            </button>
+          `}
+        </div>
+      `).join('');
+
+      if (otherMembersCount === 0) {
+        html += `
+          <div class="empty-social-msg" style="padding: 24px 16px; border-top: 1px dashed var(--border-color); margin-top: 16px;">
+            서원경 청년부 지체들이 가입하면<br>
+            이곳 양떼목장에 자동으로 함께 나타납니다! 🌿
+          </div>
+        `;
+      }
+
+      listEl.innerHTML = html;
+    };
+
+    // 1단계: 로컬 캐시 즉시 렌더링 (빠른 표시)
+    const localUsers = AuthService.getAllUsersLocal();
+    renderItems(buildList(localUsers));
+
+    // 2단계: Supabase 최신 사용자 목록 비동기 동기화
+    AuthService.getAllUsers().then(remoteUsers => {
+      if (Array.isArray(remoteUsers)) {
+        renderItems(buildList(remoteUsers));
+      }
+    }).catch(err => {
+      console.warn('양떼목장 원격 동기화 알림:', err);
+    });
+  },
+
+  sendCheer(name) {
+    this.showToast(`${name}님에게 양 풀과 따뜻한 응원을 보냈어요! 🌿✨`);
+  },
+
+  // ==================== 친구 정보 모달 오픈 ====================
+  async openFriendDetail(userId) {
+    const modal = document.getElementById('friend-detail-modal');
+    if (!modal) return;
+
+    // 1. 해당 유저 정보 찾기 (AuthService)
+    const users = AuthService.getAllUsersLocal();
+    let user = users.find(u => String(u.id).toLowerCase() === String(userId).toLowerCase());
+    if (!user) {
+      const cur = AuthService.getCurrentUser();
+      if (cur && String(cur.id).toLowerCase() === String(userId).toLowerCase()) {
+        user = cur;
+      }
+    }
+
+    const callName = (user && (user.nickname || user.name)) || userId;
+    const cellName = (user && user.cell) ? `${user.cell}` : '소속 셀 미지정';
+    const realName = (user && user.name) ? ` · ${user.name}` : '';
+    const isMe = user && String(user.id).toLowerCase() === String(StorageService.getCurrentUserId()).toLowerCase();
+
+    // 기본 텍스트 주입
+    const nickEl = document.getElementById('friend-modal-nickname');
+    if (nickEl) nickEl.textContent = callName;
+
+    const subEl = document.getElementById('friend-modal-sub');
+    if (subEl) subEl.textContent = `${cellName}${realName}`;
+
+    const streakEl = document.getElementById('friend-modal-stat-streak');
+    const todayEl = document.getElementById('friend-modal-stat-today');
+    if (streakEl) streakEl.textContent = '...';
+    if (todayEl) todayEl.textContent = '...';
+
+    modal.style.display = 'flex';
+    RetroAudio.click();
+
+    // 2. 통독 정보 및 양의 상태 비동기 조회
+    const state = await StorageService.getUserState(userId);
+    const visual = getCharlesVisual(state.stage);
+
+    // 그래픽 주입
+    const graphicSlot = document.getElementById('friend-modal-graphic');
+    if (graphicSlot) graphicSlot.innerHTML = visual.svg;
+
+    const titleEl = document.getElementById('friend-modal-charles-title');
+    if (titleEl) titleEl.textContent = visual.info.title;
+
+    const stageEl = document.getElementById('friend-modal-charles-stage');
+    if (stageEl) stageEl.textContent = `${state.stage}단계 찰스 🌿`;
+
+    if (streakEl) streakEl.textContent = `${state.streakCount}일`;
+    if (todayEl) todayEl.textContent = `${state.todayRead}장`;
+  },
+
+  renderQuickContinue() {
+    const continueBtn = document.getElementById('btn-quick-continue');
+    const continueText = document.getElementById('quick-continue-text');
+    if (!continueBtn || !continueText) return;
+
+    let nextBook = null;
+    let nextChapter = 1;
+
+    // 테스트 버전: 신약(NT)부터 이어 읽기 탐색
+    const ntBooks = BIBLE_BOOKS.filter(b => b.testament === 'NT');
+    for (const book of ntBooks) {
+      for (let c = 1; c <= book.chapters; c++) {
+        if (!StorageService.isChapterRead(book.id, c)) {
+          nextBook = book;
+          nextChapter = c;
+          break;
+        }
+      }
+      if (nextBook) break;
+    }
+
+    if (nextBook) {
+      continueText.textContent = `${nextBook.name} ${nextChapter}장 이어 읽기 ➔`;
+      continueBtn.onclick = () => {
+        this.openReader(nextBook.id, nextChapter);
+      };
+    } else {
+      continueText.textContent = `축하합니다! 신약 27권 전체 완독 완료 👑`;
+      continueBtn.onclick = null;
+    }
+  },
+
+  // ==================== 성경 목록 탭 렌더링 ====================
+  renderBibleList() {
+    const container = document.getElementById('bible-books-list');
+    if (!container) return;
+
+    let filtered = BIBLE_BOOKS;
+
+    if (this.currentTestament === 'OT') {
+      filtered = filtered.filter(b => b.testament === 'OT');
+    } else if (this.currentTestament === 'NT') {
+      filtered = filtered.filter(b => b.testament === 'NT');
+    }
+
+    if (this.searchKeyword) {
+      filtered = filtered.filter(b => 
+        b.name.toLowerCase().includes(this.searchKeyword) || 
+        b.eng.toLowerCase().includes(this.searchKeyword)
+      );
+    }
+
+    const stats = StorageService.getStats();
+
+    container.innerHTML = filtered.map(book => {
+      const isOT = book.testament === 'OT';
+      const readInBook = stats.bookProgress[book.id] || 0;
+      const isComplete = readInBook === book.chapters;
+
+      const cardClass = isOT ? 'book-card locked-book' : 'book-card';
+      const badgeContent = isOT 
+        ? '<span class="book-lock-tag">🔒 준비중</span>' 
+        : `<span>${readInBook}/${book.chapters}</span>${isComplete ? '<span class="book-complete-stamp">★완독</span>' : ''}<span class="accordion-arrow">▼</span>`;
+
+      return `
+        <div class="${cardClass}" id="book-card-${book.id}" data-book-id="${book.id}">
+          <div class="book-card-header" onclick="App.handleBookClick('${book.id}')">
+            <div class="book-name-wrap">
+              <span class="book-title">${book.name}</span>
+              <span class="book-category-tag">${book.category}</span>
+            </div>
+            <div class="book-progress-badge">
+              ${badgeContent}
+            </div>
+          </div>
+          <div class="book-chapters-grid" id="grid-${book.id}">
+            <!-- 챕터 버튼들 -->
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  handleBookClick(bookId) {
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book) return;
+
+    if (book.testament === 'OT') {
+      this.showToast('아직 개발중이에요! 이번 테스트 버전에서는 신약만 읽을 수 있어요 🔒🐑');
+      RetroAudio.click();
+      return;
+    }
+
+    this.toggleBookAccordion(bookId);
+  },
+
+  toggleBookAccordion(bookId) {
+    const card = document.getElementById(`book-card-${bookId}`);
+    if (!card) return;
+
+    const isExpanded = card.classList.contains('expanded');
+    if (!isExpanded) {
+      this.populateChaptersGrid(bookId);
+      card.classList.add('expanded');
+      RetroAudio.click();
+    } else {
+      card.classList.remove('expanded');
+      RetroAudio.click();
+    }
+  },
+
+  populateChaptersGrid(bookId) {
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    const grid = document.getElementById(`grid-${bookId}`);
+    if (!book || !grid) return;
+
+    let html = `
+      <div style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-color);">
+        <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${book.eng} · 총 ${book.chapters}장</span>
+      </div>
+    `;
+
+    for (let c = 1; c <= book.chapters; c++) {
+      const isRead = StorageService.isChapterRead(book.id, c);
+      html += `
+        <button class="chapter-btn ${isRead ? 'read' : ''}" 
+                onclick="App.openReader('${book.id}', ${c})"
+                id="btn-${book.id}-${c}">
+          ${c}
+        </button>
+      `;
+    }
+
+    grid.innerHTML = html;
+  },
+
+  updateBookCardProgress(bookId) {
+    const card = document.getElementById(`book-card-${bookId}`);
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!card || !book) return;
+
+    const stats = StorageService.getStats();
+    const readInBook = stats.bookProgress[book.id] || 0;
+    const isComplete = readInBook === book.chapters;
+
+    const badge = card.querySelector('.book-progress-badge');
+    if (badge) {
+      badge.innerHTML = `
+        <span>${readInBook}/${book.chapters}</span>
+        ${isComplete ? '<span class="book-complete-stamp">★완독</span>' : ''}
+        <span class="accordion-arrow">▼</span>
+      `;
+    }
+  },
+
+  // ==================== 앱 내 성경 읽기 뷰어 (BIBLE READER) ====================
+  async openReader(bookId, chapter) {
+    const readerView = document.getElementById('bible-reader-view');
+    const titleEl = document.getElementById('reader-current-title');
+    const container = document.getElementById('reader-verses-container');
+    const scrollBody = document.getElementById('reader-body');
+
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book) return;
+
+    // 구약 차단 (이번 테스트 버전은 신약만)
+    if (book.testament === 'OT') {
+      this.showToast('아직 개발중이에요! 이번 테스트 버전에서는 신약만 읽을 수 있어요 🔒🐑');
+      return;
+    }
+
+    this.currentReadingBookId = bookId;
+    this.currentReadingChapter = Number(chapter);
+    this.hasAutoMarkedThisSession = false; // 새로운 장 열람 시 자동완독 플래그 초기화
+
+    // 리더 뷰 열기
+    readerView.classList.add('active');
+    titleEl.textContent = `${book.name} ${chapter}장`;
+    container.innerHTML = `<div class="reader-loading">말씀을 불러오는 중입니다... 📖</div>`;
+    scrollBody.scrollTop = 0;
+
+    this.updateReaderCompleteBtn();
+
+    try {
+      const data = await BibleTextService.getChapterVerses(bookId, chapter);
+      
+      let html = '';
+      data.verses.forEach(v => {
+        html += `
+          <div class="verse-item">
+            <span class="verse-num">${v.verse}</span>
+            <span class="verse-text">${v.text}</span>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = `
+        <div class="reader-loading" style="color: #E74C3C;">
+          본문을 불러오지 못했습니다.<br>
+          <span style="font-size: 11px; color: var(--text-muted);">${err.message}</span>
+        </div>
+      `;
+    }
+  },
+
+  closeReader() {
+    const readerView = document.getElementById('bible-reader-view');
+    if (readerView) {
+      readerView.classList.remove('active');
+    }
+    this.renderAll();
+  },
+
+  handleCompleteAndNext() {
+    const bookId = this.currentReadingBookId;
+    const chapter = this.currentReadingChapter;
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book || book.testament === 'OT') return;
+
+    // 현재 장 완독 처리
+    const alreadyRead = StorageService.isChapterRead(bookId, chapter);
+    if (!alreadyRead) {
+      this.hasAutoMarkedThisSession = true;
+      const beforeStage = StorageService.getCharlesStage();
+      StorageService.setChapterRead(bookId, chapter, true);
+
+      this.showToast(`✓ ${book.name} ${chapter}장 완독! 찰스가 기뻐합니다 🐑🌿`);
+      RetroAudio.success();
+
+      const afterStage = StorageService.getCharlesStage();
+      if (afterStage > beforeStage) {
+        setTimeout(() => {
+          this.showToast(`🎉 찰스 성장! [${CHARLES_STAGES[afterStage].title}]`);
+        }, 800);
+      }
+
+      this.updateBookCardProgress(bookId);
+      this.renderHome();
+      this.renderStats();
+    }
+
+    // 신약의 마지막 장(요한계시록 22장)인지 확인
+    if (bookId === 'REV' && chapter === 22) {
+      this.showToast('🎉 축하합니다! 신약 27권 전체를 완독하셨습니다! 👑✨');
+      this.updateReaderCompleteBtn();
+      return;
+    }
+
+    // 다음 장으로 이동
+    this.nextChapter(false);
+  },
+
+  nextChapter(autoMark = true) {
+    if (autoMark) {
+      const bookId = this.currentReadingBookId;
+      const chapter = this.currentReadingChapter;
+      const book = BIBLE_BOOKS.find(b => b.id === bookId);
+      if (book && book.testament !== 'OT') {
+        const alreadyRead = StorageService.isChapterRead(bookId, chapter);
+        if (!alreadyRead) {
+          this.hasAutoMarkedThisSession = true;
+          const beforeStage = StorageService.getCharlesStage();
+          StorageService.setChapterRead(bookId, chapter, true);
+
+          this.showToast(`✓ ${book.name} ${chapter}장 완독! 찰스가 기뻐합니다 🐑🌿`);
+          RetroAudio.success();
+
+          const afterStage = StorageService.getCharlesStage();
+          if (afterStage > beforeStage) {
+            setTimeout(() => {
+              this.showToast(`🎉 찰스 성장! [${CHARLES_STAGES[afterStage].title}]`);
+            }, 800);
+          }
+
+          this.updateBookCardProgress(bookId);
+          this.renderHome();
+          this.renderStats();
+        }
+      }
+    }
+
+    const currentBook = BIBLE_BOOKS.find(b => b.id === this.currentReadingBookId);
+    if (!currentBook) return;
+
+    if (this.currentReadingChapter < currentBook.chapters) {
+      this.openReader(currentBook.id, this.currentReadingChapter + 1);
+    } else {
+      // 다음 책으로 넘어가기
+      const currentIdx = BIBLE_BOOKS.findIndex(b => b.id === this.currentReadingBookId);
+      if (currentIdx < BIBLE_BOOKS.length - 1) {
+        const nextBook = BIBLE_BOOKS[currentIdx + 1];
+        if (nextBook.testament === 'OT') {
+          this.showToast('신약의 마지막 장(요한계시록 22장)입니다! 👑');
+          return;
+        }
+        this.openReader(nextBook.id, 1);
+      } else {
+        this.showToast('신약의 마지막 장(요한계시록 22장)입니다! 👑');
+      }
+    }
+  },
+
+  prevChapter() {
+    const currentBook = BIBLE_BOOKS.find(b => b.id === this.currentReadingBookId);
+    if (!currentBook) return;
+
+    if (this.currentReadingChapter > 1) {
+      this.openReader(currentBook.id, this.currentReadingChapter - 1);
+    } else {
+      // 이전 책으로 넘어가기
+      const currentIdx = BIBLE_BOOKS.findIndex(b => b.id === this.currentReadingBookId);
+      if (currentIdx > 0) {
+        const prevBook = BIBLE_BOOKS[currentIdx - 1];
+        if (prevBook.testament === 'OT') {
+          this.showToast('신약의 첫 장(마태복음 1장)입니다! 구약은 개발 중이에요 🔒');
+          return;
+        }
+        this.openReader(prevBook.id, prevBook.chapters);
+      }
+    }
+  },
+
+  // 스크롤이 가장 아래로 내려왔을 때 자동으로 장 완독 체크
+  checkReaderScrollBottom() {
+    const readerView = document.getElementById('bible-reader-view');
+    const scrollBody = document.getElementById('reader-body');
+    if (!readerView || !readerView.classList.contains('active') || !scrollBody) return;
+    if (this.hasAutoMarkedThisSession) return;
+
+    // 본문 컨텐츠가 충분히 로드되어 스크롤이 생긴 상태인지 확인
+    if (scrollBody.scrollHeight <= scrollBody.clientHeight + 20) return;
+
+    // 바닥 35px 이내 도달 확인
+    const scrollBottom = scrollBody.scrollTop + scrollBody.clientHeight;
+    if (scrollBottom >= scrollBody.scrollHeight - 35) {
+      this.autoMarkCurrentChapterRead();
+    }
+  },
+
+  autoMarkCurrentChapterRead() {
+    if (this.hasAutoMarkedThisSession) return;
+    const bookId = this.currentReadingBookId;
+    const chapter = this.currentReadingChapter;
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book || book.testament === 'OT') return;
+
+    const alreadyRead = StorageService.isChapterRead(bookId, chapter);
+    if (!alreadyRead) {
+      this.hasAutoMarkedThisSession = true;
+      const beforeStage = StorageService.getCharlesStage();
+      StorageService.setChapterRead(bookId, chapter, true);
+
+      this.showToast(`✓ ${book.name} ${chapter}장 완독! 찰스가 기뻐합니다 🐑🌿`);
+      RetroAudio.success();
+
+      const afterStage = StorageService.getCharlesStage();
+      if (afterStage > beforeStage) {
+        setTimeout(() => {
+          this.showToast(`🎉 찰스 성장! [${CHARLES_STAGES[afterStage].title}]`);
+        }, 800);
+      }
+
+      this.updateReaderCompleteBtn();
+      this.updateBookCardProgress(bookId);
+      this.renderHome();
+      this.renderStats();
+    }
+  },
+
+  updateReaderCompleteBtn() {
+    const completeBtn = document.getElementById('reader-btn-complete-next');
+    if (!completeBtn) return;
+
+    const isLast = this.currentReadingBookId === 'REV' && this.currentReadingChapter === 22;
+    const isRead = StorageService.isChapterRead(this.currentReadingBookId, this.currentReadingChapter);
+
+    if (isLast) {
+      completeBtn.textContent = isRead ? '✓ 신약 전체 완독 완료 👑' : '✓ 다 읽고 신약 완독하기 👑';
+    } else {
+      completeBtn.textContent = isRead ? '다음 장으로 ➔' : '✓ 다 읽고 다음 장으로 ➔';
+    }
+  },
+
+  adjustFontSize(delta) {
+    this.readerFontSize = Math.max(13, Math.min(24, this.readerFontSize + delta));
+    document.documentElement.style.setProperty('--reader-font-size', `${this.readerFontSize}px`);
+    localStorage.setItem('charles_reader_font_size', this.readerFontSize);
+  },
+
+  // ==================== 통계 탭 렌더링 ====================
+  renderStats() {
+    const stats = StorageService.getStats();
+    const streak = StorageService.getStreakInfo();
+    const achievements = StorageService.getAchievements();
+
+    const totalEl = document.getElementById('stats-total-read');
+    if (totalEl) totalEl.textContent = `${stats.totalRead} / ${stats.totalChapters} 장 (${stats.percent}%)`;
+
+    const fillEl = document.getElementById('stats-progress-fill');
+    if (fillEl) fillEl.style.width = `${stats.percent}%`;
+
+    const otFill = document.getElementById('stats-ot-fill');
+    if (otFill) otFill.style.width = `${stats.otPercent}%`;
+    const otLabel = document.getElementById('stats-ot-label');
+    if (otLabel) otLabel.textContent = `${stats.otRead}/${stats.otTotal} (${stats.otPercent}%)`;
+
+    const ntFill = document.getElementById('stats-nt-fill');
+    if (ntFill) ntFill.style.width = `${stats.ntPercent}%`;
+    const ntLabel = document.getElementById('stats-nt-label');
+    if (ntLabel) ntLabel.textContent = `${stats.ntRead}/${stats.ntTotal} (${stats.ntPercent}%)`;
+
+    const streakEl = document.getElementById('stats-streak-val');
+    if (streakEl) streakEl.textContent = `${streak.count}일 연속 (최대 ${streak.maxStreak}일)`;
+
+    const badgeContainer = document.getElementById('stats-badge-list');
+    if (badgeContainer) {
+      badgeContainer.innerHTML = achievements.map(ach => `
+        <div class="badge-clean-item ${ach.unlocked ? '' : 'locked'}">
+          <div class="badge-header">
+            <span class="badge-icon">${ach.icon}</span>
+            <span class="badge-name">${ach.name}</span>
+          </div>
+          <span class="badge-desc">${ach.desc}</span>
+          <span style="font-size: 10px; font-weight: 700; color: ${ach.unlocked ? '#000' : '#888'};">
+            ${ach.unlocked ? '✓ 획득 완료' : '🔒 잠김'}
+          </span>
+        </div>
+      `).join('');
+    }
+  },
+
+  // ==================== 5. 내 정보 (프로필 & 달력) 탭 렌더링 ====================
+  renderProfile() {
+    const user = AuthService.getCurrentUser();
+    if (!user) return;
+
+    // 1) 유저 기본 정보
+    const nickEl = document.getElementById('profile-user-nickname');
+    if (nickEl) nickEl.textContent = user.nickname || user.name || '성도님';
+
+    const subEl = document.getElementById('profile-user-sub');
+    if (subEl) {
+      const cellText = user.cell ? `${user.cell}` : '일반';
+      const nameText = user.name ? ` (${user.name})` : '';
+      subEl.textContent = `${cellText}${nameText}`;
+    }
+
+    // 2) 찰스 상태 뱃지
+    const badgeEl = document.getElementById('profile-charles-badge');
+    if (badgeEl) {
+      const stage = StorageService.getCharlesStage();
+      const info = CHARLES_STAGES[stage];
+      badgeEl.textContent = `${stage}단계 · ${info.name} 🌿`;
+    }
+
+    // 3) 3대 통독 지표
+    const todayStatEl = document.getElementById('profile-stat-today');
+    if (todayStatEl) {
+      todayStatEl.textContent = `${StorageService.getTodayReadCount()}장`;
+    }
+
+    const streakStatEl = document.getElementById('profile-stat-streak');
+    if (streakStatEl) {
+      const streak = StorageService.getStreakInfo();
+      streakStatEl.textContent = `${streak.count}일`;
+    }
+
+    const totalStatEl = document.getElementById('profile-stat-total');
+    if (totalStatEl) {
+      const stats = StorageService.getStats();
+      totalStatEl.textContent = `${stats.ntRead} / 260장`;
+    }
+
+    // 4) 달력 렌더링
+    this.renderReadingCalendar(this.calendarYear, this.calendarMonth);
+  },
+
+  renderReadingCalendar(year, month) {
+    const titleEl = document.getElementById('calendar-month-title');
+    const gridEl = document.getElementById('calendar-days-grid');
+    if (!titleEl || !gridEl) return;
+
+    titleEl.textContent = `${year}년 ${month}월`;
+
+    // 1일의 요일 (0: 일요일, 6: 토요일)
+    const firstDayIndex = new Date(year, month - 1, 1).getDay();
+    // 해당 월의 총 일수
+    const totalDays = new Date(year, month, 0).getDate();
+
+    const todayStr = StorageService.getTodayDateStr();
+    let html = '';
+
+    // 1일 이전의 빈 칸
+    for (let i = 0; i < firstDayIndex; i++) {
+      html += `<div class="calendar-day empty"></div>`;
+    }
+
+    // 1일부터 말일까지 셀 생성
+    for (let day = 1; day <= totalDays; day++) {
+      const mStr = String(month).padStart(2, '0');
+      const dStr = String(day).padStart(2, '0');
+      const dateStr = `${year}-${mStr}-${dStr}`;
+
+      const count = StorageService.getDailyReadCount(dateStr);
+
+      let levelClass = 'level-0';
+      if (count >= 5) levelClass = 'level-3';
+      else if (count >= 3) levelClass = 'level-2';
+      else if (count >= 1) levelClass = 'level-1';
+
+      const isToday = dateStr === todayStr;
+      const isSelected = this.selectedDateStr === dateStr;
+
+      html += `
+        <div class="calendar-day ${levelClass} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+             onclick="App.selectCalendarDate('${dateStr}', ${count})"
+             title="${dateStr}: ${count}장 통독">
+          <span>${day}</span>
+          ${count > 0 ? `<span class="calendar-day-count">${count}장</span>` : ''}
+        </div>
+      `;
+    }
+
+    gridEl.innerHTML = html;
+  },
+
+  selectCalendarDate(dateStr, count) {
+    this.selectedDateStr = dateStr;
+    const infoEl = document.getElementById('calendar-selected-info');
+    if (infoEl) {
+      if (count > 0) {
+        infoEl.innerHTML = `<strong>${dateStr}</strong>: 총 <strong>${count}장</strong>의 말씀을 통독했어요! 🌿✨`;
+      } else {
+        infoEl.innerHTML = `<strong>${dateStr}</strong>: 통독 기록이 없습니다. (0장)`;
+      }
+    }
+
+    // 선택된 셀 포커스 갱신
+    document.querySelectorAll('.calendar-day').forEach(el => {
+      if (el.getAttribute('title') && el.getAttribute('title').startsWith(dateStr)) {
+        el.classList.add('selected');
+      } else {
+        el.classList.remove('selected');
+      }
+    });
+  },
+
+  changeCalendarMonth(delta) {
+    let m = this.calendarMonth + delta;
+    let y = this.calendarYear;
+    if (m < 1) {
+      m = 12;
+      y -= 1;
+    } else if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+    this.calendarYear = y;
+    this.calendarMonth = m;
+    this.renderReadingCalendar(y, m);
+  },
+
+  resetCalendarToToday() {
+    const now = new Date();
+    this.calendarYear = now.getFullYear();
+    this.calendarMonth = now.getMonth() + 1;
+    this.selectedDateStr = StorageService.getTodayDateStr();
+    this.renderReadingCalendar(this.calendarYear, this.calendarMonth);
+    const count = StorageService.getDailyReadCount(this.selectedDateStr);
+    this.selectCalendarDate(this.selectedDateStr, count);
+  },
+
+  // ==================== 설정 탭 렌더링 ====================
+  renderSettings() {
+    const user = AuthService.getCurrentUser();
+    const idEl = document.getElementById('settings-user-id');
+    if (idEl && user) {
+      idEl.textContent = user.id || '-';
+    }
+    const nameEl = document.getElementById('settings-user-name');
+    if (nameEl && user) {
+      nameEl.textContent = user.name || '찰스';
+    }
+    const nickEl = document.getElementById('settings-user-nickname');
+    if (nickEl && user) {
+      nickEl.textContent = user.nickname || user.name || '-';
+    }
+    const cellEl = document.getElementById('settings-user-cell');
+    if (cellEl && user) {
+      cellEl.textContent = user.cell || '일반';
+    }
+    const regDateEl = document.getElementById('settings-reg-date');
+    if (regDateEl && user) {
+      regDateEl.textContent = user.registeredAt ? user.registeredAt.slice(0, 10) : '-';
+    }
+  },
+
+  // ==================== 소식 및 알림 관리 ====================
+  getNotifications() {
+    const defaultNotifs = [
+      {
+        id: 'n1',
+        icon: '🐑',
+        text: '서원경 청년부 양떼목장에 오신 것을 환영합니다!',
+        time: '방금 전',
+        read: false
+      },
+      {
+        id: 'n2',
+        icon: '📖',
+        text: '말씀양 찰스가 오늘의 성경 통독을 기다리고 있어요.',
+        time: '오늘',
+        read: false
+      },
+      {
+        id: 'n3',
+        icon: '🌿',
+        text: '오늘 하루도 말씀 안에서 승리하는 청년부가 되길 축복합니다 ✨',
+        time: '오늘',
+        read: true
+      }
+    ];
+
+    const saved = localStorage.getItem('charles_notifications');
+    if (!saved) {
+      localStorage.setItem('charles_notifications', JSON.stringify(defaultNotifs));
+      return defaultNotifs;
+    }
+    try {
+      let parsed = JSON.parse(saved);
+      // 예시 친구(다윗, 에스더 등) 언급 알림 완전 제거
+      parsed = parsed.filter(n => n && n.text && !n.text.includes('다윗') && !n.text.includes('에스더') && !n.text.includes('친구로 추가'));
+      if (parsed.length === 0) {
+        parsed = defaultNotifs;
+      }
+      localStorage.setItem('charles_notifications', JSON.stringify(parsed));
+      return parsed;
+    } catch (e) {
+      return defaultNotifs;
+    }
+  },
+
+  addNotification(notif) {
+    const notifs = this.getNotifications();
+    notifs.unshift(notif);
+    localStorage.setItem('charles_notifications', JSON.stringify(notifs));
+    this.updateUnreadNotificationDot();
+  },
+
+  updateUnreadNotificationDot() {
+    const dot = document.querySelector('.msg-unread-dot');
+    if (!dot) return;
+    const notifs = this.getNotifications();
+    const hasUnread = notifs.some(n => !n.read);
+    dot.style.display = hasUnread ? 'block' : 'none';
+  },
+
+  renderNotifications() {
+    const listEl = document.getElementById('notifications-list');
+    if (!listEl) return;
+
+    const notifs = this.getNotifications();
+    this.updateUnreadNotificationDot();
+
+    if (notifs.length === 0) {
+      listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 32px 0; font-size: 13px;">새로운 알림이 없습니다.</div>';
+      return;
+    }
+
+    listEl.innerHTML = notifs.map(n => `
+      <div class="notif-item ${n.read ? 'read' : 'unread'}" onclick="App.markNotifRead('${n.id}')" style="cursor: pointer; padding: 10px 8px; border-radius: 8px; margin-bottom: 6px; ${n.read ? '' : 'background: var(--color-badge-bg);'}">
+        <div class="notif-icon">${n.icon}</div>
+        <div class="notif-content">
+          <div class="notif-text" style="${n.read ? 'color: var(--text-muted);' : 'font-weight: 600;'}">${n.text}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+        ${!n.read ? '<span style="width: 7px; height: 7px; border-radius: 50%; background: #E74C3C; display: inline-block; margin-top: 4px; flex-shrink: 0;"></span>' : ''}
+      </div>
+    `).join('');
+  },
+
+  markNotifRead(id) {
+    const notifs = this.getNotifications();
+    const updated = notifs.map(n => n.id === id ? { ...n, read: true } : n);
+    localStorage.setItem('charles_notifications', JSON.stringify(updated));
+    this.renderNotifications();
+    this.updateUnreadNotificationDot();
+  },
+
+  showToast(message) {
+    const existing = document.querySelector('.celebrate-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'celebrate-toast';
+    toast.textContent = message;
+    document.getElementById('app-container').appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 1500);
+  }
+};

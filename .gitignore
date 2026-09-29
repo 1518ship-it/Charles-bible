@@ -1,0 +1,11 @@
+# 임시 스크립트 및 테스트 파일
+scratch/
+*.log
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 로컬 개발용 스크립트 (선택 사항)
+# server.ps1
