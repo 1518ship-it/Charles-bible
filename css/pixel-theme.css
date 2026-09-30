@@ -738,7 +738,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  opacity: 0.38;
+  filter: grayscale(0.85);
+  transition: opacity 0.18s ease, filter 0.18s ease, transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-tab-btn:hover .nav-tab-icon {
+  opacity: 0.75;
+  filter: grayscale(0.25);
 }
 
 .nav-tab-btn.active {
@@ -746,6 +753,8 @@ body {
 }
 
 .nav-tab-btn.active .nav-tab-icon {
+  opacity: 1;
+  filter: grayscale(0);
   transform: scale(1.12);
 }
 
