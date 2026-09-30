@@ -57,27 +57,42 @@
   user-select: none;
 }
 
+input, textarea, select, .reader-verses, .verse-text {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background-color: #ECECEE;
   color: var(--text-color);
   font-family: var(--main-font);
   font-size: 14px;
   line-height: 1.45;
+  height: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 0;
   margin: 0;
   letter-spacing: -0.2px;
+  overflow-x: hidden;
 }
 
 /* 모바일 쉘 컨테이너 */
 #app-container {
   width: 100%;
   max-width: 440px;
-  min-height: 100vh;
   height: 100vh;
+  height: 100dvh;
+  min-height: -webkit-fill-available;
   background-color: var(--bg-color);
   border-left: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
@@ -120,7 +135,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 8px;
+  color: var(--text-color);
   transition: transform 0.1s ease;
 }
 
@@ -130,13 +146,13 @@ body {
 
 .msg-unread-dot {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 7px;
-  height: 7px;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
   background: #E74C3C;
-  border-radius: 50%;
-  border: 1.5px solid var(--bg-color);
+  border-radius: 0;
+  border: 1px solid var(--bg-color);
 }
 
 .btn-icon-ghost {
@@ -150,11 +166,14 @@ body {
 /* 메인 스크롤 뷰포트 */
 .app-main {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 20px;
-  padding-bottom: calc(var(--nav-height) + 20px);
+  padding: 14px 18px;
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 32px);
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
 }
 
 /* 탭 패널 기본 */
@@ -166,15 +185,15 @@ body {
   display: block;
 }
 
-/* ==================== TAB: HOME (화면 중앙 대형 찰스 & 텍스트 제거) ==================== */
+/* ==================== TAB: HOME (화면 중앙 대형 찰스 & 컴팩트 비율) ==================== */
 #tab-home.active {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  min-height: calc(100vh - var(--header-height) - var(--nav-height) - 40px);
-  padding: 0;
+  min-height: calc(100% - 10px);
+  padding: 6px 0;
   margin: 0;
 }
 
@@ -190,7 +209,7 @@ body {
 .charles-display-box {
   background: transparent;
   border: none;
-  padding: 10px 0;
+  padding: 2px 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,15 +219,15 @@ body {
 
 /* 양 아래의 Charles is ____ 문구 & 물음표 버튼 */
 .charles-status-wrap {
-  margin-top: 18px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .charles-status-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-color);
   display: flex;
@@ -248,14 +267,14 @@ body {
   transform: scale(0.95);
 }
 
-/* 오늘 읽은 말씀 도트 게이지 (최대 5장) */
+/* 오늘 읽은 말씀 도트 게이지 (최대 5장 - 컴팩트 비율) */
 .today-reading-gauge-wrap {
   width: 100%;
-  max-width: 200px;
-  margin-bottom: 22px;
+  max-width: 190px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .today-gauge-header {
@@ -269,21 +288,21 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--text-color);
   letter-spacing: -0.2px;
 }
 
 .today-gauge-count {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-color);
   font-weight: 800;
 }
 
 .today-gauge-bar {
   display: flex;
-  gap: 4px;
+  gap: 3.5px;
   background: transparent;
   padding: 0;
   border: none;
@@ -293,17 +312,17 @@ body {
 
 .gauge-slot {
   flex: 1;
-  height: 12px;
+  height: 9px;
   border-radius: 0;
   background: transparent;
-  border: 2px solid var(--text-color, #111);
+  border: 1.5px solid var(--text-color, #111);
   box-shadow: none;
   transition: none;
 }
 
 .gauge-slot.filled {
   background: var(--text-color, #111);
-  border: 2px solid var(--text-color, #111);
+  border: 1.5px solid var(--text-color, #111);
   box-shadow: none;
   transform: none;
 }
@@ -682,12 +701,14 @@ body {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: var(--nav-height);
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--bg-color);
   border-top: 1px solid var(--border-color);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   z-index: 30;
+  box-sizing: border-box;
 }
 
 .nav-tab-btn {
@@ -700,7 +721,11 @@ body {
   cursor: pointer;
   padding: 0;
   position: relative;
-  transition: transform 0.1s ease;
+  transition: transform 0.12s ease, color 0.15s ease;
+}
+
+.nav-tab-btn:hover {
+  color: var(--text-color);
 }
 
 .nav-tab-btn:active {
@@ -708,27 +733,49 @@ body {
 }
 
 .nav-tab-icon {
-  font-size: 22px;
-  line-height: 1;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-tab-btn.active {
+  color: var(--text-color);
 }
 
 .nav-tab-btn.active .nav-tab-icon {
-  transform: scale(1.1);
+  transform: scale(1.12);
 }
 
 .nav-tab-btn.active::after {
   content: '';
   position: absolute;
-  bottom: 8px;
+  bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
+  width: 5px;
+  height: 3px;
+  border-radius: 0;
   background: var(--text-color);
+}
+
+/* 큼직하고 귀여운 레트로 도트 아이콘 공통 클래스 */
+.pixel-icon {
+  display: inline-block;
+  vertical-align: middle;
+  shape-rendering: crispEdges;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+}
+
+.pixel-icon-nav {
+  width: 28px;
+  height: 28px;
 }
 
 /* ==================== 성경 읽기 뷰어 (BIBLE READER) ==================== */
@@ -739,6 +786,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
+  height: 100dvh;
   background: var(--bg-color);
   z-index: 50;
   flex-direction: column;
@@ -782,13 +830,23 @@ body {
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
+  color: var(--text-color);
+  transition: transform 0.1s ease, background-color 0.15s ease;
+}
+
+.reader-nav-arrow:active {
+  transform: scale(0.9);
 }
 
 .reader-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 24px 20px 100px 20px;
+  overflow-x: hidden;
+  padding: 20px 18px calc(90px + env(safe-area-inset-bottom, 0px)) 18px;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
 }
 
 .reader-verses {
@@ -828,11 +886,12 @@ body {
   width: 100%;
   background: var(--bg-color);
   border-top: 1px solid var(--border-color);
-  padding: 12px 18px;
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
   display: flex;
   gap: 8px;
   z-index: 55;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .btn-complete-chapter {
@@ -871,27 +930,39 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100%;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 16px;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 16px)) 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .gate-modal {
   width: 100%;
   max-width: 360px;
-  max-height: 90vh;
+  max-height: min(86dvh, 640px);
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: var(--card-bg);
   border-radius: 14px;
-  padding: 28px 22px;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 12px)) 20px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  margin: auto;
 }
 
 .gate-view {
@@ -1070,25 +1141,34 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100%;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   z-index: 100;
+  touch-action: pan-y;
+  box-sizing: border-box;
 }
 
 .modal-sheet {
   width: 100%;
   max-width: 440px;
   background: var(--card-bg);
-  border-radius: 16px 16px 0 0;
-  padding: 20px 20px 32px 20px;
-  max-height: 80vh;
+  border-radius: 18px 18px 0 0;
+  padding: 18px 20px calc(24px + env(safe-area-inset-bottom, 16px)) 20px;
+  max-height: min(84dvh, calc(100% - 40px));
   display: flex;
   flex-direction: column;
   animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 @keyframes slideUp {
@@ -1100,7 +1180,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 28px;
+  touch-action: pan-y;
 }
 
 .modal-tabs {
@@ -1148,6 +1240,10 @@ body {
 .modal-section-content {
   display: none;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 20px;
 }
 
 .modal-section-content.active {
@@ -1203,7 +1299,7 @@ body {
   border-radius: 8px;
   width: 34px;
   height: 34px;
-  font-size: 16px;
+  color: var(--text-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1340,6 +1436,12 @@ body {
   justify-content: center;
   font-size: 11px;
   cursor: pointer;
+  color: var(--text-color);
+  transition: transform 0.1s ease, background-color 0.15s ease;
+}
+
+.calendar-nav-btn:active {
+  transform: scale(0.9);
 }
 
 .calendar-btn-today {
@@ -1576,6 +1678,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  margin-bottom: 8px;
 }
 
 .friend-modal-stat-card {
@@ -1605,10 +1708,13 @@ body {
 /* ==================== 찰스 육성 가이드 모달 (간소화 1뷰) ==================== */
 .charles-help-sheet {
   max-width: 400px;
-  padding: 16px 16px 20px 16px;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 16px)) 16px;
   animation: slideUp 0.18s ease-out;
-  max-height: 88vh;
+  max-height: min(84dvh, 580px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
 }
 
 .help-compact-notice {
@@ -1700,6 +1806,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  padding-bottom: 8px;
 }
 
 .rule-compact-row {

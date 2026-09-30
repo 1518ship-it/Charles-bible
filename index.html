@@ -8,7 +8,7 @@
   <title>Charles' Bible - 말씀양 찰스</title>
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=2.2">
 </head>
 <body>
 
@@ -20,7 +20,32 @@
       <div class="header-left"></div>
       <div class="header-actions">
         <button id="btn-open-messages" class="btn-msg-icon" title="메시지 및 알림">
-          <span style="font-size: 20px;">💬</span>
+          <!-- 💬 귀여운 하트 말풍선 (16x16 픽셀 도트) -->
+          <svg class="pixel-icon" viewBox="0 0 16 16" width="22" height="22" shape-rendering="crispEdges">
+            <!-- 말풍선 상단/좌우 둥근 외곽선 -->
+            <rect x="3" y="1" width="10" height="1" fill="currentColor" />
+            <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="13" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="0" y="3" width="1" height="7" fill="currentColor" />
+            <rect x="15" y="3" width="1" height="7" fill="currentColor" />
+            <rect x="1" y="10" width="2" height="1" fill="currentColor" />
+            <rect x="13" y="10" width="2" height="1" fill="currentColor" />
+            <!-- 말풍선 몸체 채움 -->
+            <rect x="1" y="3" width="14" height="7" fill="var(--card-bg, #fff)" />
+            <rect x="3" y="2" width="10" height="1" fill="var(--card-bg, #fff)" />
+            <!-- 말풍선 속 사랑스러운 핑크 하트 (💖) -->
+            <rect x="5" y="4" width="2" height="1" fill="#FF5E57" />
+            <rect x="9" y="4" width="2" height="1" fill="#FF5E57" />
+            <rect x="4" y="5" width="8" height="2" fill="#FF5E57" />
+            <rect x="5" y="7" width="6" height="1" fill="#FF5E57" />
+            <rect x="6" y="8" width="4" height="1" fill="#FF5E57" />
+            <rect x="7" y="9" width="2" height="1" fill="#FF5E57" />
+            <!-- 말풍선 하단 꼬리 -->
+            <rect x="3" y="11" width="3" height="1" fill="currentColor" />
+            <rect x="8" y="11" width="6" height="1" fill="currentColor" />
+            <rect x="3" y="12" width="3" height="1" fill="currentColor" />
+            <rect x="4" y="13" width="2" height="1" fill="currentColor" />
+          </svg>
           <span class="msg-unread-dot"></span>
         </button>
       </div>
@@ -31,7 +56,27 @@
 
       <!-- ==================== 1. TAB: SOCIAL (서원경 청년부 양떼목장 화면) ==================== -->
       <section id="tab-social" class="tab-content">
-        <div class="section-heading">서원경 청년부 양떼목장 🐑</div>
+        <div class="section-heading" style="display: flex; align-items: center; gap: 6px;">
+          <span>서원경 청년부 양떼목장</span>
+          <svg class="pixel-icon" viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
+            <rect x="3" y="1" width="6" height="1" fill="currentColor" />
+            <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="9" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="0" y="3" width="1" height="4" fill="currentColor" />
+            <rect x="11" y="3" width="1" height="4" fill="currentColor" />
+            <rect x="2" y="3" width="8" height="5" fill="var(--card-bg, #fff)" />
+            <rect x="3" y="4" width="1" height="2" fill="currentColor" />
+            <rect x="8" y="4" width="1" height="2" fill="currentColor" />
+            <rect x="2" y="6" width="1" height="1" fill="#FFAAA6" />
+            <rect x="9" y="6" width="1" height="1" fill="#FFAAA6" />
+            <rect x="5" y="6" width="2" height="1" fill="currentColor" />
+            <rect x="1" y="7" width="2" height="1" fill="currentColor" />
+            <rect x="9" y="7" width="2" height="1" fill="currentColor" />
+            <rect x="3" y="8" width="6" height="1" fill="currentColor" />
+            <rect x="3" y="9" width="2" height="2" fill="currentColor" />
+            <rect x="7" y="9" width="2" height="2" fill="currentColor" />
+          </svg>
+        </div>
         <div id="social-friends-list" class="friend-list">
           <!-- js에서 동적으로 로드 -->
         </div>
@@ -84,7 +129,16 @@
           <div class="charles-status-wrap">
             <div id="charles-status-title" class="charles-status-title">
               <span id="charles-status-text">Charles is starving...</span>
-              <button id="btn-charles-help" class="btn-charles-help" type="button" title="찰스 성장 조건 알아보기">?</button>
+              <button id="btn-charles-help" class="btn-charles-help" type="button" title="찰스 성장 조건 알아보기">
+                <svg class="pixel-icon" viewBox="0 0 10 10" width="10" height="10" shape-rendering="crispEdges">
+                  <rect x="3" y="0" width="4" height="1" fill="currentColor" />
+                  <rect x="2" y="1" width="2" height="2" fill="currentColor" />
+                  <rect x="6" y="1" width="2" height="2" fill="currentColor" />
+                  <rect x="5" y="3" width="2" height="2" fill="currentColor" />
+                  <rect x="4" y="5" width="2" height="2" fill="currentColor" />
+                  <rect x="4" y="8" width="2" height="2" fill="currentColor" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -92,7 +146,16 @@
 
       <!-- ==================== 4. TAB: STATS (통계) ==================== -->
       <section id="tab-stats" class="tab-content">
-        <div class="section-heading">통독 현황 📊</div>
+        <div class="section-heading" style="display: flex; align-items: center; gap: 6px;">
+          <span>통독 현황</span>
+          <svg class="pixel-icon" viewBox="0 0 12 12" width="15" height="15" shape-rendering="crispEdges">
+            <rect x="8" y="0" width="3" height="2" fill="#F4D03F" />
+            <rect x="1" y="7" width="2" height="3" fill="#2ECC71" />
+            <rect x="4" y="4" width="2" height="6" fill="#2ECC71" />
+            <rect x="7" y="2" width="2" height="8" fill="#2ECC71" />
+            <rect x="0" y="10" width="11" height="1" fill="currentColor" />
+          </svg>
+        </div>
 
         <div class="stats-clean-group">
           <div class="stats-row">
@@ -142,16 +205,54 @@
         <!-- 상단 헤더: 좌측 톱니바퀴(설정) 버튼 + 타이틀 -->
         <div class="profile-top-bar">
           <button id="btn-open-settings" class="btn-gear-settings" type="button" title="환경설정 열기">
-            ⚙️
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="18" height="18" shape-rendering="crispEdges">
+              <!-- 상하좌우 돌출 톱니 -->
+              <rect x="4" y="0" width="4" height="2" fill="currentColor" />
+              <rect x="4" y="10" width="4" height="2" fill="currentColor" />
+              <rect x="0" y="4" width="2" height="4" fill="currentColor" />
+              <rect x="10" y="4" width="2" height="4" fill="currentColor" />
+              <!-- 대각선 톱니 -->
+              <rect x="1" y="1" width="2" height="2" fill="currentColor" />
+              <rect x="9" y="1" width="2" height="2" fill="currentColor" />
+              <rect x="1" y="9" width="2" height="2" fill="currentColor" />
+              <rect x="9" y="9" width="2" height="2" fill="currentColor" />
+              <!-- 기어 몸체 디스크 -->
+              <rect x="2" y="2" width="8" height="8" fill="currentColor" />
+              <!-- 중앙 구멍 도트 -->
+              <rect x="4" y="4" width="4" height="4" fill="var(--card-bg, #fff)" />
+            </svg>
           </button>
-          <div class="profile-header-title">내 정보 👤</div>
+          <div class="profile-header-title">내 정보</div>
           <div style="width: 32px;"></div>
         </div>
 
         <!-- 유저 프로필 및 내 찰스 요약 카드 -->
         <div class="profile-user-card">
           <div class="profile-user-info">
-            <div class="profile-user-avatar">🐑</div>
+            <div class="profile-user-avatar">
+              <!-- 🐑 귀엽고 뽀송한 찰스 아기양 도트 -->
+              <svg class="pixel-icon" viewBox="0 0 12 12" width="30" height="30" shape-rendering="crispEdges">
+                <rect x="2" y="2" width="8" height="6" fill="#FFFFFF" />
+                <rect x="3" y="1" width="6" height="1" fill="#FFFFFF" />
+                <rect x="3" y="0" width="6" height="1" fill="#111111" />
+                <rect x="2" y="1" width="1" height="1" fill="#111111" />
+                <rect x="9" y="1" width="1" height="1" fill="#111111" />
+                <rect x="0" y="3" width="2" height="2" fill="#111111" />
+                <rect x="10" y="3" width="2" height="2" fill="#111111" />
+                <rect x="1" y="2" width="1" height="4" fill="#111111" />
+                <rect x="10" y="2" width="1" height="4" fill="#111111" />
+                <rect x="4" y="4" width="1" height="2" fill="#111111" />
+                <rect x="7" y="4" width="1" height="2" fill="#111111" />
+                <rect x="2" y="6" width="2" height="1" fill="#FFAAA6" />
+                <rect x="8" y="6" width="2" height="1" fill="#FFAAA6" />
+                <rect x="5" y="6" width="2" height="1" fill="#111111" />
+                <rect x="3" y="8" width="6" height="1" fill="#111111" />
+                <rect x="2" y="7" width="1" height="1" fill="#111111" />
+                <rect x="9" y="7" width="1" height="1" fill="#111111" />
+                <rect x="3" y="9" width="2" height="2" fill="#111111" />
+                <rect x="7" y="9" width="2" height="2" fill="#111111" />
+              </svg>
+            </div>
             <div class="profile-user-names">
               <div class="profile-user-nickname" id="profile-user-nickname">-</div>
               <div class="profile-user-sub" id="profile-user-sub">-</div>
@@ -181,9 +282,29 @@
         <!-- 월간 성경 읽기 달력 (Calendar) -->
         <div class="calendar-container">
           <div class="calendar-nav-bar">
-            <button id="calendar-btn-prev" class="calendar-nav-btn" type="button" title="이전 달">◀</button>
+            <button id="calendar-btn-prev" class="calendar-nav-btn" type="button" title="이전 달">
+              <svg class="pixel-icon" viewBox="0 0 8 8" width="8" height="8" shape-rendering="crispEdges">
+                <rect x="3" y="0" width="2" height="1" fill="currentColor" />
+                <rect x="2" y="1" width="2" height="1" fill="currentColor" />
+                <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+                <rect x="0" y="3" width="2" height="2" fill="currentColor" />
+                <rect x="1" y="5" width="2" height="1" fill="currentColor" />
+                <rect x="2" y="6" width="2" height="1" fill="currentColor" />
+                <rect x="3" y="7" width="2" height="1" fill="currentColor" />
+              </svg>
+            </button>
             <span id="calendar-month-title" class="calendar-month-title">2026년 9월</span>
-            <button id="calendar-btn-next" class="calendar-nav-btn" type="button" title="다음 달">▶</button>
+            <button id="calendar-btn-next" class="calendar-nav-btn" type="button" title="다음 달">
+              <svg class="pixel-icon" viewBox="0 0 8 8" width="8" height="8" shape-rendering="crispEdges">
+                <rect x="3" y="0" width="2" height="1" fill="currentColor" />
+                <rect x="4" y="1" width="2" height="1" fill="currentColor" />
+                <rect x="5" y="2" width="2" height="1" fill="currentColor" />
+                <rect x="6" y="3" width="2" height="2" fill="currentColor" />
+                <rect x="5" y="5" width="2" height="1" fill="currentColor" />
+                <rect x="4" y="6" width="2" height="1" fill="currentColor" />
+                <rect x="3" y="7" width="2" height="1" fill="currentColor" />
+              </svg>
+            </button>
             <button id="calendar-btn-today" class="calendar-btn-today" type="button">오늘</button>
           </div>
 
@@ -223,17 +344,46 @@
     <!-- ==================== 성경 본문 읽기 뷰어 (BIBLE READER) ==================== -->
     <div id="bible-reader-view" class="reader-view">
       <header class="reader-header">
-        <button id="reader-btn-back" class="btn-icon-ghost" style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600;">
-          <span>⬅</span> <span>목록</span>
+        <button id="reader-btn-back" class="btn-icon-ghost" style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+          <svg class="pixel-icon" viewBox="0 0 8 8" width="10" height="10" shape-rendering="crispEdges">
+            <rect x="3" y="0" width="2" height="1" fill="currentColor" />
+            <rect x="2" y="1" width="2" height="1" fill="currentColor" />
+            <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="0" y="3" width="2" height="2" fill="currentColor" />
+            <rect x="1" y="5" width="2" height="1" fill="currentColor" />
+            <rect x="2" y="6" width="2" height="1" fill="currentColor" />
+            <rect x="3" y="7" width="2" height="1" fill="currentColor" />
+          </svg>
+          <span>목록</span>
         </button>
 
         <div class="reader-title-wrap">
-          <button id="reader-btn-prev" class="reader-nav-arrow" title="이전 장">◀</button>
+          <button id="reader-btn-prev" class="reader-nav-arrow" title="이전 장">
+            <svg class="pixel-icon" viewBox="0 0 8 8" width="8" height="8" shape-rendering="crispEdges">
+              <rect x="3" y="0" width="2" height="1" fill="currentColor" />
+              <rect x="2" y="1" width="2" height="1" fill="currentColor" />
+              <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="0" y="3" width="2" height="2" fill="currentColor" />
+              <rect x="1" y="5" width="2" height="1" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="1" fill="currentColor" />
+              <rect x="3" y="7" width="2" height="1" fill="currentColor" />
+            </svg>
+          </button>
           <div style="display: flex; flex-direction: column; align-items: center; line-height: 1.2;">
             <span id="reader-current-title" class="reader-title">창세기 1장</span>
             <span style="font-size: 10px; color: var(--text-muted); font-weight: 500;">개역개정 4판</span>
           </div>
-          <button id="reader-btn-next" class="reader-nav-arrow" title="다음 장">▶</button>
+          <button id="reader-btn-next" class="reader-nav-arrow" title="다음 장">
+            <svg class="pixel-icon" viewBox="0 0 8 8" width="8" height="8" shape-rendering="crispEdges">
+              <rect x="3" y="0" width="2" height="1" fill="currentColor" />
+              <rect x="4" y="1" width="2" height="1" fill="currentColor" />
+              <rect x="5" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="6" y="3" width="2" height="2" fill="currentColor" />
+              <rect x="5" y="5" width="2" height="1" fill="currentColor" />
+              <rect x="4" y="6" width="2" height="1" fill="currentColor" />
+              <rect x="3" y="7" width="2" height="1" fill="currentColor" />
+            </svg>
+          </button>
         </div>
 
         <div style="display: flex; gap: 4px;">
@@ -259,19 +409,224 @@
     <!-- 순서: [소셜(친구)] - [bible] - [home] - [stats] - [setting] -->
     <nav class="app-nav">
       <button class="nav-tab-btn" data-tab="social" title="서원경 청년부 양떼목장">
-        <span class="nav-tab-icon">🐑</span>
+        <span class="nav-tab-icon">
+          <!-- 🏡 목장 나무 울타리 (16x16 레트로 우드 펜스 & 아기 새싹) -->
+          <svg class="pixel-icon pixel-icon-nav" viewBox="0 0 16 16" width="28" height="28" shape-rendering="crispEdges">
+            <!-- 상단 가운데 피어난 싱그러운 아기 새싹 -->
+            <rect x="7" y="0" width="2" height="1" fill="#2ECC71" />
+            <rect x="6" y="1" width="4" height="1" fill="#2ECC71" />
+            <rect x="6" y="0" width="1" height="1" fill="#A8F0C6" />
+
+            <!-- 말뚝 3개 뾰족한 꼭대기 외곽선 -->
+            <rect x="2" y="1" width="2" height="1" fill="currentColor" />
+            <rect x="12" y="1" width="2" height="1" fill="currentColor" />
+            <rect x="1" y="2" width="4" height="1" fill="currentColor" />
+            <rect x="6" y="2" width="4" height="1" fill="currentColor" />
+            <rect x="11" y="2" width="4" height="1" fill="currentColor" />
+
+            <!-- 말뚝 3개 세로 몸통 외곽선 -->
+            <rect x="1" y="3" width="1" height="11" fill="currentColor" />
+            <rect x="4" y="3" width="1" height="11" fill="currentColor" />
+            <rect x="6" y="3" width="1" height="11" fill="currentColor" />
+            <rect x="9" y="3" width="1" height="11" fill="currentColor" />
+            <rect x="11" y="3" width="1" height="11" fill="currentColor" />
+            <rect x="14" y="3" width="1" height="11" fill="currentColor" />
+
+            <!-- 말뚝 세로 나무 속 채움 (따스한 오크 우드) -->
+            <rect x="2" y="2" width="2" height="12" fill="#E8C99B" />
+            <rect x="7" y="2" width="2" height="12" fill="#E8C99B" />
+            <rect x="12" y="2" width="2" height="12" fill="#E8C99B" />
+
+            <!-- 상단 가로 나무판자 외곽선 & 채움 -->
+            <rect x="0" y="4" width="16" height="1" fill="currentColor" />
+            <rect x="0" y="7" width="16" height="1" fill="currentColor" />
+            <rect x="0" y="5" width="1" height="2" fill="currentColor" />
+            <rect x="15" y="5" width="1" height="2" fill="currentColor" />
+            <rect x="1" y="5" width="14" height="2" fill="#DEB887" />
+
+            <!-- 하단 가로 나무판자 외곽선 & 채움 -->
+            <rect x="0" y="9" width="16" height="1" fill="currentColor" />
+            <rect x="0" y="12" width="16" height="1" fill="currentColor" />
+            <rect x="0" y="10" width="1" height="2" fill="currentColor" />
+            <rect x="15" y="10" width="1" height="2" fill="currentColor" />
+            <rect x="1" y="10" width="14" height="2" fill="#DEB887" />
+
+            <!-- 교차점 고정 못 도트 (골드 포인트) -->
+            <rect x="2" y="5" width="2" height="1" fill="#FED330" />
+            <rect x="7" y="5" width="2" height="1" fill="#FED330" />
+            <rect x="12" y="5" width="2" height="1" fill="#FED330" />
+            <rect x="2" y="10" width="2" height="1" fill="#FED330" />
+            <rect x="7" y="10" width="2" height="1" fill="#FED330" />
+            <rect x="12" y="10" width="2" height="1" fill="#FED330" />
+
+            <!-- 말뚝 밑단 마무리 라인 -->
+            <rect x="1" y="14" width="4" height="1" fill="currentColor" />
+            <rect x="6" y="14" width="4" height="1" fill="currentColor" />
+            <rect x="11" y="14" width="4" height="1" fill="currentColor" />
+
+            <!-- 바닥 잔디 도트 (산뜻한 초록) -->
+            <rect x="0" y="14" width="1" height="2" fill="#2ECC71" />
+            <rect x="5" y="14" width="1" height="2" fill="#2ECC71" />
+            <rect x="10" y="14" width="1" height="2" fill="#2ECC71" />
+            <rect x="15" y="14" width="1" height="2" fill="#2ECC71" />
+          </svg>
+        </span>
       </button>
       <button class="nav-tab-btn" data-tab="bible" title="성경">
-        <span class="nav-tab-icon">📖</span>
+        <span class="nav-tab-icon">
+          <!-- 📖 성경 (16x16 빨간 리본이 쏙 내려온 도톰한 성경책) -->
+          <svg class="pixel-icon pixel-icon-nav" viewBox="0 0 16 16" width="28" height="28" shape-rendering="crispEdges">
+            <!-- 책 윗면 상단 빨간 리본 북마크 -->
+            <rect x="7" y="0" width="2" height="4" fill="#FF5E57" />
+            <!-- 양쪽 펼쳐진 페이지 윗선 -->
+            <rect x="2" y="2" width="4" height="1" fill="currentColor" />
+            <rect x="10" y="2" width="4" height="1" fill="currentColor" />
+            <rect x="1" y="3" width="1" height="1" fill="currentColor" />
+            <rect x="6" y="3" width="1" height="1" fill="currentColor" />
+            <rect x="9" y="3" width="1" height="1" fill="currentColor" />
+            <rect x="14" y="3" width="1" height="1" fill="currentColor" />
+            <!-- 페이지 속지 채움 -->
+            <rect x="1" y="4" width="6" height="7" fill="var(--card-bg, #fff)" />
+            <rect x="9" y="4" width="6" height="7" fill="var(--card-bg, #fff)" />
+            <rect x="2" y="3" width="4" height="1" fill="var(--card-bg, #fff)" />
+            <rect x="10" y="3" width="4" height="1" fill="var(--card-bg, #fff)" />
+            <!-- 책 좌우 가장자리 -->
+            <rect x="0" y="4" width="1" height="7" fill="currentColor" />
+            <rect x="15" y="4" width="1" height="7" fill="currentColor" />
+            <!-- 중앙 책등 기둥선 -->
+            <rect x="7" y="3" width="2" height="9" fill="currentColor" />
+            <!-- 왼쪽 페이지: 귀여운 미니 골드 십자가 (✝) -->
+            <rect x="3" y="6" width="3" height="1" fill="#F4D03F" />
+            <rect x="4" y="5" width="1" height="4" fill="#F4D03F" />
+            <!-- 오른쪽 페이지: 단정한 말씀 도트 줄 3줄 -->
+            <rect x="10" y="5" width="4" height="1" fill="currentColor" opacity="0.75" />
+            <rect x="10" y="7" width="4" height="1" fill="currentColor" opacity="0.75" />
+            <rect x="10" y="9" width="3" height="1" fill="currentColor" opacity="0.75" />
+            <!-- 페이지 밑선 -->
+            <rect x="1" y="11" width="6" height="1" fill="currentColor" />
+            <rect x="9" y="11" width="6" height="1" fill="currentColor" />
+            <!-- 하단 책 표지 두께 -->
+            <rect x="1" y="12" width="14" height="1" fill="currentColor" />
+            <rect x="2" y="13" width="12" height="1" fill="currentColor" />
+            <!-- 하단으로 늘어진 빨간 리본 끝자락 -->
+            <rect x="7" y="12" width="2" height="3" fill="#FF5E57" />
+          </svg>
+        </span>
       </button>
       <button class="nav-tab-btn active" data-tab="home" title="홈 (찰스)">
-        <span class="nav-tab-icon">🏠</span>
+        <span class="nav-tab-icon">
+          <!-- 🏠 홈 (16x16 하트 연기와 노란 불빛 창문이 있는 동화 오두막) -->
+          <svg class="pixel-icon pixel-icon-nav" viewBox="0 0 16 16" width="28" height="28" shape-rendering="crispEdges">
+            <!-- 굴뚝에서 피어난 깜찍한 하트 연기 -->
+            <rect x="11" y="0" width="1" height="1" fill="#FFAAA6" />
+            <rect x="13" y="0" width="1" height="1" fill="#FFAAA6" />
+            <rect x="11" y="1" width="3" height="1" fill="#FFAAA6" />
+            <rect x="12" y="2" width="1" height="1" fill="#FFAAA6" />
+            <!-- 굴뚝 -->
+            <rect x="11" y="3" width="2" height="2" fill="currentColor" />
+            <!-- 지붕 외곽선 (부드러운 계단형 박공지붕) -->
+            <rect x="7" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="5" y="3" width="2" height="1" fill="currentColor" />
+            <rect x="9" y="3" width="2" height="1" fill="currentColor" />
+            <rect x="4" y="4" width="1" height="1" fill="currentColor" />
+            <rect x="11" y="4" width="1" height="1" fill="currentColor" />
+            <rect x="3" y="5" width="1" height="1" fill="currentColor" />
+            <rect x="12" y="5" width="1" height="1" fill="currentColor" />
+            <rect x="2" y="6" width="1" height="1" fill="currentColor" />
+            <rect x="13" y="6" width="1" height="1" fill="currentColor" />
+            <rect x="0" y="7" width="16" height="1" fill="currentColor" />
+            <!-- 지붕 & 벽 속 채움 -->
+            <rect x="2" y="8" width="12" height="6" fill="var(--card-bg, #fff)" />
+            <rect x="4" y="4" width="8" height="3" fill="var(--card-bg, #fff)" />
+            <!-- 좌우 벽 기둥 -->
+            <rect x="1" y="8" width="1" height="6" fill="currentColor" />
+            <rect x="14" y="8" width="1" height="6" fill="currentColor" />
+            <!-- 따스한 노란 불빛 창문 (3x3) -->
+            <rect x="3" y="9" width="3" height="3" fill="#FED330" />
+            <rect x="4" y="9" width="1" height="3" fill="currentColor" />
+            <rect x="3" y="10" width="3" height="1" fill="currentColor" />
+            <!-- 앙증맞은 문 & 황금 도어 손잡이 -->
+            <rect x="8" y="9" width="4" height="5" fill="currentColor" />
+            <rect x="9" y="10" width="2" height="4" fill="var(--card-bg, #fff)" />
+            <rect x="11" y="11" width="1" height="1" fill="#FED330" />
+            <!-- 바닥 기초 라인 -->
+            <rect x="0" y="14" width="16" height="2" fill="currentColor" />
+          </svg>
+        </span>
       </button>
       <button class="nav-tab-btn" data-tab="stats" title="통계">
-        <span class="nav-tab-icon">📊</span>
+        <span class="nav-tab-icon">
+          <!-- 📊 통계 (16x16 레벨업 성장 막대 + 반짝이는 황금별) -->
+          <svg class="pixel-icon pixel-icon-nav" viewBox="0 0 16 16" width="28" height="28" shape-rendering="crispEdges">
+            <!-- 우상단 반짝이는 황금별 (Level Up! ✨) -->
+            <rect x="12" y="0" width="2" height="1" fill="#F4D03F" />
+            <rect x="10" y="1" width="6" height="2" fill="#F4D03F" />
+            <rect x="12" y="3" width="2" height="1" fill="#F4D03F" />
+            <rect x="12" y="1" width="2" height="2" fill="#FFF7CC" />
+            <!-- 1단계 막대 (낮음, 파스텔 민트초록) -->
+            <rect x="1" y="10" width="3" height="4" fill="#2ECC71" />
+            <rect x="1" y="9" width="3" height="1" fill="currentColor" />
+            <rect x="0" y="10" width="1" height="4" fill="currentColor" />
+            <rect x="4" y="10" width="1" height="4" fill="currentColor" />
+            <rect x="2" y="10" width="1" height="1" fill="#A8F0C6" />
+            <!-- 2단계 막대 (중간) -->
+            <rect x="6" y="7" width="3" height="7" fill="#2ECC71" />
+            <rect x="6" y="6" width="3" height="1" fill="currentColor" />
+            <rect x="5" y="7" width="1" height="7" fill="currentColor" />
+            <rect x="9" y="7" width="1" height="7" fill="currentColor" />
+            <rect x="7" y="7" width="1" height="1" fill="#A8F0C6" />
+            <!-- 3단계 막대 (높음) -->
+            <rect x="11" y="5" width="3" height="9" fill="#2ECC71" />
+            <rect x="11" y="4" width="3" height="1" fill="currentColor" />
+            <rect x="10" y="5" width="1" height="9" fill="currentColor" />
+            <rect x="14" y="5" width="1" height="9" fill="currentColor" />
+            <rect x="12" y="5" width="1" height="1" fill="#A8F0C6" />
+            <!-- 바닥 기초선 -->
+            <rect x="0" y="14" width="16" height="2" fill="currentColor" />
+          </svg>
+        </span>
       </button>
       <button class="nav-tab-btn" data-tab="profile" title="내 정보">
-        <span class="nav-tab-icon">👤</span>
+        <span class="nav-tab-icon">
+          <!-- 👤 내 정보 (16x16 멜빵옷과 콩알눈의 귀여운 성도 캐릭터) -->
+          <svg class="pixel-icon pixel-icon-nav" viewBox="0 0 16 16" width="28" height="28" shape-rendering="crispEdges">
+            <!-- 머리 윗선 -->
+            <rect x="5" y="1" width="6" height="1" fill="currentColor" />
+            <rect x="3" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="11" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="2" y="3" width="1" height="5" fill="currentColor" />
+            <rect x="13" y="3" width="1" height="5" fill="currentColor" />
+            <!-- 얼굴 채움 -->
+            <rect x="3" y="3" width="10" height="6" fill="var(--card-bg, #fff)" />
+            <rect x="4" y="2" width="8" height="1" fill="var(--card-bg, #fff)" />
+            <!-- 귀여운 앞머리 -->
+            <rect x="4" y="3" width="2" height="1" fill="currentColor" />
+            <rect x="7" y="3" width="2" height="1" fill="currentColor" />
+            <rect x="10" y="3" width="2" height="1" fill="currentColor" />
+            <!-- 초롱초롱 콩알 눈 2개 -->
+            <rect x="5" y="5" width="1" height="2" fill="currentColor" />
+            <rect x="10" y="5" width="1" height="2" fill="currentColor" />
+            <!-- 사랑스러운 핑크 볼터치 -->
+            <rect x="3" y="7" width="2" height="1" fill="#FFAAA6" />
+            <rect x="11" y="7" width="2" height="1" fill="#FFAAA6" />
+            <!-- 방긋 미소 입 -->
+            <rect x="7" y="7" width="2" height="1" fill="currentColor" />
+            <!-- 턱선 -->
+            <rect x="4" y="9" width="8" height="1" fill="currentColor" />
+            <!-- 몸통/멜빵 옷 -->
+            <rect x="1" y="11" width="14" height="1" fill="currentColor" />
+            <rect x="0" y="12" width="1" height="2" fill="currentColor" />
+            <rect x="15" y="12" width="1" height="2" fill="currentColor" />
+            <rect x="1" y="12" width="14" height="2" fill="var(--card-bg, #fff)" />
+            <!-- 멜빵 끈 -->
+            <rect x="3" y="10" width="2" height="2" fill="currentColor" />
+            <rect x="11" y="10" width="2" height="2" fill="currentColor" />
+            <!-- 앙증맞은 노란 단추 -->
+            <rect x="7" y="11" width="2" height="2" fill="#FED330" />
+            <!-- 바닥 라인 -->
+            <rect x="0" y="14" width="16" height="2" fill="currentColor" />
+          </svg>
+        </span>
       </button>
     </nav>
 
@@ -281,8 +636,25 @@
 
         <!-- 1. 로그인 화면 (기본 활성화) -->
         <div id="gate-view-login" class="gate-view active">
-          <div class="gate-title">
-            <span>🐑</span>
+          <div class="gate-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="22" height="22" shape-rendering="crispEdges">
+              <rect x="3" y="1" width="6" height="1" fill="currentColor" />
+              <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="9" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="0" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="11" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="2" y="3" width="8" height="5" fill="var(--card-bg, #fff)" />
+              <rect x="3" y="4" width="1" height="2" fill="currentColor" />
+              <rect x="8" y="4" width="1" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="1" height="1" fill="#FFAAA6" />
+              <rect x="9" y="6" width="1" height="1" fill="#FFAAA6" />
+              <rect x="5" y="6" width="2" height="1" fill="currentColor" />
+              <rect x="1" y="7" width="2" height="1" fill="currentColor" />
+              <rect x="9" y="7" width="2" height="1" fill="currentColor" />
+              <rect x="3" y="8" width="6" height="1" fill="currentColor" />
+              <rect x="3" y="9" width="2" height="2" fill="currentColor" />
+              <rect x="7" y="9" width="2" height="2" fill="currentColor" />
+            </svg>
             <span>Charles' Bible</span>
           </div>
           <p class="gate-desc">
@@ -322,8 +694,17 @@
 
         <!-- 2. 회원가입 화면 -->
         <div id="gate-view-signup" class="gate-view">
-          <div class="gate-title">
-            <span>✨</span>
+          <div class="gate-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="20" height="20" shape-rendering="crispEdges">
+              <rect x="5" y="0" width="2" height="1" fill="#F4D03F" />
+              <rect x="4" y="1" width="4" height="2" fill="#F4D03F" />
+              <rect x="3" y="3" width="6" height="1" fill="#F4D03F" />
+              <rect x="0" y="4" width="12" height="4" fill="#F4D03F" />
+              <rect x="3" y="8" width="6" height="1" fill="#F4D03F" />
+              <rect x="4" y="9" width="4" height="2" fill="#F4D03F" />
+              <rect x="5" y="11" width="2" height="1" fill="#F4D03F" />
+              <rect x="5" y="5" width="2" height="2" fill="#FFF7CC" />
+            </svg>
             <span>새 가족 회원가입</span>
           </div>
           <p class="gate-desc">
@@ -407,10 +788,39 @@
     <div id="message-modal-overlay" class="modal-overlay" style="display: none;">
       <div class="modal-sheet">
         <div class="modal-header">
-          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
-            <span>🔔</span> <span>소식 및 알림</span>
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
+              <rect x="5" y="0" width="2" height="1" fill="#F4D03F" />
+              <rect x="4" y="1" width="4" height="2" fill="#F4D03F" />
+              <rect x="3" y="3" width="6" height="4" fill="#F4D03F" />
+              <rect x="1" y="7" width="10" height="2" fill="#F4D03F" />
+              <rect x="5" y="9" width="2" height="2" fill="#E67E22" />
+              <!-- 외곽선 -->
+              <rect x="5" y="0" width="2" height="1" fill="currentColor" />
+              <rect x="4" y="1" width="1" height="2" fill="currentColor" />
+              <rect x="7" y="1" width="1" height="2" fill="currentColor" />
+              <rect x="3" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="8" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="0" y="7" width="1" height="2" fill="currentColor" />
+              <rect x="11" y="7" width="1" height="2" fill="currentColor" />
+              <rect x="1" y="9" width="10" height="1" fill="currentColor" />
+              <rect x="5" y="11" width="2" height="1" fill="currentColor" />
+            </svg>
+            <span>소식 및 알림</span>
           </div>
-          <button id="btn-close-messages" class="btn-icon-close">✕</button>
+          <button id="btn-close-messages" class="btn-icon-close" title="닫기">
+            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
         </div>
 
         <div class="modal-body">
@@ -428,10 +838,40 @@
     <div id="charles-help-modal" class="modal-overlay" style="display: none;">
       <div class="modal-sheet charles-help-sheet">
         <div class="modal-header" style="margin-bottom: 8px;">
-          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
-            <span>🐑</span> <span>찰스 성장 가이드</span>
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
+              <rect x="3" y="1" width="6" height="1" fill="currentColor" />
+              <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="9" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="0" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="11" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="2" y="3" width="8" height="5" fill="var(--card-bg, #fff)" />
+              <rect x="3" y="4" width="1" height="2" fill="currentColor" />
+              <rect x="8" y="4" width="1" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="1" height="1" fill="#FFAAA6" />
+              <rect x="9" y="6" width="1" height="1" fill="#FFAAA6" />
+              <rect x="5" y="6" width="2" height="1" fill="currentColor" />
+              <rect x="1" y="7" width="2" height="1" fill="currentColor" />
+              <rect x="9" y="7" width="2" height="1" fill="currentColor" />
+              <rect x="3" y="8" width="6" height="1" fill="currentColor" />
+              <rect x="3" y="9" width="2" height="2" fill="currentColor" />
+              <rect x="7" y="9" width="2" height="2" fill="currentColor" />
+            </svg>
+            <span>찰스 성장 가이드</span>
           </div>
-          <button id="btn-close-charles-help" class="btn-icon-close" type="button" aria-label="닫기">✕</button>
+          <button id="btn-close-charles-help" class="btn-icon-close" type="button" aria-label="닫기" title="닫기">
+            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
         </div>
 
         <div class="modal-body" style="padding: 0;">
@@ -498,12 +938,36 @@
 
     <!-- ==================== 설정 모달 (기존 설정 메뉴 이관) ==================== -->
     <div id="settings-modal-overlay" class="modal-overlay" style="display: none;">
-      <div class="modal-sheet" style="max-height: 90vh;">
+      <div class="modal-sheet">
         <div class="modal-header">
-          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
-            <span>⚙️</span> <span>환경 설정</span>
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
+              <rect x="5" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="5" y="10" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="5" width="2" height="2" fill="currentColor" />
+              <rect x="10" y="5" width="2" height="2" fill="currentColor" />
+              <rect x="1" y="1" width="2" height="2" fill="currentColor" />
+              <rect x="9" y="1" width="2" height="2" fill="currentColor" />
+              <rect x="1" y="9" width="2" height="2" fill="currentColor" />
+              <rect x="9" y="9" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="8" height="8" fill="currentColor" />
+              <rect x="4" y="4" width="4" height="4" fill="var(--card-bg, #fff)" />
+            </svg>
+            <span>환경 설정</span>
           </div>
-          <button id="btn-close-settings" class="btn-icon-close">✕</button>
+          <button id="btn-close-settings" class="btn-icon-close" title="닫기">
+            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
         </div>
 
         <div class="modal-body" style="padding-top: 8px;">
@@ -569,12 +1033,42 @@
 
     <!-- ==================== 친구 정보 모달 (간단한 창) ==================== -->
     <div id="friend-detail-modal" class="modal-overlay" style="display: none;">
-      <div class="modal-sheet" style="max-height: 85vh;">
+      <div class="modal-sheet">
         <div class="modal-header">
-          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px;">
-            <span>🐑</span> <span>양떼목장 친구 정보</span>
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
+            <svg class="pixel-icon" viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
+              <rect x="3" y="1" width="6" height="1" fill="currentColor" />
+              <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="9" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="0" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="11" y="3" width="1" height="4" fill="currentColor" />
+              <rect x="2" y="3" width="8" height="5" fill="var(--card-bg, #fff)" />
+              <rect x="3" y="4" width="1" height="2" fill="currentColor" />
+              <rect x="8" y="4" width="1" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="1" height="1" fill="#FFAAA6" />
+              <rect x="9" y="6" width="1" height="1" fill="#FFAAA6" />
+              <rect x="5" y="6" width="2" height="1" fill="currentColor" />
+              <rect x="1" y="7" width="2" height="1" fill="currentColor" />
+              <rect x="9" y="7" width="2" height="1" fill="currentColor" />
+              <rect x="3" y="8" width="6" height="1" fill="currentColor" />
+              <rect x="3" y="9" width="2" height="2" fill="currentColor" />
+              <rect x="7" y="9" width="2" height="2" fill="currentColor" />
+            </svg>
+            <span>양떼목장 친구 정보</span>
           </div>
-          <button id="btn-close-friend-modal" class="btn-icon-close">✕</button>
+          <button id="btn-close-friend-modal" class="btn-icon-close" title="닫기">
+            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
         </div>
 
         <div class="modal-body" style="padding-top: 6px;">
