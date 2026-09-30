@@ -723,13 +723,42 @@ const App = {
     }
   },
 
-  // ==================== 서원경 청년부 양떼목장 탭 렌더링 ====================
+  // ==================== 서원경 청년부 양떼목장 2D 플랫폼 화면 렌더링 ====================
+  pastureFriends: [],
+  pastureSearchQuery: '',
+
+  // 양떼목장 친구 고유 악세사리 결정 (사용자 ID 기반 일관성 유지)
+  getFriendAccessory(user, isMe, stage) {
+    if (isMe) {
+      return { type: 'crown', icon: '👑', name: '나의 찰스' };
+    }
+    if (stage === 5) {
+      return { type: 'angel', icon: '😇', name: '영광의 천사' };
+    }
+    const ACCESSORY_LIST = [
+      { type: 'sunglasses', icon: '🕶️', name: '선글라스' },
+      { type: 'bunny', icon: '🐰', name: '토끼귀' },
+      { type: 'ribbon', icon: '🎀', name: '리본' },
+      { type: 'flower', icon: '🌸', name: '꽃 머리핀' },
+      { type: 'sprout', icon: '🌿', name: '새싹' },
+      { type: 'cap', icon: '🧢', name: '볼캡' },
+      { type: 'scarf', icon: '🧣', name: '목도리' }
+    ];
+    const str = String((user && (user.id || user.nickname || user.name)) || '');
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    const idx = Math.abs(hash) % ACCESSORY_LIST.length;
+    return ACCESSORY_LIST[idx];
+  },
+
   async renderSocial() {
     const listEl = document.getElementById('social-friends-list');
     if (!listEl) return;
 
     const currentUser = AuthService.getCurrentUser();
-    const stats = StorageService.getStats();
     const currentUserId = currentUser && currentUser.id ? String(currentUser.id).trim().toLowerCase() : '';
 
     const isUserMe = (u) => {
@@ -740,13 +769,12 @@ const App = {
     const buildList = (users) => {
       if (!Array.isArray(users)) users = [];
 
-      // 전체 등록 회원 목록 생성 (현재 사용자 포함)
       let allMembers = [...users];
       if (currentUser && currentUser.id && !allMembers.some(u => isUserMe(u))) {
         allMembers.unshift(currentUser);
       }
 
-      // 내 계정을 최상단으로 올리고 나머지는 닉네임/이름 순 정렬
+      // 내 계정 최상단, 그 다음 닉네임/이름 순 정렬
       allMembers.sort((a, b) => {
         const aIsMe = isUserMe(a);
         const bIsMe = isUserMe(b);
@@ -763,90 +791,340 @@ const App = {
         const cellTag = u.cell ? ` (${u.cell})` : '';
         const displayName = `${call}${cellTag}`;
 
-        let statusText = "Charles is chewing the Word 🌿";
+        // 로컬 캐시에서 즉시 스테이지 및 통독 데이터 로드
+        let stage = 1;
+        let streakCount = 0;
+        let todayRead = 0;
+
         if (isMe) {
-          statusText = stats.totalRead > 0 
-            ? `${stats.totalRead}장 통독 중 🌿 (나의 찰스)`
-            : "Charles is happy 🍀 (나의 찰스)";
+          stage = StorageService.getCharlesStage();
+          streakCount = StorageService.getStreakInfo().count || 0;
+          todayRead = StorageService.getTodayReadCount() || 0;
+        } else {
+          try {
+            const s = localStorage.getItem(`charles_user_${u.id}_stage`);
+            if (s) stage = parseInt(s, 10) || 1;
+            const strk = localStorage.getItem(`charles_user_${u.id}_streak`);
+            if (strk) streakCount = (JSON.parse(strk) || {}).count || 0;
+            const dc = localStorage.getItem(`charles_user_${u.id}_daily_counts`);
+            if (dc) {
+              const parsed = JSON.parse(dc);
+              const todayStr = StorageService.getTodayDateStr();
+              if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
+            }
+          } catch (e) {}
         }
 
         return {
           id: u.id || u.name,
           callName: call,
           displayName,
+          cell: u.cell || '',
           isMe,
-          status: statusText,
-          icon: isMe ? '👑' : '🐑'
+          stage,
+          streakCount,
+          todayRead,
+          accessory: this.getFriendAccessory(u, isMe, stage)
         };
       });
     };
 
-    const renderItems = (items) => {
-      if (!items || items.length === 0) {
-        listEl.innerHTML = `
-          <div class="empty-social-msg">
-            <div style="font-size: 32px; margin-bottom: 8px;">🐑✨</div>
-            서원경 청년부 지체들이 가입하면<br>
-            이곳 양떼목장에 자동으로 모두 함께 모입니다!
-          </div>
-        `;
-        return;
-      }
-
-      const otherMembersCount = items.filter(i => !i.isMe).length;
-
-      let html = items.map(f => `
-        <div class="friend-item" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
-          <div class="friend-info">
-            <div class="friend-avatar">${f.icon}</div>
-            <div class="friend-meta">
-              <span class="friend-name">
-                ${f.displayName}
-                ${f.isMe ? '<span class="badge-me">나</span>' : ''}
-              </span>
-              <span class="friend-status">${f.status}</span>
-            </div>
-          </div>
-          ${f.isMe ? `
-            <button class="btn-cheer" style="opacity: 0.6; cursor: default;" onclick="event.stopPropagation(); App.showToast('오늘도 말씀 안에서 파이팅! 💪✨')">
-              내 찰스 🌿
-            </button>
-          ` : `
-            <button class="btn-cheer" onclick="event.stopPropagation(); App.sendCheer('${f.callName}')">
-              응원 🐑
-            </button>
-          `}
-        </div>
-      `).join('');
-
-      if (otherMembersCount === 0) {
-        html += `
-          <div class="empty-social-msg" style="padding: 24px 16px; border-top: 1px dashed var(--border-color); margin-top: 16px;">
-            서원경 청년부 지체들이 가입하면<br>
-            이곳 양떼목장에 자동으로 함께 나타납니다! 🌿
-          </div>
-        `;
-      }
-
-      listEl.innerHTML = html;
-    };
-
-    // 1단계: 로컬 캐시 즉시 렌더링 (빠른 표시)
+    // 1단계: 로컬 캐시 즉시 렌더링
     const localUsers = AuthService.getAllUsersLocal();
-    renderItems(buildList(localUsers));
+    this.pastureFriends = buildList(localUsers);
+    this.renderPastureShelves(this.pastureFriends);
 
-    // 2단계: Supabase 최신 사용자 목록 비동기 동기화
-    AuthService.getAllUsers().then(remoteUsers => {
-      if (Array.isArray(remoteUsers)) {
-        renderItems(buildList(remoteUsers));
+    // 2단계: 최신 상태 비동기 동기화 (Supabase & 각 유저 스토리지 상태)
+    AuthService.getAllUsers().then(async (remoteUsers) => {
+      if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+        this.pastureFriends = buildList(remoteUsers);
+      }
+      
+      // 비동기 통독 상태 병렬 조회
+      await Promise.all(this.pastureFriends.map(async (f) => {
+        try {
+          const state = await StorageService.getUserState(f.id);
+          if (state) {
+            f.stage = state.stage || f.stage || 1;
+            f.streakCount = state.streakCount !== undefined ? state.streakCount : f.streakCount;
+            f.todayRead = state.todayRead !== undefined ? state.todayRead : f.todayRead;
+            f.accessory = this.getFriendAccessory(f, f.isMe, f.stage);
+          }
+        } catch (e) {}
+      }));
+
+      // 갱신된 최신 데이터로 화면 업데이트
+      if (this.pastureSearchQuery) {
+        this.filterPastureFriends(this.pastureSearchQuery);
+      } else {
+        this.renderPastureShelves(this.pastureFriends);
       }
     }).catch(err => {
       console.warn('양떼목장 원격 동기화 알림:', err);
     });
   },
 
-  sendCheer(name) {
+  // 3인 1조 선반(Platform Shelf) 렌더러
+  renderPastureShelves(friendsList) {
+    const listEl = document.getElementById('social-friends-list');
+    if (!listEl) return;
+
+    const countEl = document.getElementById('pasture-member-count');
+    if (countEl) {
+      const realCount = (friendsList || []).filter(f => !f.isEmpty).length;
+      countEl.textContent = `${realCount}마리 🌿`;
+    }
+
+    // 3명씩 선반 단위로 청크 분할
+    const shelves = [];
+    const sourceList = Array.isArray(friendsList) ? [...friendsList] : [];
+    for (let i = 0; i < sourceList.length; i += 3) {
+      shelves.push(sourceList.slice(i, i + 3));
+    }
+
+    if (shelves.length === 0) {
+      shelves.push([{ isEmpty: true }, { isEmpty: true }, { isEmpty: true }]);
+    } else {
+      const lastShelf = shelves[shelves.length - 1];
+      while (lastShelf.length < 3) {
+        lastShelf.push({ isEmpty: true });
+      }
+    }
+
+    const html = shelves.map((shelf, shelfIdx) => {
+      const isTopShelf = (shelfIdx === 0);
+
+      // 1) 캐릭터 슬롯 3개
+      const charSlotsHtml = shelf.map(f => {
+        if (f.isEmpty) {
+          return `
+            <div class="pasture-char-slot empty-slot" onclick="App.shareOrInviteFriend()" title="새 친구 초대하기">
+              <div class="pasture-empty-sprout">🌱</div>
+            </div>
+          `;
+        }
+
+        const visual = getCharlesVisual(f.stage || 1, 4);
+        const isMe = f.isMe;
+
+        return `
+          <div class="pasture-char-slot" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
+            <div class="pasture-sheep-box">
+              ${isMe ? `
+                <div class="pasture-crown-wrap">
+                  <span class="pasture-crown-icon">👑</span>
+                  <span class="pasture-me-pill">나</span>
+                </div>
+              ` : f.accessory ? `
+                <div class="pasture-accessory-wrap" title="${f.accessory.name}">
+                  ${f.accessory.icon}
+                </div>
+              ` : ''}
+              <div class="pasture-sheep-svg-wrap">
+                ${visual.svg}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 2) 흙 블록 셀 3개 (친구 닉네임 표기)
+      const dirtCellsHtml = shelf.map(f => {
+        if (f.isEmpty) {
+          return `
+            <div class="pasture-dirt-cell empty" onclick="App.shareOrInviteFriend()" title="새 친구 자리">
+              <span class="pasture-char-name empty">새 친구 자리</span>
+            </div>
+          `;
+        }
+        return `
+          <div class="pasture-dirt-cell" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
+            <span class="pasture-char-name">${f.callName}</span>
+          </div>
+        `;
+      }).join('');
+
+      // 3) 하단 반투명 알약 캡슐 버튼 3개
+      const pillsHtml = shelf.map(f => {
+        if (f.isEmpty) {
+          return `
+            <div class="pasture-pill-cell">
+              <button class="pasture-pill-btn empty-btn" onclick="event.stopPropagation(); App.shareOrInviteFriend()" title="친구 초대하기">
+                + 초대
+              </button>
+            </div>
+          `;
+        }
+        if (f.isMe) {
+          const todayText = f.todayRead > 0 ? `오늘 ${f.todayRead}장 ⭐` : '내 찰스 🌿';
+          return `
+            <div class="pasture-pill-cell">
+              <button class="pasture-pill-btn is-me" onclick="event.stopPropagation(); App.showToast('오늘도 말씀 안에서 승리하세요! 💪✨')">
+                ${todayText}
+              </button>
+            </div>
+          `;
+        } else {
+          const pillLabel = f.todayRead > 0 ? `오늘 ${f.todayRead}장 🌿` : '응원 🐑';
+          return `
+            <div class="pasture-pill-cell">
+              <button class="pasture-pill-btn" onclick="event.stopPropagation(); App.sendCheer('${f.callName}', event)">
+                ${pillLabel}
+              </button>
+            </div>
+          `;
+        }
+      }).join('');
+
+      return `
+        <div class="pasture-shelf">
+          <!-- 0층 좌측 버스 정류장 푯말 -->
+          ${isTopShelf ? `
+            <div class="pasture-bus-stop" onclick="App.showToast('🚏 서원경 정류장: 매일 말씀으로 하나되는 목장입니다 🌿')" title="서원경 정류장">
+              <div class="bus-stop-sign">
+                <svg viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
+                  <rect x="3" y="1" width="6" height="1" fill="#ffffff" />
+                  <rect x="1" y="2" width="10" height="1" fill="#ffffff" />
+                  <rect x="1" y="3" width="10" height="4" fill="#ffffff" />
+                  <rect x="3" y="4" width="2" height="2" fill="#1565c0" />
+                  <rect x="7" y="4" width="2" height="2" fill="#1565c0" />
+                  <rect x="2" y="6" width="1" height="1" fill="#ffb6c1" />
+                  <rect x="9" y="6" width="1" height="1" fill="#ffb6c1" />
+                  <rect x="5" y="6" width="2" height="1" fill="#1565c0" />
+                  <rect x="2" y="8" width="8" height="1" fill="#ffffff" />
+                  <rect x="3" y="9" width="2" height="1" fill="#1565c0" />
+                  <rect x="7" y="9" width="2" height="1" fill="#1565c0" />
+                </svg>
+              </div>
+              <div class="bus-stop-pole"></div>
+              <div class="bus-stop-base"></div>
+            </div>
+          ` : ''}
+
+          <!-- 상단: 3명의 캐릭터 슬롯 -->
+          <div class="pasture-shelf-characters">
+            ${charSlotsHtml}
+          </div>
+
+          <!-- 중간: 잔디 & 흙 블록 선반 플랫폼 -->
+          <div class="pasture-platform">
+            <div class="pasture-platform-grass"></div>
+            <div class="pasture-platform-dirt">
+              ${dirtCellsHtml}
+            </div>
+          </div>
+
+          <!-- 하단: 3개의 캡슐 버튼 -->
+          <div class="pasture-shelf-pills">
+            ${pillsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listEl.innerHTML = html;
+  },
+
+  // 검색 토글
+  togglePastureSearch() {
+    const wrap = document.getElementById('pasture-search-wrap');
+    if (!wrap) return;
+    const isHidden = wrap.style.display === 'none';
+    wrap.style.display = isHidden ? 'block' : 'none';
+    RetroAudio.click();
+    if (isHidden) {
+      const input = document.getElementById('pasture-search-input');
+      if (input) input.focus();
+    } else {
+      this.pastureSearchQuery = '';
+      this.renderPastureShelves(this.pastureFriends);
+    }
+  },
+
+  // 친구 검색 필터
+  onPastureSearch(query) {
+    this.pastureSearchQuery = (query || '').trim().toLowerCase();
+    this.filterPastureFriends(this.pastureSearchQuery);
+  },
+
+  filterPastureFriends(query) {
+    if (!query) {
+      this.renderPastureShelves(this.pastureFriends);
+      return;
+    }
+    const filtered = this.pastureFriends.filter(f => {
+      if (f.isEmpty) return false;
+      const name = (f.callName || '').toLowerCase();
+      const disp = (f.displayName || '').toLowerCase();
+      const cell = (f.cell || '').toLowerCase();
+      return name.includes(query) || disp.includes(query) || cell.includes(query);
+    });
+    this.renderPastureShelves(filtered);
+  },
+
+  // 찰스 5단계 진화 갤러리 모달 오픈
+  openEvolutionModal() {
+    const modal = document.getElementById('evolution-guide-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      RetroAudio.click();
+    }
+  },
+
+  // 친구 초대 링크 복사
+  shareOrInviteFriend() {
+    RetroAudio.click();
+    const url = window.location.origin + window.location.pathname;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.showToast('양떼목장 초대 링크가 복사되었어요! 💌');
+      }).catch(() => {
+        this.showToast('친구들에게 찰스 바이블을 알려주세요! 🌿');
+      });
+    } else {
+      this.showToast('친구들에게 찰스 바이블을 알려주세요! 🌿');
+    }
+  },
+
+  // 따뜻한 응원 보내기 및 파티클 인터랙션
+  sendCheer(name, event) {
+    RetroAudio.click();
     this.showToast(`${name}님에게 양 풀과 따뜻한 응원을 보냈어요! 🌿✨`);
+    if (event && event.clientX) {
+      this.spawnCheerEffect(event.clientX, event.clientY);
+    } else {
+      this.spawnCheerEffect();
+    }
+  },
+
+  spawnCheerEffect(x, y) {
+    const emojis = ['🌿', '❤️', '🐑', '✨'];
+    const posX = (x !== undefined && x > 0) ? x : window.innerWidth / 2;
+    const posY = (y !== undefined && y > 0) ? y : window.innerHeight / 2;
+
+    for (let i = 0; i < 4; i++) {
+      const p = document.createElement('div');
+      p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      const randX = (Math.random() - 0.5) * 60;
+      const randY = 40 + Math.random() * 50;
+      p.style.cssText = `
+        position: fixed;
+        left: ${posX + randX}px;
+        top: ${posY}px;
+        font-size: 22px;
+        pointer-events: none;
+        z-index: 9999;
+        transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.9s ease-out;
+        transform: translateY(0) scale(0.6);
+        opacity: 1;
+      `;
+      document.body.appendChild(p);
+      requestAnimationFrame(() => {
+        p.style.transform = `translateY(-${randY}px) scale(1.2)`;
+        p.style.opacity = '0';
+      });
+      setTimeout(() => p.remove(), 1000);
+    }
   },
 
   // ==================== 친구 정보 모달 오픈 ====================

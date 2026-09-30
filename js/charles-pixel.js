@@ -180,7 +180,7 @@ const SIMPLE_PIXEL_STAGE_5 = [
 /**
  * 단계별 찰스 SVG 그래픽 및 메타 정보 반환
  */
-function getCharlesVisual(stage = 1) {
+function getCharlesVisual(stage = 1, scale = 8) {
   const safeStage = Math.max(1, Math.min(5, Math.floor(stage)));
   const info = CHARLES_STAGES[safeStage];
 
@@ -201,7 +201,7 @@ function getCharlesVisual(stage = 1) {
     animClass = 'cute-float';
   }
 
-  const svg = renderSimplePixelGrid(pixelMap, 8, animClass);
+  const svg = renderSimplePixelGrid(pixelMap, scale, animClass);
 
   return {
     stage: safeStage,
