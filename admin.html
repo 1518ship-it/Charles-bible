@@ -173,7 +173,9 @@ ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS quest_c
 -- 자정(00:00 KST)이 지나면 오늘 읽은 장수가 한국 시간 기준으로 자동 0으로 리셋되어 언제나 정확합니다.
 DROP VIEW IF EXISTS public.user_today_summary CASCADE;
 
-CREATE OR REPLACE VIEW public.user_today_summary AS
+CREATE OR REPLACE VIEW public.user_today_summary
+WITH (security_invoker = true)
+AS
 SELECT 
   r.user_id AS user_id,
   COALESCE(m.name, r.user_id) AS name,
