@@ -3222,6 +3222,204 @@ body {
   transform: scale(0.428); /* 56px -> 24px */
 }
 
+/* ==================== 사용자 지정 퀘스트 두루마리 픽셀 아트 (.pixel-quest-scroll) ==================== */
+.pixel-quest-scroll {
+  width: 4px;
+  height: 4px;
+  display: inline-block;
+  box-shadow:
+    72px 12px 0 0 #ffffff,
+    68px 16px 0 0 #ffea6c,
+    72px 16px 0 0 #ffffff,
+    76px 16px 0 0 #ffea6c,
+    72px 20px 0 0 #ffffff,
+    20px 28px 0 0 #18181b,
+    24px 28px 0 0 #18181b,
+    28px 28px 0 0 #18181b,
+    32px 28px 0 0 #18181b,
+    36px 28px 0 0 #18181b,
+    40px 28px 0 0 #ef233c,
+    44px 28px 0 0 #ef233c,
+    48px 28px 0 0 #b7094c,
+    52px 28px 0 0 #18181b,
+    56px 28px 0 0 #18181b,
+    60px 28px 0 0 #18181b,
+    64px 28px 0 0 #18181b,
+    68px 28px 0 0 #18181b,
+    12px 32px 0 0 #18181b,
+    16px 32px 0 0 #18181b,
+    20px 32px 0 0 #fefae0,
+    24px 32px 0 0 #fefae0,
+    28px 32px 0 0 #fefae0,
+    32px 32px 0 0 #fefae0,
+    36px 32px 0 0 #18181b,
+    40px 32px 0 0 #ef233c,
+    44px 32px 0 0 #ef233c,
+    48px 32px 0 0 #b7094c,
+    52px 32px 0 0 #18181b,
+    56px 32px 0 0 #fefae0,
+    60px 32px 0 0 #fefae0,
+    64px 32px 0 0 #fefae0,
+    68px 32px 0 0 #fefae0,
+    72px 32px 0 0 #18181b,
+    76px 32px 0 0 #18181b,
+    8px 36px 0 0 #18181b,
+    12px 36px 0 0 #8a5a36,
+    16px 36px 0 0 #18181b,
+    20px 36px 0 0 #fefae0,
+    24px 36px 0 0 #fefae0,
+    28px 36px 0 0 #fefae0,
+    32px 36px 0 0 #fefae0,
+    36px 36px 0 0 #18181b,
+    40px 36px 0 0 #18181b,
+    44px 36px 0 0 #18181b,
+    48px 36px 0 0 #18181b,
+    52px 36px 0 0 #18181b,
+    56px 36px 0 0 #fefae0,
+    60px 36px 0 0 #fefae0,
+    64px 36px 0 0 #fefae0,
+    68px 36px 0 0 #fefae0,
+    72px 36px 0 0 #18181b,
+    76px 36px 0 0 #8a5a36,
+    80px 36px 0 0 #18181b,
+    8px 40px 0 0 #18181b,
+    12px 40px 0 0 #543310,
+    16px 40px 0 0 #18181b,
+    20px 40px 0 0 #faedcd,
+    24px 40px 0 0 #faedcd,
+    28px 40px 0 0 #faedcd,
+    32px 40px 0 0 #faedcd,
+    36px 40px 0 0 #18181b,
+    40px 40px 0 0 #ffea6c,
+    44px 40px 0 0 #ffc000,
+    48px 40px 0 0 #ffc000,
+    52px 40px 0 0 #18181b,
+    56px 40px 0 0 #faedcd,
+    60px 40px 0 0 #faedcd,
+    64px 40px 0 0 #faedcd,
+    68px 40px 0 0 #faedcd,
+    72px 40px 0 0 #18181b,
+    76px 40px 0 0 #543310,
+    80px 40px 0 0 #18181b,
+    8px 44px 0 0 #18181b,
+    12px 44px 0 0 #8a5a36,
+    16px 44px 0 0 #18181b,
+    20px 44px 0 0 #faedcd,
+    24px 44px 0 0 #faedcd,
+    28px 44px 0 0 #faedcd,
+    32px 44px 0 0 #faedcd,
+    36px 44px 0 0 #18181b,
+    40px 44px 0 0 #ffea6c,
+    44px 44px 0 0 #ffffff,
+    48px 44px 0 0 #ffc000,
+    52px 44px 0 0 #18181b,
+    56px 44px 0 0 #faedcd,
+    60px 44px 0 0 #faedcd,
+    64px 44px 0 0 #faedcd,
+    68px 44px 0 0 #faedcd,
+    72px 44px 0 0 #18181b,
+    76px 44px 0 0 #8a5a36,
+    80px 44px 0 0 #18181b,
+    12px 48px 0 0 #18181b,
+    16px 48px 0 0 #18181b,
+    20px 48px 0 0 #e9d8a6,
+    24px 48px 0 0 #e9d8a6,
+    28px 48px 0 0 #e9d8a6,
+    32px 48px 0 0 #e9d8a6,
+    36px 48px 0 0 #18181b,
+    40px 48px 0 0 #ffc000,
+    44px 48px 0 0 #ffc000,
+    48px 48px 0 0 #996500,
+    52px 48px 0 0 #18181b,
+    56px 48px 0 0 #e9d8a6,
+    60px 48px 0 0 #e9d8a6,
+    64px 48px 0 0 #e9d8a6,
+    68px 48px 0 0 #e9d8a6,
+    72px 48px 0 0 #18181b,
+    76px 48px 0 0 #18181b,
+    16px 52px 0 0 #18181b,
+    20px 52px 0 0 #e9d8a6,
+    24px 52px 0 0 #e9d8a6,
+    28px 52px 0 0 #e9d8a6,
+    32px 52px 0 0 #e9d8a6,
+    36px 52px 0 0 #18181b,
+    40px 52px 0 0 #18181b,
+    44px 52px 0 0 #18181b,
+    48px 52px 0 0 #18181b,
+    52px 52px 0 0 #18181b,
+    56px 52px 0 0 #e9d8a6,
+    60px 52px 0 0 #e9d8a6,
+    64px 52px 0 0 #e9d8a6,
+    68px 52px 0 0 #e9d8a6,
+    72px 52px 0 0 #18181b,
+    16px 56px 0 0 #18181b,
+    20px 56px 0 0 #d4a373,
+    24px 56px 0 0 #d4a373,
+    28px 56px 0 0 #d4a373,
+    32px 56px 0 0 #d4a373,
+    36px 56px 0 0 #18181b,
+    40px 56px 0 0 #ef233c,
+    44px 56px 0 0 #ef233c,
+    48px 56px 0 0 #b7094c,
+    52px 56px 0 0 #18181b,
+    56px 56px 0 0 #d4a373,
+    60px 56px 0 0 #d4a373,
+    64px 56px 0 0 #d4a373,
+    68px 56px 0 0 #d4a373,
+    72px 56px 0 0 #18181b,
+    20px 60px 0 0 #18181b,
+    24px 60px 0 0 #18181b,
+    28px 60px 0 0 #18181b,
+    32px 60px 0 0 #18181b,
+    36px 60px 0 0 #ef233c,
+    40px 60px 0 0 #ef233c,
+    44px 60px 0 0 #ef233c,
+    48px 60px 0 0 #b7094c,
+    52px 60px 0 0 #b7094c,
+    56px 60px 0 0 #18181b,
+    60px 60px 0 0 #18181b,
+    64px 60px 0 0 #18181b,
+    68px 60px 0 0 #18181b,
+    36px 64px 0 0 #ef233c,
+    52px 64px 0 0 #b7094c,
+    32px 68px 0 0 #18181b,
+    36px 68px 0 0 #ef233c,
+    40px 68px 0 0 #18181b,
+    48px 68px 0 0 #18181b,
+    52px 68px 0 0 #b7094c,
+    56px 68px 0 0 #18181b;
+}
+
+/* 두루마리 아이콘 래퍼 규격 */
+.quest-scroll-icon {
+  width: 26px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.quest-scroll-icon.scroll-lg {
+  width: 32px;
+  height: 26px;
+}
+
+.quest-scroll-icon .pixel-quest-scroll {
+  position: absolute;
+  top: -12px;
+  left: -8px;
+  transform-origin: 8px 12px;
+  transform: scale(0.35); /* 76px x 60px -> ~26px x 21px */
+}
+
+.quest-scroll-icon.scroll-lg .pixel-quest-scroll {
+  transform: scale(0.42); /* 76px x 60px -> ~32px x 25px */
+}
+
 .home-quest-btn {
   pointer-events: auto;
   background: var(--card-bg);
