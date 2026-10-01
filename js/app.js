@@ -826,6 +826,7 @@ const App = {
 
   // ==================== 8. 달란트(Talent) & 퀘스트 & 커스터마이징 매니저 ====================
   currentShopTab: 'store',
+  shopPreviewEquipped: null,
 
   // 달란트 픽셀 코인 HTML 생성 헬퍼
   getTalentCoinIcon(size = 'sm') {
@@ -977,6 +978,7 @@ const App = {
     const modal = document.getElementById('talent-shop-modal');
     if (!modal) return;
     this.currentShopTab = tab;
+    this.shopPreviewEquipped = { ...(typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}) };
     this.renderTalentShop(tab);
     modal.style.display = 'flex';
     RetroAudio.click();
@@ -985,6 +987,7 @@ const App = {
   closeTalentShop() {
     const modal = document.getElementById('talent-shop-modal');
     if (modal) modal.style.display = 'none';
+    this.shopPreviewEquipped = null;
     this.renderHome();
   },
 
@@ -1010,12 +1013,28 @@ const App = {
     }
 
     // 3) 피팅룸 찰스 아바타 렌더링
+    if (!this.shopPreviewEquipped) {
+      this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
+    }
     const stage = StorageService.getCharlesStage();
-    const equipped = TalentService.getEquipped();
-    const previewVisual = getCharlesVisual(stage, 6, equipped);
+    const previewVisual = getCharlesVisual(stage, 6, this.shopPreviewEquipped);
     const previewSlot = document.getElementById('shop-preview-avatar');
     if (previewSlot) {
       previewSlot.innerHTML = previewVisual.svg;
+    }
+
+    // 피팅룸 안내 뱃지 / 상태 표시 (착용 미리보기 중인지 안내)
+    const previewTag = document.getElementById('shop-preview-tag');
+    if (previewTag) {
+      const realEquipped = TalentService.getEquipped() || {};
+      const isCustomPreview = ['head', 'hold', 'back'].some(slot => (this.shopPreviewEquipped[slot] || null) !== (realEquipped[slot] || null));
+      if (isCustomPreview) {
+        previewTag.innerHTML = `<span>✨ 착용 미리보기 중</span> <button type="button" class="btn-preview-reset" onclick="App.resetShopPreview()">원래대로 ↺</button>`;
+        previewTag.classList.add('active');
+      } else {
+        previewTag.innerHTML = `<span>피팅룸</span>`;
+        previewTag.classList.remove('active');
+      }
     }
 
     // 4) 아이템 그리드 렌더링
@@ -1028,12 +1047,16 @@ const App = {
       // 상점: 4개 아이템 전체 노출
       grid.innerHTML = allItems.map(item => {
         const isOwned = TalentService.hasItem(item.id);
+        const isTryingOn = this.shopPreviewEquipped && this.shopPreviewEquipped[item.slot] === item.id;
 
-        let btnHtml = '';
+        const tryBtnText = isTryingOn ? '해제하기' : '착용해보기';
+        const tryBtnClass = isTryingOn ? 'shop-item-btn try-on active' : 'shop-item-btn try-on';
+
+        let buyOrOwnedBtn = '';
         if (isOwned) {
-          btnHtml = `<button class="shop-item-btn equipped" type="button" disabled>보유중 ✓</button>`;
+          buyOrOwnedBtn = `<button class="shop-item-btn equipped" type="button" disabled>보유중 ✓</button>`;
         } else {
-          btnHtml = `<button class="shop-item-btn buy" type="button" onclick="App.buyTalentItem('${item.id}')">구매 (${item.price} ${this.getTalentCoinIcon('sm')})</button>`;
+          buyOrOwnedBtn = `<button class="shop-item-btn buy" type="button" onclick="App.buyTalentItem('${item.id}')">구매 (${item.price} ${this.getTalentCoinIcon('sm')})</button>`;
         }
 
         return `
@@ -1041,7 +1064,10 @@ const App = {
             <div class="shop-item-icon">${item.icon}</div>
             <div class="shop-item-name">${item.name}</div>
             <div class="shop-item-desc">${item.desc}</div>
-            ${btnHtml}
+            <div class="shop-item-actions">
+              <button class="${tryBtnClass}" type="button" onclick="App.togglePreviewTalentItem('${item.id}')">${tryBtnText}</button>
+              ${buyOrOwnedBtn}
+            </div>
           </div>
         `;
       }).join('');
@@ -1074,11 +1100,52 @@ const App = {
             <div class="shop-item-icon">${item.icon}</div>
             <div class="shop-item-name">${item.name}</div>
             <div class="shop-item-desc">${item.desc}</div>
-            ${btnHtml}
+            <div class="shop-item-actions">
+              ${btnHtml}
+            </div>
           </div>
         `;
       }).join('');
     }
+  },
+
+  togglePreviewTalentItem(itemId) {
+    if (typeof TalentService === 'undefined') return;
+    const item = TALENT_ITEMS[itemId];
+    if (!item) return;
+
+    if (!this.shopPreviewEquipped) {
+      this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
+    }
+
+    const isTryingOn = this.shopPreviewEquipped[item.slot] === itemId;
+    if (isTryingOn) {
+      this.shopPreviewEquipped[item.slot] = null;
+      this.showToast(`${item.name} 착용을 해제했습니다.`);
+    } else {
+      this.shopPreviewEquipped[item.slot] = itemId;
+      this.showToast(`✨ ${item.name} 착용 미리보기!`);
+    }
+
+    RetroAudio.click();
+
+    // 찰스 바운스 애니메이션 트리거
+    const previewSlot = document.getElementById('shop-preview-avatar');
+    if (previewSlot) {
+      previewSlot.classList.remove('charles-preview-bounce');
+      void previewSlot.offsetWidth;
+      previewSlot.classList.add('charles-preview-bounce');
+    }
+
+    this.renderTalentShop(this.currentShopTab || 'store');
+  },
+
+  resetShopPreview() {
+    if (typeof TalentService === 'undefined') return;
+    this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
+    this.showToast('원래 착용 모습으로 되돌렸습니다.');
+    RetroAudio.click();
+    this.renderTalentShop(this.currentShopTab || 'store');
   },
 
   buyTalentItem(itemId) {
@@ -1092,7 +1159,11 @@ const App = {
 
     RetroAudio.success();
     this.showToast(`🎉 '${res.item.name}' 구매 및 착용 완료!`);
-    this.renderTalentShop('store');
+    if (!this.shopPreviewEquipped) {
+      this.shopPreviewEquipped = {};
+    }
+    this.shopPreviewEquipped[res.item.slot] = res.item.id;
+    this.renderTalentShop(this.currentShopTab || 'store');
     this.renderHome();
   },
 
@@ -1109,6 +1180,7 @@ const App = {
       this.showToast(`✨ ${item.name}을(를) 착용했습니다!`);
     }
 
+    this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
     RetroAudio.click();
     this.renderTalentShop(this.currentShopTab || 'closet');
     this.renderHome();
