@@ -156,33 +156,7 @@
         </div>
       </div>
 
-      <!-- 3. 찰스 상태 시뮬레이션 및 테스트 도구 -->
-      <div class="admin-card">
-        <div class="admin-card-title">
-          <span>🐑</span> 찰스 성장 시뮬레이터 (개발/관리자용)
-        </div>
-        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
-          원클릭으로 찰스의 상태(1~5단계)를 테스트해 볼 수 있습니다.
-        </p>
-
-        <div id="admin-stats-summary" style="font-size: 12px; margin-bottom: 14px; padding: 10px; background: #FFF9C4; border: 1px solid #111;">
-          <!-- 통독 요약 -->
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
-          <button class="admin-btn btn-sim-stage" data-stage="1">1단계: 배고픈 찰스 (0%)</button>
-          <button class="admin-btn btn-sim-stage" data-stage="2">2단계: 풀 먹는 찰스 (10장)</button>
-          <button class="admin-btn btn-sim-stage" data-stage="3">3단계: 복슬 찰스 (25%)</button>
-          <button class="admin-btn btn-sim-stage" data-stage="4">4단계: 활기찬 찰스 (60%)</button>
-          <button class="admin-btn btn-sim-stage" data-stage="5">5단계: 천사 찰스 (100% 완독)</button>
-        </div>
-
-        <button id="btn-admin-clear-progress" class="admin-btn admin-btn-danger" style="font-size: 12px;">
-          ⚠️ 통독 진도 완전 초기화
-        </button>
-      </div>
-
-      <!-- 4. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & user_reading_state) -->
+      <!-- 3. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & user_reading_state) -->
       <div class="admin-card">
         <div class="admin-card-title">
           <span>☁️</span> Supabase 오늘 통독 & 달란트 요약 테이블(VIEW) 생성 SQL

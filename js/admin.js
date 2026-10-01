@@ -159,28 +159,7 @@ const AdminApp = {
       });
     }
 
-    // 4) 찰스 시뮬레이션 버튼들
-    document.querySelectorAll('.btn-sim-stage').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetStage = parseInt(btn.dataset.stage, 10);
-        this.simulateStage(targetStage);
-      });
-    });
-
-    // 5) 전체 통독 리셋
-    const clearProgBtn = document.getElementById('btn-admin-clear-progress');
-    if (clearProgBtn) {
-      clearProgBtn.addEventListener('click', () => {
-        if (confirm('현재 기기의 모든 통독 진행 데이터를 로컬 초기화하시겠습니까?')) {
-          StorageService.resetAll();
-          RetroAudio.click();
-          this.showToast('통독 데이터가 로컬 초기화되었습니다.', 'info');
-          this.refreshDashboard();
-        }
-      });
-    }
-
-    // 6) SQL 쿼리 복사 버튼
+    // 4) SQL 쿼리 복사 버튼
     const copySqlBtn = document.getElementById('btn-copy-sql');
     if (copySqlBtn) {
       copySqlBtn.addEventListener('click', () => {
@@ -365,17 +344,6 @@ const AdminApp = {
 
     // 성도 목록 테이블 렌더링
     this.renderFilteredTable();
-
-    // 4) 인스턴스 통독 요약
-    const stats = StorageService.getStats();
-    const stage = StorageService.getCharlesStage();
-    const sumEl = document.getElementById('admin-stats-summary');
-    if (sumEl) {
-      sumEl.innerHTML = `
-        현재 인스턴스 통독 진행: <strong>${stats.totalRead} / ${stats.totalChapters} 장 (${stats.percent}%)</strong><br>
-        현재 찰스 상태: <strong>${CHARLES_STAGES[stage].title} (${CHARLES_STAGES[stage].badge})</strong>
-      `;
-    }
   },
 
   // 셀 목록 드롭다운 채우기
@@ -809,33 +777,5 @@ const AdminApp = {
       delBtn.disabled = false;
       delBtn.textContent = '🗑️ 이 성도 계정 영구 삭제';
     }
-  },
-
-  // ==================== 8. 찰스 단계 시뮬레이션 ====================
-  simulateStage(stage) {
-    if (stage === 1) {
-      StorageService.resetAll();
-    } else if (stage === 2) {
-      StorageService.resetAll();
-      for (let i = 1; i <= 10; i++) StorageService.toggleChapter('GEN', i);
-    } else if (stage === 3) {
-      StorageService.resetAll();
-      for (const b of BIBLE_BOOKS.slice(0, 10)) {
-        StorageService.toggleBookAll(b.id, b.chapters, true);
-      }
-    } else if (stage === 4) {
-      StorageService.resetAll();
-      for (const b of BIBLE_BOOKS.filter(x => x.testament === 'OT')) {
-        StorageService.toggleBookAll(b.id, b.chapters, true);
-      }
-    } else if (stage === 5) {
-      for (const b of BIBLE_BOOKS) {
-        StorageService.toggleBookAll(b.id, b.chapters, true);
-      }
-    }
-
-    RetroAudio.success();
-    this.showToast(`찰스를 [단계 ${stage}] 상태로 시뮬레이션 설정했습니다! 메인 앱에서 확인하세요.`, 'success');
-    this.refreshDashboard();
   }
 };
