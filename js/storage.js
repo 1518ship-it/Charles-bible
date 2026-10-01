@@ -663,9 +663,14 @@ const StorageService = {
         const remoteTalentsUpdatedAt = (remoteTalentMeta && remoteTalentMeta.updated_at) || data.updated_at;
 
         if (remoteTalents !== null) {
+          let minExpected = 0;
+          if (typeof TalentService !== 'undefined' && TalentService.getExpectedMinTalents) {
+            minExpected = TalentService.getExpectedMinTalents();
+          }
+
           if (!remoteTalentsUpdatedAt && !localTalentsUpdatedAt) {
             // 둘 다 타임스탬프가 없는 초기 전환 시: 달란트 손실 방지를 위해 Max값 사용
-            const bestTalents = Math.max(localTalents, remoteTalents);
+            const bestTalents = Math.max(localTalents, remoteTalents, minExpected);
             localStorage.setItem(`charles_user_${uid}_talents`, String(bestTalents));
             localStorage.setItem(`charles_user_${uid}_talents_updated_at`, new Date().toISOString());
             hasNewerLocalData = true;
@@ -673,9 +678,10 @@ const StorageService = {
             const remoteTime = new Date(remoteTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
             const localTime = new Date(localTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
 
+            let targetTalents = localTalents;
             if (isNaN(localTime) || remoteTime >= localTime) {
               // 원격 데이터가 최신이거나 같음 -> 원격 잔액으로 동기화
-              localStorage.setItem(`charles_user_${uid}_talents`, String(remoteTalents));
+              targetTalents = remoteTalents;
               if (remoteTalentsUpdatedAt) {
                 localStorage.setItem(`charles_user_${uid}_talents_updated_at`, remoteTalentsUpdatedAt);
               }
@@ -683,6 +689,16 @@ const StorageService = {
               // 로컬에 아직 클라우드로 올라가지 않은 변경이 있음
               hasNewerLocalData = true;
             }
+
+            // 달란트 유실 방지: 퀘스트 수령 보상 최소 보장값 미달 시 즉시 자가 치유
+            if (targetTalents < minExpected) {
+              console.warn(`🪙 [Cloud Sync Self-Healing] 유저 [${uid}] 달란트 유실 감지 (${targetTalents} < 최소보장 ${minExpected}). 정상 복구합니다.`);
+              targetTalents = minExpected;
+              localStorage.setItem(`charles_user_${uid}_talents_updated_at`, new Date().toISOString());
+              hasNewerLocalData = true;
+            }
+
+            localStorage.setItem(`charles_user_${uid}_talents`, String(targetTalents));
           }
         } else if (localTalents > 0) {
           // 원격에 달란트 데이터가 아예 없으나 로컬에 잔액이 있는 경우 -> 원격으로 업로드 필요

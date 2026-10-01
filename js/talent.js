@@ -52,11 +52,53 @@ const TalentService = {
     return `charles_user_${uid}_${key}`;
   },
 
+  // 최소 보장 달란트 계산 (수령한 퀘스트 총 보상 - 구매한 아이템 총 가격)
+  getExpectedMinTalents() {
+    try {
+      const claimsStr = localStorage.getItem(this.getUserKey('quest_claims'));
+      const claims = claimsStr ? JSON.parse(claimsStr) : {};
+      let minEarned = 0;
+      if (claims.daily_login) minEarned += 1;
+      if (claims.daily_read_3) minEarned += 1;
+      if (claims.weekly_streak_cycle) minEarned += Math.max(0, parseInt(claims.weekly_streak_cycle, 10) || 0);
+      if (claims.achieve_nt_complete) minEarned += 100;
+
+      const invStr = localStorage.getItem(this.getUserKey('inventory'));
+      const inv = invStr ? JSON.parse(invStr) : [];
+      let spent = 0;
+      if (Array.isArray(inv)) {
+        for (const itemId of inv) {
+          if (TALENT_ITEMS[itemId] && TALENT_ITEMS[itemId].price) {
+            spent += TALENT_ITEMS[itemId].price;
+          }
+        }
+      }
+
+      return Math.max(0, minEarned - spent);
+    } catch (e) {
+      return 0;
+    }
+  },
+
   // ==================== 1. 달란트 잔액 ====================
   getTalents() {
     try {
       const val = localStorage.getItem(this.getUserKey('talents'));
-      return val !== null ? Math.max(0, parseInt(val, 10) || 0) : 0;
+      let talents = val !== null ? Math.max(0, parseInt(val, 10) || 0) : 0;
+
+      // 퀘스트 수령 보상 유실 방지 자동 보정 (Self-Healing)
+      const minExpected = this.getExpectedMinTalents();
+      if (talents < minExpected) {
+        console.warn(`🪙 [Talent Self-Healing] 달란트 유실 감지 (${talents} < 최소보장 ${minExpected}). 정상 복구합니다.`);
+        talents = minExpected;
+        localStorage.setItem(this.getUserKey('talents'), String(talents));
+        localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
+        if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
+          StorageService.scheduleCloudSync();
+        }
+      }
+
+      return talents;
     } catch (e) {
       return 0;
     }
