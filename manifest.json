@@ -1,7 +1,7 @@
 {
-  "name": "Charles' Bible - 말씀양 찰스",
-  "short_name": "말씀양 찰스",
-  "description": "말씀양 찰스와 함께하는 성경 읽기 및 청년부 양떼목장",
+  "name": "Charles",
+  "short_name": "Charles",
+  "description": "Charles - 말씀양 찰스와 함께하는 성경 읽기",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
