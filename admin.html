@@ -98,30 +98,34 @@
         </button>
       </div>
 
-      <!-- 2. 가입 사용자 관리 -->
+      <!-- 2. 가입 사용자 관리 & 오늘 통독 및 달란트 현황 -->
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>👥</span> 등록된 성도 명부
+          <span>👥</span> 등록된 성도 명부 & 오늘 통독 및 달란트 현황
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
-          가입코드를 인증하고 등록된 사용자 목록입니다.
+          성도들의 오늘 읽은 성경 장 수, 보유 달란트 잔액, 연속 통독일수 및 찰스 육성 상태입니다.
         </p>
 
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>아이디</th>
-              <th>성도 이름</th>
-              <th>닉네임</th>
-              <th>소속 셀</th>
-              <th>가입 시각</th>
-              <th>최근 접속</th>
-            </tr>
-          </thead>
-          <tbody id="admin-user-tbody">
-            <!-- 사용자 목록 주입 -->
-          </tbody>
-        </table>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>아이디</th>
+                <th>성도 이름</th>
+                <th>소속 셀</th>
+                <th style="color: #2E7D32;">오늘 읽은 장수</th>
+                <th style="color: #D68910;">보유 달란트</th>
+                <th style="color: #E65100;">연속 통독일</th>
+                <th>찰스 상태</th>
+                <th>최근 접속</th>
+              </tr>
+            </thead>
+            <tbody id="admin-user-tbody">
+              <!-- 사용자 목록 주입 -->
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 3. 찰스 상태 시뮬레이션 및 테스트 도구 -->
@@ -150,46 +154,50 @@
         </button>
       </div>
 
-      <!-- 4. Supabase DB 연동 설정 안내 (user_reading_state) -->
+      <!-- 4. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & user_reading_state) -->
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>☁️</span> Supabase 유저별 통독/찰스 DB 동기화 SQL 안내
+          <span>☁️</span> Supabase 오늘 통독 & 달란트 요약 테이블(VIEW) 생성 SQL
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 10px;">
-          각 유저의 고유 찰스 단계 및 날짜별 통독 장수를 Supabase 클라우드에 영구 저장하기 위해, Supabase SQL Editor에서 아래 쿼리를 1회 실행해 주세요. (미실행 시 브라우저 로컬 저장소로 안전하게 작동합니다.)
+          Supabase 페이지의 <strong>[Table Editor]</strong>에서 유저별 오늘 읽은 장수, 달란트, 연속 접속일을 별도 테이블로 바로 보실 수 있도록 아래 SQL을 Supabase <strong>[SQL Editor]</strong>에서 1회 실행해 주세요.
         </p>
-        <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 유저별 통독 상태, 찰스 육성 및 달란트/아이템 기록 테이블 생성
-CREATE TABLE IF NOT EXISTS public.user_reading_state (
-  user_id text PRIMARY KEY,
-  charles_stage integer DEFAULT 1,
-  read_progress jsonb DEFAULT '{}'::jsonb,
-  daily_counts jsonb DEFAULT '{}'::jsonb,
-  read_history jsonb DEFAULT '[]'::jsonb,
-  streak_count integer DEFAULT 0,
-  max_streak integer DEFAULT 0,
-  last_evaluated_date text,
-  last_read_date text,
-  talents integer DEFAULT 0,
-  equipped jsonb DEFAULT '{}'::jsonb,
-  inventory jsonb DEFAULT '[]'::jsonb,
-  quest_claims jsonb DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
-);
+        <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 컬럼 안전 추가
+ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
+ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS equipped jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS quest_claims jsonb DEFAULT '{}'::jsonb;
 
--- 기존에 테이블을 이미 생성했던 분들을 위한 추가 컬럼 적용 (안전 실행)
-ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
-ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS equipped jsonb DEFAULT '{}'::jsonb;
-ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
-ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS quest_claims jsonb DEFAULT '{}'::jsonb;
+-- 2. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
+-- Supabase Table Editor에서 'user_today_summary'를 누르면 별도 테이블로 바로 확인할 수 있습니다.
+-- 자정(00:00 KST)이 지나면 오늘 읽은 장수가 한국 시간 기준으로 자동 0으로 리셋되어 언제나 정확합니다.
+DROP VIEW IF EXISTS public.user_today_summary CASCADE;
 
--- RLS 활성화 및 권한 설정
-ALTER TABLE public.user_reading_state ENABLE ROW LEVEL SECURITY;
+CREATE OR REPLACE VIEW public.user_today_summary AS
+SELECT 
+  r.user_id AS user_id,
+  COALESCE(m.name, r.user_id) AS name,
+  COALESCE(m.cell, '미지정') AS cell,
+  COALESCE(
+    NULLIF(r.daily_counts ->> (CURRENT_DATE AT TIME ZONE 'Asia/Seoul')::text, '')::integer, 
+    0
+  ) AS today_read_chapters,
+  COALESCE(
+    r.talents,
+    ((r.daily_counts -> '__talent_data__' ->> 'talents')::integer),
+    0
+  ) AS talents,
+  COALESCE(r.streak_count, 0) AS streak_days,
+  COALESCE(r.max_streak, 0) AS max_streak,
+  COALESCE(r.charles_stage, 1) AS charles_stage,
+  r.last_read_date AS last_read_date,
+  r.updated_at AS last_synced_at
+FROM public.user_reading_state r
+LEFT JOIN public.members m ON r.user_id = m.id
+ORDER BY today_read_chapters DESC, streak_days DESC, talents DESC;
 
-CREATE POLICY "Enable all access for user_reading_state" 
-ON public.user_reading_state
-FOR ALL 
-USING (true)
-WITH CHECK (true);</pre>
+-- 3. 조회 권한 부여 (Supabase Studio 대시보드 및 API 연동)
+GRANT SELECT ON public.user_today_summary TO anon, authenticated, service_role;</pre>
         <button id="btn-copy-sql" class="admin-btn admin-btn-primary" style="font-size: 12px;">
           📋 SQL 쿼리 복사하기
         </button>

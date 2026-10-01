@@ -733,6 +733,7 @@ const StorageService = {
         stage: this.getCharlesStage(),
         streakCount: this.getStreakInfo().count || 0,
         todayRead: this.getTodayReadCount(),
+        talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : (parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10)),
         equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}
       };
     }
@@ -741,6 +742,7 @@ const StorageService = {
     let stage = 1;
     let streakCount = 0;
     let todayRead = 0;
+    let talents = 0;
     let equipped = {};
 
     try {
@@ -758,6 +760,9 @@ const StorageService = {
         const parsed = JSON.parse(dc);
         if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
       }
+
+      const tal = localStorage.getItem(`charles_user_${uid}_talents`);
+      if (tal) talents = parseInt(tal, 10) || 0;
 
       const eq = localStorage.getItem(`charles_user_${uid}_equipped`);
       if (eq) {
@@ -794,6 +799,12 @@ const StorageService = {
             if (data.daily_counts.__talent_data__ && data.daily_counts.__talent_data__.equipped) {
               equipped = data.daily_counts.__talent_data__.equipped;
             }
+            if (data.daily_counts.__talent_data__ && data.daily_counts.__talent_data__.talents !== undefined) {
+              talents = data.daily_counts.__talent_data__.talents;
+            }
+          }
+          if (data.talents !== undefined && data.talents !== null) {
+            talents = data.talents;
           }
           if (data.equipped && typeof data.equipped === 'object' && Object.keys(data.equipped).length > 0) {
             equipped = data.equipped;
@@ -803,6 +814,9 @@ const StorageService = {
               localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
             } catch (e) {}
           }
+          try {
+            localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
+          } catch (e) {}
         }
       } catch (err) {
         console.warn('Supabase getUserState warning:', err);
@@ -814,6 +828,7 @@ const StorageService = {
       stage,
       streakCount,
       todayRead,
+      talents,
       equipped
     };
   },
@@ -836,6 +851,7 @@ const StorageService = {
           stage: this.getCharlesStage(),
           streakCount: this.getStreakInfo().count || 0,
           todayRead: this.getTodayReadCount(),
+          talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : (parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10)),
           equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}
         };
         return;
@@ -844,6 +860,7 @@ const StorageService = {
       let stage = 1;
       let streakCount = 0;
       let todayRead = 0;
+      let talents = 0;
       let equipped = {};
 
       try {
@@ -862,6 +879,9 @@ const StorageService = {
           if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
         }
 
+        const tal = localStorage.getItem(`charles_user_${uid}_talents`);
+        if (tal) talents = parseInt(tal, 10) || 0;
+
         const eq = localStorage.getItem(`charles_user_${uid}_equipped`);
         if (eq) {
           const parsed = JSON.parse(eq);
@@ -869,7 +889,7 @@ const StorageService = {
         }
       } catch (e) {}
 
-      stateMap[uid] = { userId: uid, stage, streakCount, todayRead, equipped };
+      stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped };
     });
 
     // 2) Supabase에서 1회의 단일 쿼리로 전체 친구 상태 일괄(Batch) 조회!
@@ -912,6 +932,7 @@ const StorageService = {
             let stage = row.charles_stage || 1;
             let streakCount = (row.streak_count !== undefined && row.streak_count !== null) ? row.streak_count : 0;
             let todayRead = 0;
+            let talents = 0;
             let equipped = (row.equipped && typeof row.equipped === 'object') ? row.equipped : {};
 
             if (row.daily_counts && typeof row.daily_counts === 'object') {
@@ -921,6 +942,13 @@ const StorageService = {
                   equipped = row.daily_counts.__talent_data__.equipped;
                 }
               }
+              if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.talents !== undefined) {
+                talents = row.daily_counts.__talent_data__.talents;
+              }
+            }
+
+            if (row.talents !== undefined && row.talents !== null) {
+              talents = row.talents;
             }
 
             // 로컬 스토리지 캐시 최신화
@@ -933,9 +961,10 @@ const StorageService = {
               if (equipped && Object.keys(equipped).length > 0) {
                 localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
               }
+              localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
             } catch (e) {}
 
-            stateMap[uid] = { userId: uid, stage, streakCount, todayRead, equipped };
+            stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped };
           });
         }
       } catch (err) {

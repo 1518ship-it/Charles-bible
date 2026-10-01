@@ -195,33 +195,57 @@ const AdminApp = {
       currentAdminKeyEl.textContent = adminKey;
     }
 
-    // 3) 가입 사용자 목록 표시 (로컬 먼저, 그 다음 Supabase 최신 목록)
+    // 3) 가입 사용자 목록 및 오늘 통독/달란트 현황 표시
     const userTableBody = document.getElementById('admin-user-tbody');
     if (userTableBody) {
-      const renderTable = (users) => {
+      const renderTable = (users, stateMap = {}) => {
         if (!users || users.length === 0) {
-          userTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">등록된 사용자가 없습니다.</td></tr>`;
+          userTableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888;">등록된 성도가 없습니다.</td></tr>`;
         } else {
-          userTableBody.innerHTML = users.map((u, i) => `
-            <tr>
-              <td><code>${u.id || '-'}</code></td>
-              <td><strong>#${i + 1} ${u.name}</strong></td>
-              <td><span style="font-weight: 700; color: #2E7D32;">${u.nickname || u.name}</span></td>
-              <td><span style="display:inline-block; padding: 2px 6px; background: #E8F5E9; border-radius: 4px; font-size: 11px; font-weight: 600; color: #2E7D32;">${u.cell || '미지정'}</span></td>
-              <td>${u.registeredAt ? u.registeredAt.slice(0, 19).replace('T', ' ') : '-'}</td>
-              <td>${u.lastLoginAt ? u.lastLoginAt.slice(0, 19).replace('T', ' ') : '-'}</td>
-            </tr>
-          `).join('');
+          // 정렬: 오늘 읽은 장수 내림차순 -> 연속통독일 내림차순 -> 달란트 내림차순
+          const sorted = [...users].sort((a, b) => {
+            const stA = stateMap[a.id] || {};
+            const stB = stateMap[b.id] || {};
+            return (stB.todayRead || 0) - (stA.todayRead || 0) ||
+                   (stB.streakCount || 0) - (stA.streakCount || 0) ||
+                   (stB.talents || 0) - (stA.talents || 0);
+          });
+
+          userTableBody.innerHTML = sorted.map((u, i) => {
+            const st = stateMap[u.id] || {};
+            const todayCount = st.todayRead || 0;
+            const talents = st.talents || 0;
+            const streak = st.streakCount || 0;
+            const stage = st.stage || 1;
+
+            return `
+              <tr>
+                <td><code>${u.id || '-'}</code></td>
+                <td><strong>${u.name}</strong> <span style="font-size:11px; color:#666;">(${u.nickname || u.name})</span></td>
+                <td><span style="display:inline-block; padding: 2px 6px; background: #E8F5E9; border-radius: 4px; font-size: 11px; font-weight: 600; color: #2E7D32;">${u.cell || '미지정'}</span></td>
+                <td style="font-weight: 800; color: ${todayCount > 0 ? '#2E7D32' : '#999'};">${todayCount > 0 ? `${todayCount}장 📖` : '0장'}</td>
+                <td style="font-weight: 800; color: #D68910;">${talents.toLocaleString()} 🪙</td>
+                <td style="font-weight: 800; color: ${streak > 0 ? '#E65100' : '#999'};">${streak > 0 ? `${streak}일 🔥` : '0일'}</td>
+                <td><span style="font-weight: 600;">${stage}단계 🐑</span></td>
+                <td style="font-size: 11px; color: #666;">${u.lastLoginAt ? u.lastLoginAt.slice(0, 10) : (u.registeredAt ? u.registeredAt.slice(0, 10) : '-')}</td>
+              </tr>
+            `;
+          }).join('');
         }
       };
 
-      // 로컬 먼저 즉시 렌더
-      renderTable(AuthService.getAllUsersLocal());
+      // 1차: 로컬 캐시 사용자 목록 및 상태로 빠른 렌더링
+      const localUsers = AuthService.getAllUsersLocal();
+      const localIds = localUsers.map(u => u.id);
+      let states = await StorageService.getAllUsersStates(localIds);
+      renderTable(localUsers, states);
 
-      // Supabase 최신 데이터 비동기 반영
+      // 2차: Supabase 최신 사용자 목록 및 실시간 상태 동기화 후 리렌더링
       const remoteUsers = await AuthService.getAllUsers();
-      if (Array.isArray(remoteUsers)) {
-        renderTable(remoteUsers);
+      if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+        const remoteIds = remoteUsers.map(u => u.id);
+        states = await StorageService.getAllUsersStates(remoteIds);
+        renderTable(remoteUsers, states);
       }
     }
 
