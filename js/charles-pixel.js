@@ -146,15 +146,31 @@ function renderAccessoryBible(scale) {
   return r;
 }
 
+/**
+ * 4종 테스트 악세사리 실제 픽셀 아트 SVG 아이콘 생성
+ */
+function getAccessoryIconSvg(itemId) {
+  if (itemId === 'head_straw_hat') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 -0.5 15 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryStrawHat(1)}</svg>`;
+  } else if (itemId === 'head_glasses') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="3.5 4.5 11 4" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryGlasses(1)}</svg>`;
+  } else if (itemId === 'hold_bible') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="12.5 8.5 5 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryBible(1)}</svg>`;
+  } else if (itemId === 'back_daisy_field') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 11.5 19 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryDaisyField(1)}</svg>`;
+  }
+  return '';
+}
+
 function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', equipped = {}) {
   const width = rows[0].length;
   const height = rows.length;
   const svgWidth = width * scale;
   const svgHeight = height * scale;
 
-  // Layer 1: Back / Floor 악세사리
+  // Layer 1: Back / Floor 악세사리 (잔디 부위 - 피크닉 데이지 풀밭)
   let backRects = '';
-  if (equipped && equipped.back === 'back_daisy_field') {
+  if (equipped && (equipped.grass === 'back_daisy_field' || equipped.back === 'back_daisy_field' || equipped.back_daisy_field)) {
     backRects = renderAccessoryDaisyField(scale);
   }
 
@@ -178,19 +194,21 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', eq
     }
   }
 
-  // Layer 3: Head 악세사리
-  let headRects = '';
-  if (equipped) {
-    if (equipped.head === 'head_straw_hat') {
-      headRects = renderAccessoryStrawHat(scale);
-    } else if (equipped.head === 'head_glasses') {
-      headRects = renderAccessoryGlasses(scale);
-    }
+  // Layer 3: Glasses 악세사리 (몸통 부위 - 둥근 범생이 안경)
+  let glassesRects = '';
+  if (equipped && (equipped.glasses === 'head_glasses' || equipped.head === 'head_glasses' || equipped.body === 'head_glasses' || equipped.head_glasses)) {
+    glassesRects = renderAccessoryGlasses(scale);
   }
 
-  // Layer 4: Hold 악세사리
+  // Layer 4: Head 악세사리 (머리 부위 - 귀여운 밀짚모자)
+  let headRects = '';
+  if (equipped && (equipped.head === 'head_straw_hat' || equipped.head_straw_hat)) {
+    headRects = renderAccessoryStrawHat(scale);
+  }
+
+  // Layer 5: Hold 악세사리 (몸통 부위 - 작은 성경책)
   let holdRects = '';
-  if (equipped && equipped.hold === 'hold_bible') {
+  if (equipped && (equipped.hold === 'hold_bible' || equipped.body === 'hold_bible' || equipped.hold_bible)) {
     holdRects = renderAccessoryBible(scale);
   }
 
@@ -200,6 +218,7 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', eq
          style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 150px; display: block; margin: 0 auto;">
       <g class="layer-back">${backRects}</g>
       <g class="layer-body">${bodyRects}</g>
+      <g class="layer-glasses">${glassesRects}</g>
       <g class="layer-head">${headRects}</g>
       <g class="layer-hold">${holdRects}</g>
     </svg>
@@ -343,5 +362,5 @@ function getCharlesVisual(stage = 1, scale = 8, equipped = null) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CHARLES_STAGES, getCharlesVisual, renderSimplePixelGrid };
+  module.exports = { CHARLES_STAGES, getCharlesVisual, renderSimplePixelGrid, getAccessoryIconSvg };
 }

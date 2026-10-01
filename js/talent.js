@@ -7,6 +7,7 @@ const TALENT_ITEMS = {
   'head_straw_hat': {
     id: 'head_straw_hat',
     slot: 'head',
+    category: '머리',
     name: '귀여운 밀짚모자',
     price: 5,
     icon: '👒',
@@ -14,7 +15,8 @@ const TALENT_ITEMS = {
   },
   'head_glasses': {
     id: 'head_glasses',
-    slot: 'head',
+    slot: 'glasses',
+    category: '몸통',
     name: '둥근 범생이 안경',
     price: 3,
     icon: '👓',
@@ -23,6 +25,7 @@ const TALENT_ITEMS = {
   'hold_bible': {
     id: 'hold_bible',
     slot: 'hold',
+    category: '몸통',
     name: '작은 성경책',
     price: 5,
     icon: '📖',
@@ -30,7 +33,8 @@ const TALENT_ITEMS = {
   },
   'back_daisy_field': {
     id: 'back_daisy_field',
-    slot: 'back',
+    slot: 'grass',
+    category: '잔디',
     name: '피크닉 데이지 풀밭',
     price: 7,
     icon: '🌼',
@@ -125,9 +129,26 @@ const TalentService = {
   getEquipped() {
     try {
       const data = localStorage.getItem(this.getUserKey('equipped'));
-      return data ? JSON.parse(data) : { head: null, hold: null, back: null };
+      const equipped = data ? JSON.parse(data) : {};
+      
+      // 하위 호환성 마이그레이션 (이전 데이터 정규화)
+      if (equipped.head === 'head_glasses' && !equipped.glasses) {
+        equipped.glasses = 'head_glasses';
+        equipped.head = null;
+      }
+      if (equipped.back && !equipped.grass) {
+        equipped.grass = equipped.back;
+      }
+
+      return {
+        head: equipped.head || null,
+        glasses: equipped.glasses || null,
+        hold: equipped.hold || null,
+        grass: equipped.grass || equipped.back || null,
+        back: equipped.back || equipped.grass || null
+      };
     } catch (e) {
-      return { head: null, hold: null, back: null };
+      return { head: null, glasses: null, hold: null, grass: null, back: null };
     }
   },
 
@@ -143,6 +164,7 @@ const TalentService = {
     if (!item || !this.hasItem(itemId)) return false;
     const equipped = this.getEquipped();
     equipped[item.slot] = itemId;
+    if (item.slot === 'grass') equipped.back = itemId;
     this.saveEquipped(equipped);
     return true;
   },
@@ -151,6 +173,7 @@ const TalentService = {
     const equipped = this.getEquipped();
     if (equipped[slot]) {
       equipped[slot] = null;
+      if (slot === 'grass') equipped.back = null;
       this.saveEquipped(equipped);
       return true;
     }
@@ -161,7 +184,9 @@ const TalentService = {
     const item = TALENT_ITEMS[itemId];
     if (!item) return false;
     const equipped = this.getEquipped();
-    return equipped[item.slot] === itemId;
+    return equipped[item.slot] === itemId ||
+      (itemId === 'head_glasses' && (equipped.glasses === itemId || equipped.head === itemId)) ||
+      (itemId === 'back_daisy_field' && (equipped.grass === itemId || equipped.back === itemId));
   },
 
   // ==================== 3. 퀘스트 수령 내역 관리 ====================

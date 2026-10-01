@@ -1027,7 +1027,8 @@ const App = {
     const previewTag = document.getElementById('shop-preview-tag');
     if (previewTag) {
       const realEquipped = TalentService.getEquipped() || {};
-      const isCustomPreview = ['head', 'hold', 'back'].some(slot => (this.shopPreviewEquipped[slot] || null) !== (realEquipped[slot] || null));
+      const slots = ['head', 'glasses', 'hold', 'grass'];
+      const isCustomPreview = slots.some(slot => (this.shopPreviewEquipped[slot] || null) !== (realEquipped[slot] || null));
       if (isCustomPreview) {
         previewTag.innerHTML = `<span>✨ 착용 미리보기 중</span> <button type="button" class="btn-preview-reset" onclick="App.resetShopPreview()">원래대로 ↺</button>`;
         previewTag.classList.add('active');
@@ -1059,9 +1060,13 @@ const App = {
           buyOrOwnedBtn = `<button class="shop-item-btn buy" type="button" onclick="App.buyTalentItem('${item.id}')">구매 (${item.price} ${this.getTalentCoinIcon('sm')})</button>`;
         }
 
+        const iconContent = (typeof getAccessoryIconSvg === 'function' ? getAccessoryIconSvg(item.id) : null) || item.icon;
+        const categoryLabel = item.category || '몸통';
+
         return `
           <div class="shop-item-card">
-            <div class="shop-item-icon">${item.icon}</div>
+            <div class="shop-item-icon">${iconContent}</div>
+            <div class="shop-item-category-tag" data-cat="${categoryLabel}">${categoryLabel}</div>
             <div class="shop-item-name">${item.name}</div>
             <div class="shop-item-desc">${item.desc}</div>
             <div class="shop-item-actions">
@@ -1095,9 +1100,13 @@ const App = {
           btnHtml = `<button class="shop-item-btn equip" type="button" onclick="App.toggleEquipTalentItem('${item.id}')">착용하기 ✨</button>`;
         }
 
+        const iconContent = (typeof getAccessoryIconSvg === 'function' ? getAccessoryIconSvg(item.id) : null) || item.icon;
+        const categoryLabel = item.category || '몸통';
+
         return `
           <div class="shop-item-card">
-            <div class="shop-item-icon">${item.icon}</div>
+            <div class="shop-item-icon">${iconContent}</div>
+            <div class="shop-item-category-tag" data-cat="${categoryLabel}">${categoryLabel}</div>
             <div class="shop-item-name">${item.name}</div>
             <div class="shop-item-desc">${item.desc}</div>
             <div class="shop-item-actions">
@@ -1121,9 +1130,11 @@ const App = {
     const isTryingOn = this.shopPreviewEquipped[item.slot] === itemId;
     if (isTryingOn) {
       this.shopPreviewEquipped[item.slot] = null;
+      if (item.slot === 'grass') this.shopPreviewEquipped.back = null;
       this.showToast(`${item.name} 착용을 해제했습니다.`);
     } else {
       this.shopPreviewEquipped[item.slot] = itemId;
+      if (item.slot === 'grass') this.shopPreviewEquipped.back = itemId;
       this.showToast(`✨ ${item.name} 착용 미리보기!`);
     }
 
@@ -1163,6 +1174,7 @@ const App = {
       this.shopPreviewEquipped = {};
     }
     this.shopPreviewEquipped[res.item.slot] = res.item.id;
+    if (res.item.slot === 'grass') this.shopPreviewEquipped.back = res.item.id;
     this.renderTalentShop(this.currentShopTab || 'store');
     this.renderHome();
   },
