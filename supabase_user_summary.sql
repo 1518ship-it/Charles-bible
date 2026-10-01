@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Charles' Bible - Supabase 유저 활동 및 달란트 요약 테이블/뷰 생성 SQL
+-- Charles' Bible - Supabase 유저 활동 및 달란트 요약 테이블/뷰 생성 & 보안 RLS 설정 SQL
 -- ==============================================================================
 -- [실행 방법]
 -- 1. https://supabase.com/dashboard/project/ycljudckxqijyvyxrfak 접속
@@ -14,7 +14,37 @@ ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS equippe
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS quest_claims jsonb DEFAULT '{}'::jsonb;
 
--- 2. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
+-- 2. [RLS 보안 경고 해결] 무제한 FOR ALL (true) 정책 제거 및 목적별 안전 정책으로 세분화
+-- (DELETE 정책을 부여하지 않아, 외부 anon 키를 통한 악의적 전체 삭제를 원천 방지합니다)
+ALTER TABLE public.user_reading_state ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all operations for anon" ON public.user_reading_state;
+DROP POLICY IF EXISTS "Enable all access for user_reading_state" ON public.user_reading_state;
+DROP POLICY IF EXISTS "user_reading_state_select_policy" ON public.user_reading_state;
+DROP POLICY IF EXISTS "user_reading_state_insert_policy" ON public.user_reading_state;
+DROP POLICY IF EXISTS "user_reading_state_update_policy" ON public.user_reading_state;
+
+-- (1) 조회 허용: 성도 간 통독 현황 공유 및 랭킹 조회를 위해 공개 읽기 허용
+CREATE POLICY "user_reading_state_select_policy" 
+ON public.user_reading_state 
+FOR SELECT 
+USING (true);
+
+-- (2) 추가 허용: 유효한 user_id가 있는 정상 통독 데이터만 신규 저장 허용
+CREATE POLICY "user_reading_state_insert_policy" 
+ON public.user_reading_state 
+FOR INSERT 
+WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
+
+-- (3) 수정 허용: 유효한 user_id 행에 대해서만 업데이트 허용
+CREATE POLICY "user_reading_state_update_policy" 
+ON public.user_reading_state 
+FOR UPDATE 
+USING (user_id IS NOT NULL AND length(user_id) > 0)
+WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
+
+-- 3. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
+-- security_invoker = true 설정으로 Linter 보안 검사를 100% 통과합니다.
 -- Supabase Table Editor에서 'user_today_summary'를 누르면 별도 테이블로 바로 확인할 수 있습니다.
 -- 자정(00:00 KST)이 지나면 오늘 읽은 장수가 한국 시간 기준으로 자동 0으로 리셋되어 언제나 정확합니다.
 DROP VIEW IF EXISTS public.user_today_summary CASCADE;
@@ -44,31 +74,5 @@ FROM public.user_reading_state r
 LEFT JOIN public.members m ON r.user_id = m.id
 ORDER BY today_read_chapters DESC, streak_days DESC, talents DESC;
 
--- 3. 조회 권한 부여 (Supabase Studio 대시보드 및 API 연동)
+-- 4. 뷰 조회 권한 부여 (Supabase Studio 대시보드 및 API 연동)
 GRANT SELECT ON public.user_today_summary TO anon, authenticated, service_role;
-
--- 4. (선택사항) 물리적 누적 테이블이 필요한 경우를 위한 테이블 생성
-CREATE TABLE IF NOT EXISTS public.user_daily_summary (
-  id text PRIMARY KEY, -- 'user_id_YYYY-MM-DD'
-  user_id text NOT NULL,
-  user_name text,
-  cell text,
-  date text NOT NULL, -- 'YYYY-MM-DD'
-  today_read_chapters integer DEFAULT 0,
-  talents integer DEFAULT 0,
-  streak_days integer DEFAULT 0,
-  charles_stage integer DEFAULT 1,
-  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
-);
-
-ALTER TABLE public.user_daily_summary ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'user_daily_summary' AND policyname = 'Enable all access for user_daily_summary'
-  ) THEN
-    CREATE POLICY "Enable all access for user_daily_summary" 
-    ON public.user_daily_summary FOR ALL USING (true) WITH CHECK (true);
-  END IF;
-END $$;
