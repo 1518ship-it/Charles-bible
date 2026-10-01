@@ -328,6 +328,7 @@ const App = {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
         this.closeReader();
+        this.closeTalentShop();
         this.switchTab(tab);
       });
     });
@@ -470,26 +471,18 @@ const App = {
       });
     }
 
-    // ==================== 달란트 상점 & 옷장 피팅룸 모달 열기/닫기 ====================
+    // ==================== 달란트 상점 & 옷장 전용 화면 열기/닫기 ====================
     const btnHomeTalents = document.getElementById('btn-home-talents');
-    const shopModal = document.getElementById('talent-shop-modal');
-    const closeShopBtn = document.getElementById('btn-close-shop-modal');
+    const btnBackFromShop = document.getElementById('btn-back-from-shop');
 
     if (btnHomeTalents) {
       btnHomeTalents.addEventListener('click', () => {
         this.openTalentShop('store');
       });
     }
-    if (closeShopBtn && shopModal) {
-      closeShopBtn.addEventListener('click', () => {
+    if (btnBackFromShop) {
+      btnBackFromShop.addEventListener('click', () => {
         this.closeTalentShop();
-      });
-    }
-    if (shopModal) {
-      shopModal.addEventListener('click', (e) => {
-        if (e.target === shopModal) {
-          this.closeTalentShop();
-        }
       });
     }
 
@@ -975,18 +968,18 @@ const App = {
   },
 
   openTalentShop(tab = 'store') {
-    const modal = document.getElementById('talent-shop-modal');
-    if (!modal) return;
+    const shopView = document.getElementById('talent-shop-view');
+    if (!shopView) return;
     this.currentShopTab = tab;
     this.shopPreviewEquipped = { ...(typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}) };
     this.renderTalentShop(tab);
-    modal.style.display = 'flex';
+    shopView.classList.add('active');
     RetroAudio.click();
   },
 
   closeTalentShop() {
-    const modal = document.getElementById('talent-shop-modal');
-    if (modal) modal.style.display = 'none';
+    const shopView = document.getElementById('talent-shop-view');
+    if (shopView) shopView.classList.remove('active');
     this.shopPreviewEquipped = null;
     this.renderHome();
   },
@@ -1010,6 +1003,10 @@ const App = {
     const balanceEl = document.getElementById('shop-balance-count');
     if (balanceEl) {
       balanceEl.innerHTML = `${this.getTalentCoinIcon('sm')} ${balance.toLocaleString()}`;
+    }
+    const headerBalanceEl = document.getElementById('shop-header-balance-count');
+    if (headerBalanceEl) {
+      headerBalanceEl.textContent = balance.toLocaleString();
     }
 
     // 3) 피팅룸 찰스 아바타 렌더링

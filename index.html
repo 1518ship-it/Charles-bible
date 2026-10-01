@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json?v=3.2">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=4.3">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=4.4">
 </head>
 <body>
 
@@ -442,6 +442,59 @@
         <button id="reader-btn-complete-next" class="btn-complete-chapter" style="width: 100%;">
           ✓ 다 읽고 다음 장으로 ➔
         </button>
+      </div>
+    </div>
+
+    <!-- ==================== 달란트 상점 & 옷장 전용 화면 (TALENT SHOP VIEW) ==================== -->
+    <div id="talent-shop-view" class="talent-shop-view">
+      <header class="shop-header">
+        <button id="btn-back-from-shop" class="btn-icon-ghost" type="button" style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+          <svg class="pixel-icon" viewBox="0 0 8 8" width="10" height="10" shape-rendering="crispEdges">
+            <rect x="3" y="0" width="2" height="1" fill="currentColor" />
+            <rect x="2" y="1" width="2" height="1" fill="currentColor" />
+            <rect x="1" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="0" y="3" width="2" height="2" fill="currentColor" />
+            <rect x="1" y="5" width="2" height="1" fill="currentColor" />
+            <rect x="2" y="6" width="2" height="1" fill="currentColor" />
+            <rect x="3" y="7" width="2" height="1" fill="currentColor" />
+          </svg>
+          <span>홈으로</span>
+        </button>
+        <div class="shop-header-title">
+          <span class="talent-coin-icon coin-sm"><span class="pixel-wooden-fence"></span></span>
+          <span>달란트 상점 & 옷장</span>
+        </div>
+        <div class="shop-header-balance">
+          <span class="talent-coin-icon coin-sm"><span class="pixel-wooden-fence"></span></span>
+          <span id="shop-header-balance-count">0</span>
+        </div>
+      </header>
+
+      <!-- 상단 고정 영역: 찰스 피팅룸 & 탭 (아이템이 많아져도 상단에 영구 고정) -->
+      <div class="shop-pinned-section">
+        <div class="shop-dressing-room">
+          <div id="shop-preview-tag" class="shop-preview-tag"><span>피팅룸</span></div>
+          <div id="shop-preview-avatar" class="shop-preview-avatar">
+            <!-- JS SVG 주입 -->
+          </div>
+          <div class="shop-balance-badge">
+            <span>보유 달란트:</span>
+            <span id="shop-balance-count"><span class="talent-coin-icon coin-sm"><span class="pixel-wooden-fence"></span></span> 0</span>
+          </div>
+        </div>
+
+        <!-- 탭: [ 🛍️ 상점 (구매) ] / [ 👒 내 옷장 (착용) ] -->
+        <div class="shop-tab-nav">
+          <button id="shop-tab-store" class="shop-tab-btn active" type="button">🛍️ 상점 (구매)</button>
+          <button id="shop-tab-closet" class="shop-tab-btn" type="button">👒 내 옷장 (착용)</button>
+        </div>
+      </div>
+
+      <!-- 아래 스크롤 영역: 아이템 목록 그리드 (아이템이 많아져도 상단 피팅룸은 고정된 채 아래만 스크롤) -->
+      <div class="shop-scroll-area">
+        <div id="shop-items-grid" class="shop-items-grid">
+          <!-- JS 동적 주입 -->
+        </div>
       </div>
     </div>
 
@@ -1465,54 +1518,6 @@
       </div>
     </div>
 
-    <!-- ==================== 2. 달란트 상점 & 옷장 피팅룸 모달 ==================== -->
-    <div id="talent-shop-modal" class="modal-overlay" style="display: none;">
-      <div class="modal-sheet talent-shop-sheet">
-        <div class="modal-header">
-          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
-            <span class="talent-coin-icon coin-lg"><span class="pixel-wooden-fence"></span></span>
-            <span>달란트 상점 & 옷장</span>
-          </div>
-          <button id="btn-close-shop-modal" class="btn-icon-close" type="button" aria-label="닫기" title="닫기">
-            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
-              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
-              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
-              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
-              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
-              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
-              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
-              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
-              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
-              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
-            </svg>
-          </button>
-        </div>
-        <div class="modal-body" style="padding: 4px 0 0;">
-          <!-- 상단 찰스 피팅룸 미리보기 -->
-          <div class="shop-dressing-room">
-            <div id="shop-preview-tag" class="shop-preview-tag"><span>피팅룸</span></div>
-            <div id="shop-preview-avatar" class="shop-preview-avatar">
-              <!-- JS SVG 주입 -->
-            </div>
-            <div class="shop-balance-badge">
-              <span>보유 달란트:</span>
-              <span id="shop-balance-count"><span class="talent-coin-icon coin-sm"><span class="pixel-wooden-fence"></span></span> 0</span>
-            </div>
-          </div>
-
-          <!-- 탭: [ 🛍️ 상점 ] / [ 👒 내 옷장 ] -->
-          <div class="shop-tab-nav">
-            <button id="shop-tab-store" class="shop-tab-btn active" type="button">🛍️ 상점 (구매)</button>
-            <button id="shop-tab-closet" class="shop-tab-btn" type="button">👒 내 옷장 (착용)</button>
-          </div>
-
-          <!-- 아이템 목록 그리드 -->
-          <div id="shop-items-grid" class="shop-items-grid">
-            <!-- JS 동적 주입 -->
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- ==================== 3. 신약 완독 대형 축하 모달 ==================== -->
     <div id="nt-grand-celebration-modal" class="modal-overlay" style="display: none;">
