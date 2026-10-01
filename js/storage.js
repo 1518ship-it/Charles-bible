@@ -584,6 +584,98 @@ const StorageService = {
     };
   },
 
+  // ==================== 6-2. 전체/다수 친구 통독 및 찰스 정보 일괄(Batch) 1회 조회 ====================
+  async getAllUsersStates(userIds = []) {
+    const todayStr = this.getTodayDateStr();
+    const currentUid = this.getCurrentUserId();
+    const stateMap = {};
+
+    const cleanIds = (Array.isArray(userIds) ? userIds : [])
+      .map(id => String(id || '').trim())
+      .filter(Boolean);
+
+    // 1) 로컬 스토리지 캐시로 기본값 우선 채우기 (오프라인 지원 및 즉시 화면 렌더링)
+    cleanIds.forEach(uid => {
+      if (uid === currentUid) {
+        stateMap[uid] = {
+          userId: uid,
+          stage: this.getCharlesStage(),
+          streakCount: this.getStreakInfo().count || 0,
+          todayRead: this.getTodayReadCount()
+        };
+        return;
+      }
+
+      let stage = 1;
+      let streakCount = 0;
+      let todayRead = 0;
+
+      try {
+        const s = localStorage.getItem(`charles_user_${uid}_stage`);
+        if (s) stage = parseInt(s, 10) || 1;
+
+        const strk = localStorage.getItem(`charles_user_${uid}_streak`);
+        if (strk) {
+          const parsed = JSON.parse(strk);
+          streakCount = (parsed && parsed.count) || 0;
+        }
+
+        const dc = localStorage.getItem(`charles_user_${uid}_daily_counts`);
+        if (dc) {
+          const parsed = JSON.parse(dc);
+          if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
+        }
+      } catch (e) {}
+
+      stateMap[uid] = { userId: uid, stage, streakCount, todayRead };
+    });
+
+    // 2) Supabase에서 1회의 단일 쿼리로 전체 친구 상태 일괄(Batch) 조회!
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      try {
+        let query = supabaseClient
+          .from('user_reading_state')
+          .select('user_id, charles_stage, streak_count, daily_counts');
+
+        // 100명 이하일 때는 in 필터, 그 이상이거나 빈 목록이면 전체 테이블 1회 조회
+        if (cleanIds.length > 0 && cleanIds.length <= 100) {
+          query = query.in('user_id', cleanIds);
+        }
+
+        const { data, error } = await query;
+
+        if (!error && Array.isArray(data)) {
+          data.forEach(row => {
+            const uid = String(row.user_id || '').trim();
+            if (!uid || uid === currentUid) return;
+
+            let stage = row.charles_stage || 1;
+            let streakCount = (row.streak_count !== undefined && row.streak_count !== null) ? row.streak_count : 0;
+            let todayRead = 0;
+            if (row.daily_counts && typeof row.daily_counts === 'object') {
+              todayRead = row.daily_counts[todayStr] || 0;
+            }
+
+            // 로컬 스토리지 캐시 최신화
+            try {
+              localStorage.setItem(`charles_user_${uid}_stage`, String(stage));
+              localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify({ count: streakCount, lastDate: null }));
+              if (row.daily_counts) {
+                localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(row.daily_counts));
+              }
+            } catch (e) {}
+
+            stateMap[uid] = { userId: uid, stage, streakCount, todayRead };
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase getAllUsersStates batch fetch warning:', err);
+      }
+    }
+
+    return stateMap;
+  },
+
   // ==================== 7. 백업 및 초기화 ====================
   exportBackup() {
     const uid = this.getCurrentUserId();

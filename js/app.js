@@ -839,17 +839,18 @@ const App = {
         this.pastureFriends = buildList(remoteUsers);
       }
       
-      // 비동기 통독 상태 병렬 조회
-      await Promise.all(this.pastureFriends.map(async (f) => {
-        try {
-          const state = await StorageService.getUserState(f.id);
-          if (state) {
-            f.stage = state.stage || f.stage || 1;
-            f.streakCount = state.streakCount !== undefined ? state.streakCount : f.streakCount;
-            f.todayRead = state.todayRead !== undefined ? state.todayRead : f.todayRead;
-          }
-        } catch (e) {}
-      }));
+      // 비동기 통독 상태 일괄(Batch) 1회 조회로 최적화 (N+1 쿼리 방지)
+      const friendIds = this.pastureFriends.filter(f => !f.isEmpty && f.id).map(f => f.id);
+      const statesMap = await StorageService.getAllUsersStates(friendIds);
+
+      this.pastureFriends.forEach(f => {
+        if (f.id && statesMap[f.id]) {
+          const state = statesMap[f.id];
+          f.stage = state.stage || f.stage || 1;
+          f.streakCount = state.streakCount !== undefined ? state.streakCount : f.streakCount;
+          f.todayRead = state.todayRead !== undefined ? state.todayRead : f.todayRead;
+        }
+      });
 
       // 갱신된 최신 데이터로 화면 업데이트
       if (this.pastureSearchQuery) {
