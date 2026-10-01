@@ -2375,7 +2375,33 @@ const App = {
       localStorage.setItem('charles_read_admin_msg_ids', JSON.stringify(readIds));
     }
     this.updateUnreadNotificationDot();
-    this.renderNotifications();
+  },
+
+  // 메세지 클릭 시 제목 아래로 본문이 부드럽게 펼쳐지는 아코디언 토글
+  toggleAdminMessage(id) {
+    const card = document.querySelector(`.notif-admin-item[data-msg-id="${id}"]`);
+    if (!card) return;
+
+    const isExpanding = !card.classList.contains('expanded');
+    card.classList.toggle('expanded');
+
+    // 열릴 때 읽음 처리
+    if (isExpanding) {
+      this.markAdminMsgRead(id);
+      card.classList.remove('unread');
+      card.classList.add('read');
+      const unreadStatus = card.querySelector('.msg-unread-status');
+      if (unreadStatus) {
+        unreadStatus.style.color = '#AAA';
+        unreadStatus.style.fontWeight = 'normal';
+        unreadStatus.textContent = '읽음 ✓';
+      }
+      const toggleText = card.querySelector('.notif-admin-toggle-icon span:first-child');
+      if (toggleText) toggleText.textContent = '닫기';
+    } else {
+      const toggleText = card.querySelector('.notif-admin-toggle-icon span:first-child');
+      if (toggleText) toggleText.textContent = '내용';
+    }
   },
 
   getNotifications() {
@@ -2437,7 +2463,7 @@ const App = {
     const notifs = this.getNotifications();
     const hasUnreadSys = notifs.some(n => !n.read);
 
-    // 2) 클라우드 운영자 공지 및 1:1 쪽지 중 안 읽은 것
+    // 2) 클라우드 운영자 공지 및 어린양의 메세지 중 안 읽은 것
     const readIds = this.getReadAdminMsgIds();
     const hasUnreadAdmin = (this.cloudAdminMessages || []).some(m => !readIds.includes(String(m.id)));
 
@@ -2461,13 +2487,13 @@ const App = {
 
     let html = '';
 
-    // 1. 운영자 공지사항 및 1:1 쪽지 목록 상단 렌더링
+    // 1. 운영자 공지사항 및 어린양의 메세지(1:1) 목록 상단 렌더링 (제목 우선 & 클릭 시 본문 펼침)
     if (adminMsgs.length > 0) {
       adminMsgs.forEach(m => {
         const isRead = readIds.includes(String(m.id));
         const isUserMsg = m.target_type === 'USER';
         const badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
-        const badgeText = isUserMsg ? '💌 1:1 쪽지' : '📢 전체 공지';
+        const badgeText = isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지';
         const cardClass = isUserMsg ? 'notif-type-user' : '';
 
         const dateStr = m.created_at ? new Date(m.created_at).toLocaleString('ko-KR', {
@@ -2484,18 +2510,30 @@ const App = {
           .replace(/\n/g, '<br>');
 
         html += `
-          <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" onclick="App.markAdminMsgRead('${m.id}')" style="cursor: pointer;">
-            <div class="notif-icon">${isUserMsg ? '💌' : '📢'}</div>
+          <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" data-msg-id="${m.id}" onclick="App.toggleAdminMessage('${m.id}')">
+            <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${isUserMsg ? '💌' : '📢'}</div>
             <div class="notif-content" style="width: 100%;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="notif-admin-header-row">
                 <span class="notif-badge ${badgeClass}">${badgeText}</span>
                 <span class="notif-time">${dateStr}</span>
               </div>
-              <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
-              <div class="notif-admin-body">${safeContent}</div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-                <span style="font-size: 11px; color: #888;">보낸이: ${m.sender_name || '운영자'}</span>
-                ${!isRead ? '<span style="font-size: 11px; font-weight: 700; color: #E74C3C;">● 읽지 않음 (터치 시 읽음)</span>' : '<span style="font-size: 11px; color: #AAA;">읽음 ✓</span>'}
+              <div class="notif-admin-title-row">
+                <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
+                <div class="notif-admin-toggle-icon">
+                  <span>내용</span> <span style="font-size: 9px;">▼</span>
+                </div>
+              </div>
+              <div class="notif-admin-footer-row">
+                <span>보낸이: ${m.sender_name || '운영자'}</span>
+                <span class="msg-unread-status" style="font-size: 11px; ${!isRead ? 'font-weight: 700; color: #E74C3C;' : 'color: #AAA;'}">
+                  ${!isRead ? '● 읽지 않음' : '읽음 ✓'}
+                </span>
+              </div>
+              <div class="notif-admin-body-wrap">
+                <div class="notif-admin-body">${safeContent}</div>
+                <div style="text-align: right; margin-top: 5px;">
+                  <span style="font-size: 11px; color: #888; text-decoration: underline;">▲ 닫기</span>
+                </div>
               </div>
             </div>
           </div>

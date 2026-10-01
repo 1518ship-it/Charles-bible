@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3.2">
   <link rel="alternate icon" type="image/png" href="favicon-32x32.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
-  <link rel="stylesheet" href="css/admin.css?v=4.6">
+  <link rel="stylesheet" href="css/admin.css?v=4.7">
 </head>
 <body>
 
@@ -156,13 +156,13 @@
         </div>
       </div>
 
-      <!-- 3. 📢 유저 공지사항 & 1:1 메시지 발송 센터 -->
+      <!-- 3. 📢 유저 공지사항 & 어린양의 메세지(1:1) 발송 센터 -->
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>📢</span> 유저 공지사항 & 1:1 메시지 발송 센터
+          <span>📢</span> 유저 공지사항 & 어린양의 메세지(1:1) 발송 센터
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 16px;">
-          전체 성도에게 전할 공지사항이나 특정 성도에게 보내는 1:1 격려 쪽지를 발송할 수 있습니다. 성도 앱 상단의 <strong>💬 하트 말풍선</strong>에 알림(레드닷)이 표시됩니다.
+          전체 성도에게 전할 공지사항이나 특정 성도에게 보내는 1:1 <strong>'어린양의 메세지'</strong>를 발송할 수 있습니다. 성도 앱 상단의 <strong>💬 하트 말풍선</strong>에 알림(레드닷)이 표시됩니다.
         </p>
 
         <!-- 메시지 작성 폼 -->
@@ -177,7 +177,7 @@
               </label>
               <label class="msg-type-option" id="label-msg-type-user">
                 <input type="radio" name="msg-target-type" value="USER">
-                <span>💌 특정 성도 1:1 쪽지</span>
+                <span>💌 어린양의 메세지 (1:1)</span>
               </label>
             </div>
           </div>
@@ -193,7 +193,7 @@
           <div style="display: flex; gap: 12px;" class="admin-form-group">
             <div style="flex: 2;">
               <label class="admin-label">공지 / 메시지 제목</label>
-              <input type="text" id="input-msg-title" class="admin-input" placeholder="예: [청년부 공지] 이번 주 통독 모임 안내 / 성도님을 응원합니다!" required>
+              <input type="text" id="input-msg-title" class="admin-input" placeholder="예: [청년부 공지] 이번 주 통독 모임 안내 / [어린양의 메세지] 성도님을 응원합니다!" required>
             </div>
             <div style="flex: 1;">
               <label class="admin-label">발신자 명</label>
@@ -521,12 +521,12 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
     </div>
   </div>
 
-  <!-- ==================== 💌 성도 1:1 쪽지 즉시 발송 모달 ==================== -->
+  <!-- ==================== 💌 성도 1:1 '어린양의 메세지' 즉시 발송 모달 ==================== -->
   <div id="modal-direct-message" class="admin-modal-overlay">
     <div class="admin-modal">
       <div class="admin-modal-header">
         <div class="admin-modal-title">
-          <span>💌</span> <span id="modal-direct-msg-title">성도 1:1 쪽지 발송</span>
+          <span>💌</span> <span id="modal-direct-msg-title">어린양의 메세지 발송</span>
         </div>
         <button type="button" class="admin-modal-close" data-close-modal="modal-direct-message">&times;</button>
       </div>
@@ -537,7 +537,7 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
             <div style="font-size: 11px; color: #666;" id="modal-direct-msg-user-id">-</div>
           </div>
           <div style="text-align: right;">
-            <span class="msg-badge-user">1:1 개인 쪽지</span>
+            <span class="msg-badge-user">어린양의 메세지</span>
           </div>
         </div>
 
@@ -546,8 +546,8 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
 
           <div style="display: flex; gap: 10px;" class="admin-form-group">
             <div style="flex: 2;">
-              <label class="admin-label">쪽지 제목</label>
-              <input type="text" id="input-direct-msg-title" class="admin-input" placeholder="예: 성도님, 오늘 통독도 함께 힘내요!" required>
+              <label class="admin-label">메세지 제목</label>
+              <input type="text" id="input-direct-msg-title" class="admin-input" placeholder="예: [어린양의 메세지] 성도님, 오늘 통독도 함께 힘내요!" required>
             </div>
             <div style="flex: 1;">
               <label class="admin-label">발신자 명</label>
@@ -556,15 +556,15 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-label">쪽지 본문 내용</label>
-            <textarea id="input-direct-msg-content" class="admin-textarea" rows="4" placeholder="성도님께 전달할 격려와 축복의 메시지를 작성해주세요." required></textarea>
+            <label class="admin-label">메세지 본문 내용</label>
+            <textarea id="input-direct-msg-content" class="admin-textarea" rows="4" placeholder="성도님께 전달할 격려와 축복의 어린양 메세지를 작성해주세요." required></textarea>
           </div>
         </form>
       </div>
       <div class="admin-modal-footer">
         <button type="button" class="admin-btn" data-close-modal="modal-direct-message">취소</button>
         <button type="button" id="btn-send-direct-message" class="admin-btn admin-btn-primary">
-          💌 쪽지 발송하기
+          💌 어린양의 메세지 발송하기
         </button>
       </div>
     </div>
@@ -578,12 +578,12 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=4.6"></script>
-  <script src="js/charles-pixel.js?v=4.6"></script>
-  <script src="js/auth.js?v=4.6"></script>
-  <script src="js/storage.js?v=4.6"></script>
-  <script src="js/talent.js?v=4.6"></script>
-  <script src="js/admin.js?v=4.6"></script>
+  <script src="js/bible-data.js?v=4.7"></script>
+  <script src="js/charles-pixel.js?v=4.7"></script>
+  <script src="js/auth.js?v=4.7"></script>
+  <script src="js/storage.js?v=4.7"></script>
+  <script src="js/talent.js?v=4.7"></script>
+  <script src="js/admin.js?v=4.7"></script>
 
 </body>
 </html>

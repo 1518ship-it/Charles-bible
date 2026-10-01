@@ -1746,20 +1746,27 @@ body {
   margin-top: 2px;
 }
 
-/* ==================== 공지사항 및 1:1 쪽지 알림 카드 ==================== */
+/* ==================== 공지사항 및 어린양의 메세지 알림 카드 ==================== */
 .notif-item.notif-admin-item {
   background: #FFFDF9;
   border: 1.5px solid #FFE0B2;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 14px;
   margin-bottom: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.notif-item.notif-admin-item:active {
+  transform: scale(0.99);
 }
 
 .notif-item.notif-admin-item.unread {
   background: #FFF9E6;
   border-color: #FFB74D;
+  box-shadow: 0 2px 6px rgba(255, 183, 77, 0.2);
 }
 
 .notif-item.notif-admin-item.notif-type-user {
@@ -1769,15 +1776,16 @@ body {
 .notif-item.notif-admin-item.notif-type-user.unread {
   background: #FFF0F4;
   border-color: #F06292;
+  box-shadow: 0 2px 6px rgba(240, 98, 146, 0.2);
 }
 
 .notif-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 2px 6px;
+  padding: 2.5px 7px;
   border-radius: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .notif-badge.badge-all {
@@ -1792,24 +1800,86 @@ body {
   border: 1px solid #F8BBD0;
 }
 
+.notif-admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.notif-admin-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .notif-admin-title {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   color: #222222;
-  margin-bottom: 4px;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.notif-admin-toggle-icon {
+  font-size: 11px;
+  color: #888888;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.notif-item.notif-admin-item.expanded .notif-admin-toggle-icon {
+  background: rgba(0, 0, 0, 0.08);
+  color: #111111;
+}
+
+.notif-admin-body-wrap {
+  display: none;
+  animation: fadeInDown 0.2s ease forwards;
+}
+
+.notif-item.notif-admin-item.expanded .notif-admin-body-wrap {
+  display: block;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .notif-admin-body {
-  font-size: 12.5px;
-  color: #444444;
-  line-height: 1.5;
+  font-size: 13px;
+  color: #333333;
+  line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 8px 10px;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.notif-admin-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 11px;
+  color: #888;
 }
 
 /* ==================== 5. TAB: PROFILE (내 정보 / 잔디 달력) ==================== */

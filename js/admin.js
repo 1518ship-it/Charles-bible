@@ -480,7 +480,7 @@ const AdminApp = {
               <button type="button" class="admin-btn admin-btn-sm admin-btn-warning btn-action-talent" data-uid="${u.id}" title="달란트 지급 및 수정">
                 🪙 달란트
               </button>
-              <button type="button" class="admin-btn admin-btn-sm btn-action-msg" data-uid="${u.id}" title="1:1 쪽지 발송">
+              <button type="button" class="admin-btn admin-btn-sm btn-action-msg" data-uid="${u.id}" title="어린양의 메세지 발송">
                 💌 쪽지
               </button>
               <button type="button" class="admin-btn admin-btn-sm btn-action-member" data-uid="${u.id}" title="계정 및 비밀번호 관리">
@@ -882,7 +882,7 @@ const AdminApp = {
     if (inputUid) inputUid.value = uid;
     if (dispName) dispName.textContent = `${userName} 성도님`;
     if (dispId) dispId.textContent = `@${uid} · 소속: ${cellName}`;
-    if (inputTitle) inputTitle.value = `[쪽지] ${userName} 성도님, 오늘 통독도 응원합니다!`;
+    if (inputTitle) inputTitle.value = `[어린양의 메세지] ${userName} 성도님, 오늘 통독도 응원합니다!`;
     if (inputSender) inputSender.value = '운영자';
     if (inputContent) {
       inputContent.value = '';
@@ -902,7 +902,7 @@ const AdminApp = {
     const targetUserId = targetType === 'USER' ? (targetUserSelect ? targetUserSelect.value : '') : null;
 
     if (targetType === 'USER' && !targetUserId) {
-      alert('1:1 쪽지를 받을 성도를 선택해 주세요!');
+      alert('어린양의 메세지를 받을 성도를 선택해 주세요!');
       if (targetUserSelect) targetUserSelect.focus();
       return;
     }
@@ -923,7 +923,7 @@ const AdminApp = {
 
     const userObj = targetType === 'USER' ? this.allUsers.find(u => u.id === targetUserId) : null;
     const targetName = userObj ? `${userObj.name}(${userObj.id})` : targetUserId;
-    const targetDesc = targetType === 'ALL' ? '📢 전체 유저' : `💌 ${targetName} 성도님`;
+    const targetDesc = targetType === 'ALL' ? '📢 전체 유저' : `💌 ${targetName} 성도님 (어린양의 메세지)`;
 
     if (!confirm(`[${targetDesc}] 에게 메시지를 발송하시겠습니까?\n\n제목: ${title}`)) {
       return;
@@ -989,7 +989,7 @@ const AdminApp = {
     }
   },
 
-  // 빠른 1:1 쪽지 모달 발송 처리
+  // 빠른 1:1 쪽지(어린양의 메세지) 모달 발송 처리
   async handleSendDirectMessage() {
     const uid = document.getElementById('input-direct-msg-user-id').value;
     const title = (document.getElementById('input-direct-msg-title').value || '').trim();
@@ -1001,7 +1001,7 @@ const AdminApp = {
       return;
     }
     if (!title || !content) {
-      alert('쪽지 제목과 본문을 모두 입력해 주세요.');
+      alert('메세지 제목과 본문을 모두 입력해 주세요.');
       return;
     }
 
@@ -1010,7 +1010,7 @@ const AdminApp = {
 
     const btn = document.getElementById('btn-send-direct-message');
     btn.disabled = true;
-    btn.textContent = '⏳ 쪽지 발송 중...';
+    btn.textContent = '⏳ 메세지 발송 중...';
 
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
@@ -1045,16 +1045,16 @@ const AdminApp = {
 
       this.closeModal('modal-direct-message');
       RetroAudio.success();
-      this.showToast(`💌 [${userName}] 성도님께 1:1 쪽지가 발송되었습니다!`, 'success');
+      this.showToast(`💌 [${userName}] 성도님께 어린양의 메세지가 발송되었습니다!`, 'success');
 
       this.loadSentMessages();
     } catch (err) {
-      console.error('1:1 쪽지 발송 실패:', err);
+      console.error('어린양의 메세지 발송 실패:', err);
       RetroAudio.error();
-      alert('쪽지 발송 실패:\n\n' + (err.message || err));
+      alert('어린양의 메세지 발송 실패:\n\n' + (err.message || err));
     } finally {
       btn.disabled = false;
-      btn.textContent = '💌 쪽지 발송하기';
+      btn.textContent = '💌 어린양의 메세지 발송하기';
     }
   },
 
@@ -1126,7 +1126,7 @@ const AdminApp = {
       } else {
         const u = this.allUsers.find(user => user.id === msg.target_user_id);
         const name = u ? `${u.name}(${u.id})` : (msg.target_user_id || '성도');
-        targetBadge = `<span class="msg-badge-user">💌 1:1 쪽지 · ${name}</span>`;
+        targetBadge = `<span class="msg-badge-user">💌 어린양의 메세지 · ${name}</span>`;
       }
 
       const dateStr = msg.created_at ? new Date(msg.created_at).toLocaleString('ko-KR', {
