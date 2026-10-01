@@ -101,22 +101,23 @@ function renderAccessoryStrawHat(scale) {
   return r;
 }
 
-// 3. 둥근 범생이 안경 (Head)
-function renderAccessoryGlasses(scale) {
+// 3. 둥근 범생이 안경 (Head / Body)
+function renderAccessoryGlasses(scale, yOffset = 0) {
   let r = '';
   const c = '#111111';
+  const dy = yOffset * scale;
   // 좌측 림 (눈 cols 5~7)
-  r += `<rect x="${5 * scale}" y="${5 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
-  r += `<rect x="${4 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
-  r += `<rect x="${8 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
-  r += `<rect x="${5 * scale}" y="${7 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${5 * scale}" y="${5 * scale + dy}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${4 * scale}" y="${6 * scale + dy}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${8 * scale}" y="${6 * scale + dy}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${5 * scale}" y="${7 * scale + dy}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
   // 안경 다리/브릿지 (cols 8~9)
-  r += `<rect x="${8 * scale}" y="${6 * scale}" width="${2 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${8 * scale}" y="${6 * scale + dy}" width="${2 * scale}" height="${scale}" fill="${c}" />`;
   // 우측 림 (눈 cols 10~12)
-  r += `<rect x="${10 * scale}" y="${5 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
-  r += `<rect x="${9 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
-  r += `<rect x="${13 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
-  r += `<rect x="${10 * scale}" y="${7 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${10 * scale}" y="${5 * scale + dy}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${9 * scale}" y="${6 * scale + dy}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${13 * scale}" y="${6 * scale + dy}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${10 * scale}" y="${7 * scale + dy}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
   return r;
 }
 
@@ -182,13 +183,13 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', eq
       const char = row[x];
       if (char === '.') continue;
 
-      let fill = '#111111';
+      let fill = '#18181B';
       if (char === 'W') fill = '#FFFFFF';
-      else if (char === 'G') fill = '#EFEFEF';
-      else if (char === 'P') fill = '#FFB6C1';
+      else if (char === 'G') fill = '#E2E8F0';
+      else if (char === 'P') fill = '#FF8EA3';
       else if (char === 'Y') fill = '#F4D03F';
       else if (char === 'S') fill = '#2ECC71';
-      else if (char === 'B') fill = '#111111';
+      else if (char === 'B') fill = '#18181B';
 
       bodyRects += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="${fill}" />`;
     }
@@ -197,7 +198,8 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', eq
   // Layer 3: Glasses 악세사리 (몸통 부위 - 둥근 범생이 안경)
   let glassesRects = '';
   if (equipped && (equipped.glasses === 'head_glasses' || equipped.head === 'head_glasses' || equipped.body === 'head_glasses' || equipped.head_glasses)) {
-    glassesRects = renderAccessoryGlasses(scale);
+    const glassesYOffset = (typeof SIMPLE_PIXEL_STAGE_4 !== 'undefined' && rows === SIMPLE_PIXEL_STAGE_4) ? 2 : 0;
+    glassesRects = renderAccessoryGlasses(scale, glassesYOffset);
   }
 
   // Layer 4: Head 악세사리 (머리 부위 - 귀여운 밀짚모자)
@@ -287,24 +289,24 @@ const SIMPLE_PIXEL_STAGE_3 = [
   ".................."
 ];
 
-// 4단계: 더욱 복슬복슬해진 찰스 (폭신폭신한 구름 털과 방울)
+// 4단계: 풍성한 찰스 (복슬복슬 귀여운 털과 앙증맞은 볼터치)
 const SIMPLE_PIXEL_STAGE_4 = [
-  "......BBBBBB......",
-  "....BBWWWWWWBB....",
-  "...BWWWWWWWWWWB...",
-  "..BWWWWWWWWWWWWB..",
-  ".B.BWWWWWWWWWW.B..",
-  ".B.BWWBWWWWWBW.B..",
-  "..BWWBBW..WBBWWB..",
-  "..BWWWWWWWWWWWWB..",
-  "..BWWPPWWWWPPWWB..",
-  "..BWWWWBWWWWWWWB..",
-  "..BBWWWYYYYWWWBB..",
-  ".BWWBBBBBBBBBBWWB.",
-  "..BBWWWWWWWWWWBB..",
-  "....BBBBBBBBBB....",
-  ".....BB......BB...",
-  ".....BB......BB..."
+  "..................",
+  ".........BB.......",
+  "......BBBWWBBB....",
+  ".....BWWBWWBWWB...",
+  ".......WWWWWW.....",
+  "....BWWWWWWWWWWB..",
+  "...BWWWWWWWWWWWB..",
+  "..BWBWWWWWWWWWGB..",
+  "...BWWWBBWWBBWG.B.",
+  "..B.WWBBWWBBWWW.B.",
+  "..B.WPPWWGWWPPWB..",
+  "...BWWWWBBWWWWWB..",
+  "....BWWWWWWWWWB...",
+  ".....BBBBBBBBB....",
+  ".....BB....BB.....",
+  ".....BB....BB....."
 ];
 
 // 5단계: 영광의 천사 찰스 (머리 위 빛나는 천사링 & 등 뒤의 앙증맞은 천사 날개)
