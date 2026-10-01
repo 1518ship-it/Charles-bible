@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Charles' Bible - 미니멀 클린 테마 (Ultra-Clean Borderless Aesthetic)
  * 메뉴 상자 제거, 중앙 대형 찰스, 5개 아이콘 하단 네비게이션, 고딕 타이포그래피
  */
@@ -271,7 +271,8 @@ body {
 .today-reading-gauge-wrap {
   width: 100%;
   max-width: 190px;
-  margin-bottom: 12px;
+  margin-top: -34px;
+  margin-bottom: 46px;
   display: flex;
   flex-direction: column;
   gap: 5px;
