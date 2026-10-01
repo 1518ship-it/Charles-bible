@@ -170,10 +170,10 @@ CREATE POLICY "admin_messages_insert_policy"
 ON public.admin_messages FOR INSERT 
 WITH CHECK (title IS NOT NULL AND length(title) > 0);
 
--- (3) 삭제 허용: 관리자 콘솔에서 발송한 메시지 취소/삭제 허용
+-- (3) 삭제 허용: 관리자 콘솔에서 발송한 메시지 취소/삭제 허용 (id가 지정된 행만 안전하게 삭제)
 CREATE POLICY "admin_messages_delete_policy" 
 ON public.admin_messages FOR DELETE 
-USING (true);
+USING (id IS NOT NULL);
 
 -- 모든 권한 부여
 GRANT ALL ON public.admin_messages TO anon, authenticated, service_role;

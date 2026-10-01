@@ -370,7 +370,7 @@ ON public.admin_messages FOR INSERT
 WITH CHECK (title IS NOT NULL AND length(title) > 0);
 
 CREATE POLICY "admin_messages_delete_policy" 
-ON public.admin_messages FOR DELETE USING (true);
+ON public.admin_messages FOR DELETE USING (id IS NOT NULL);
 
 GRANT ALL ON public.admin_messages TO anon, authenticated, service_role;
 
