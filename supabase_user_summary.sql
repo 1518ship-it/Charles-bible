@@ -78,3 +78,9 @@ ORDER BY today_read_chapters DESC, streak_days DESC, talents DESC;
 
 -- 4. 뷰 조회 권한 부여 (Supabase Studio 대시보드 및 API 연동)
 GRANT SELECT ON public.user_today_summary TO anon, authenticated, service_role;
+
+-- 5. [Linter 보안 경고 일괄 해결] 미사용 레거시 SECURITY DEFINER 함수 정리
+-- (외부 anon 호출이 열려 있어 Supabase에서 경고를 발생시키는 3개 미사용 함수 완전 제거)
+DROP FUNCTION IF EXISTS public.verify_signup_code(text);
+DROP FUNCTION IF EXISTS public.verify_admin_code(text);
+DROP FUNCTION IF EXISTS public.record_member_login(text);
