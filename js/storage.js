@@ -123,7 +123,12 @@ const StorageService = {
     const key = this.getUserKey('daily_counts');
     try {
       const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {};
+      const parsed = data ? JSON.parse(data) : {};
+      if (parsed && typeof parsed === 'object') {
+        const { __talent_data__, ...rest } = parsed;
+        return rest;
+      }
+      return {};
     } catch (e) {
       return {};
     }
@@ -441,11 +446,24 @@ const StorageService = {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return false;
 
     try {
+      // 1) 달란트 및 퀘스트 데이터 패키징
+      const talentPayload = {
+        talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10),
+        equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : JSON.parse(localStorage.getItem(this.getUserKey('equipped')) || '{}'),
+        inventory: typeof TalentService !== 'undefined' ? TalentService.getInventory() : JSON.parse(localStorage.getItem(this.getUserKey('inventory')) || '[]'),
+        quest_claims: typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : JSON.parse(localStorage.getItem(this.getUserKey('quest_claims')) || '{}'),
+        updated_at: localStorage.getItem(this.getUserKey('talents_updated_at')) || new Date().toISOString()
+      };
+
+      // 2) JSONB 컬럼인 daily_counts에 항상 임베드하여 Supabase 스키마 마이그레이션 없이도 모든 기기 즉시 동기화 보장
+      const dailyCounts = { ...this.getDailyCounts() };
+      dailyCounts.__talent_data__ = talentPayload;
+
       const payload = {
         user_id: uid,
         charles_stage: this.getCharlesStage(),
         read_progress: this.getProgress(),
-        daily_counts: this.getDailyCounts(),
+        daily_counts: dailyCounts,
         read_history: this.getHistory(),
         streak_count: this.getStreakInfo().count || 0,
         max_streak: this.getStreakInfo().maxStreak || 0,
@@ -454,22 +472,22 @@ const StorageService = {
         updated_at: new Date().toISOString()
       };
 
-      // 달란트/아이템 컬럼 지원 여부 확인 후 추가 (미지원 확인 시 400 에러 사전 방지)
+      // Supabase 테이블에 개별 달란트 컬럼이 존재하는 경우 함께 전송
       if (this._supportsTalentColumns !== false) {
-        payload.talents = typeof TalentService !== 'undefined' ? TalentService.getTalents() : 0;
-        payload.equipped = typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {};
-        payload.inventory = typeof TalentService !== 'undefined' ? TalentService.getInventory() : [];
-        payload.quest_claims = typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : {};
+        payload.talents = talentPayload.talents;
+        payload.equipped = talentPayload.equipped;
+        payload.inventory = talentPayload.inventory;
+        payload.quest_claims = talentPayload.quest_claims;
       }
 
       let { error } = await supabaseClient
         .from('user_reading_state')
         .upsert(payload, { onConflict: 'user_id' });
 
-      // Supabase 테이블에 달란트/아이템 관련 컬럼이 아직 없을 경우의 자동 폴백
+      // Supabase 테이블에 달란트/아이템 개별 컬럼이 아직 없을 경우의 자동 폴백
       if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
         this._supportsTalentColumns = false;
-        console.warn('☁️ Supabase 테이블에 달란트 컬럼 미존재 감지 -> 기본 통독 컬럼만으로 동기화합니다.');
+        console.warn('☁️ Supabase 테이블에 달란트 개별 컬럼 미존재 감지 -> daily_counts JSONB 임베딩으로 안전하게 동기화합니다.');
         delete payload.talents;
         delete payload.equipped;
         delete payload.inventory;
@@ -492,7 +510,7 @@ const StorageService = {
       } else {
         const readCount = Object.keys(payload.read_progress || {}).length;
         const todayCount = (payload.daily_counts || {})[this.getTodayDateStr()] || 0;
-        console.log(`☁️ Supabase 동기화 완료: [${uid}] - 총 ${readCount}장 읽음, 오늘 ${todayCount}장 읽음`);
+        console.log(`☁️ Supabase 동기화 완료: [${uid}] - 총 ${readCount}장 읽음, 오늘 ${todayCount}장 읽음, 달란트 ${talentPayload.talents}`);
         return true;
       }
     } catch (err) {
@@ -515,7 +533,7 @@ const StorageService = {
         .maybeSingle();
 
       if (!error && data) {
-        console.log('☁️ Supabase에서 유저 통독 데이터 수신 및 양방향 병합:', uid);
+        console.log('☁️ Supabase에서 유저 통독 및 달란트 데이터 수신 및 통합:', uid);
 
         let hasNewerLocalData = false;
 
@@ -529,12 +547,26 @@ const StorageService = {
         }
         localStorage.setItem(`charles_user_${uid}_progress`, JSON.stringify(mergedProgress));
 
-        // 2) 일별 읽은 장수 (daily_counts) 날짜별 최대값 보존 병합
+        // 2) 일별 읽은 장수 (daily_counts) 날짜별 최대값 보존 병합 & 임베디드 달란트 메타데이터 추출
+        const rawRemoteDaily = (data.daily_counts && typeof data.daily_counts === 'object') ? data.daily_counts : {};
+        const remoteTalentMeta = (rawRemoteDaily && rawRemoteDaily.__talent_data__) || {
+          talents: data.talents,
+          equipped: data.equipped,
+          inventory: data.inventory,
+          quest_claims: data.quest_claims,
+          updated_at: data.updated_at
+        };
+
         const localDaily = this.getDailyCounts();
-        const remoteDaily = (data.daily_counts && typeof data.daily_counts === 'object') ? data.daily_counts : {};
-        const mergedDaily = { ...remoteDaily };
+        const mergedDaily = {};
+        for (const [k, v] of Object.entries(rawRemoteDaily)) {
+          if (k !== '__talent_data__' && typeof v === 'number') {
+            mergedDaily[k] = v;
+          }
+        }
         for (const [dateStr, count] of Object.entries(localDaily)) {
-          const rCount = remoteDaily[dateStr] || 0;
+          if (dateStr === '__talent_data__') continue;
+          const rCount = mergedDaily[dateStr] || 0;
           if (count > rCount) {
             hasNewerLocalData = true;
           }
@@ -579,36 +611,104 @@ const StorageService = {
           lastDate: data.last_read_date || localStreakInfo.lastDate || null
         }));
 
-        // 7) 달란트 / 아이템 / 인벤토리 / 퀘스트 병합
-        if (data.talents !== undefined && data.talents !== null) {
-          const localTalents = parseInt(localStorage.getItem(`charles_user_${uid}_talents`) || '0', 10);
-          localStorage.setItem(`charles_user_${uid}_talents`, String(Math.max(localTalents, data.talents)));
+        // 7) 기기 간 퀘스트 수령 내역 완전 통합 (중복 수령 원천 방지)
+        const todayStr = this.getTodayDateStr();
+        const remoteClaims = (remoteTalentMeta && remoteTalentMeta.quest_claims && typeof remoteTalentMeta.quest_claims === 'object')
+          ? remoteTalentMeta.quest_claims
+          : ((data.quest_claims && typeof data.quest_claims === 'object') ? data.quest_claims : {});
+        const localClaims = JSON.parse(localStorage.getItem(`charles_user_${uid}_quest_claims`) || '{}');
+
+        const mergedClaims = { ...remoteClaims, ...localClaims };
+        if (remoteClaims.daily_login === todayStr || localClaims.daily_login === todayStr) {
+          mergedClaims.daily_login = todayStr;
         }
-        if (data.equipped && typeof data.equipped === 'object') {
-          const localEq = localStorage.getItem(`charles_user_${uid}_equipped`);
-          if (!localEq) {
-            localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(data.equipped));
+        if (remoteClaims.daily_read_3 === todayStr || localClaims.daily_read_3 === todayStr) {
+          mergedClaims.daily_read_3 = todayStr;
+        }
+        mergedClaims.weekly_streak_cycle = Math.max(
+          parseInt(localClaims.weekly_streak_cycle || 0, 10),
+          parseInt(remoteClaims.weekly_streak_cycle || 0, 10)
+        );
+        if (localClaims.weekly_streak_claimed_at || remoteClaims.weekly_streak_claimed_at) {
+          mergedClaims.weekly_streak_claimed_at = localClaims.weekly_streak_claimed_at || remoteClaims.weekly_streak_claimed_at;
+        }
+        if (localClaims.achieve_nt_complete || remoteClaims.achieve_nt_complete) {
+          mergedClaims.achieve_nt_complete = true;
+          mergedClaims.achieve_nt_claimed_at = localClaims.achieve_nt_claimed_at || remoteClaims.achieve_nt_claimed_at;
+        }
+        if (JSON.stringify(mergedClaims) !== JSON.stringify(remoteClaims)) {
+          hasNewerLocalData = true;
+        }
+        localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify(mergedClaims));
+
+        // 8) 인벤토리 합집합 병합 (어느 기기에서 샀든 모든 기기에서 보유)
+        const remoteInv = (remoteTalentMeta && Array.isArray(remoteTalentMeta.inventory))
+          ? remoteTalentMeta.inventory
+          : (Array.isArray(data.inventory) ? data.inventory : []);
+        const localInv = JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]');
+        const combinedInv = Array.from(new Set([...remoteInv, ...localInv]));
+        if (combinedInv.length > remoteInv.length) {
+          hasNewerLocalData = true;
+        }
+        localStorage.setItem(`charles_user_${uid}_inventory`, JSON.stringify(combinedInv));
+
+        // 9) 달란트 잔액 통합 (타임스탬프 기반 최신 상태 보존 및 최초 마이그레이션 보호)
+        const localTalents = parseInt(localStorage.getItem(`charles_user_${uid}_talents`) || '0', 10);
+        const localTalentsUpdatedAt = localStorage.getItem(`charles_user_${uid}_talents_updated_at`);
+        const remoteTalents = (remoteTalentMeta && typeof remoteTalentMeta.talents === 'number')
+          ? remoteTalentMeta.talents
+          : (typeof data.talents === 'number' ? data.talents : null);
+        const remoteTalentsUpdatedAt = (remoteTalentMeta && remoteTalentMeta.updated_at) || data.updated_at;
+
+        if (remoteTalents !== null) {
+          if (!remoteTalentsUpdatedAt && !localTalentsUpdatedAt) {
+            // 둘 다 타임스탬프가 없는 초기 전환 시: 달란트 손실 방지를 위해 Max값 사용
+            const bestTalents = Math.max(localTalents, remoteTalents);
+            localStorage.setItem(`charles_user_${uid}_talents`, String(bestTalents));
+            localStorage.setItem(`charles_user_${uid}_talents_updated_at`, new Date().toISOString());
+            hasNewerLocalData = true;
+          } else {
+            const remoteTime = new Date(remoteTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
+            const localTime = new Date(localTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
+
+            if (isNaN(localTime) || remoteTime >= localTime) {
+              // 원격 데이터가 최신이거나 같음 -> 원격 잔액으로 동기화
+              localStorage.setItem(`charles_user_${uid}_talents`, String(remoteTalents));
+              if (remoteTalentsUpdatedAt) {
+                localStorage.setItem(`charles_user_${uid}_talents_updated_at`, remoteTalentsUpdatedAt);
+              }
+            } else {
+              // 로컬에 아직 클라우드로 올라가지 않은 변경이 있음
+              hasNewerLocalData = true;
+            }
+          }
+        } else if (localTalents > 0) {
+          // 원격에 달란트 데이터가 아예 없으나 로컬에 잔액이 있는 경우 -> 원격으로 업로드 필요
+          hasNewerLocalData = true;
+        }
+
+        // 10) 착용 아이템 (equipped) 동기화
+        const remoteEq = (remoteTalentMeta && remoteTalentMeta.equipped && typeof remoteTalentMeta.equipped === 'object')
+          ? remoteTalentMeta.equipped
+          : ((data.equipped && typeof data.equipped === 'object') ? data.equipped : null);
+        if (remoteEq) {
+          const hasLocalEq = !!localStorage.getItem(`charles_user_${uid}_equipped`);
+          const remoteTime = new Date(remoteTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
+          const localTime = new Date(localTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
+          if (!hasLocalEq || isNaN(localTime) || remoteTime >= localTime) {
+            localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(remoteEq));
           }
         }
-        if (Array.isArray(data.inventory)) {
-          const localInv = JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]');
-          const combinedInv = Array.from(new Set([...data.inventory, ...localInv]));
-          localStorage.setItem(`charles_user_${uid}_inventory`, JSON.stringify(combinedInv));
-        }
-        if (data.quest_claims && typeof data.quest_claims === 'object') {
-          const localClaims = JSON.parse(localStorage.getItem(`charles_user_${uid}_quest_claims`) || '{}');
-          localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify({ ...data.quest_claims, ...localClaims }));
-        }
 
-        // 8) 자정 평가 재확인
+        // 11) 자정 평가 재확인
         this.evaluateCharlesMidnight();
 
-        // 9) 로컬에 새로운 읽음 기록이 있었다면 원격 Supabase도 최신 병합본으로 즉시 갱신
+        // 12) 로컬에 새로운 읽음/달란트 기록이 있었다면 원격 Supabase도 최신 병합본으로 즉시 갱신
         if (hasNewerLocalData) {
           this.scheduleCloudSync();
         }
 
-        // 10) 동기화 완료 커스텀 이벤트 발행 (UI 실시간 갱신용)
+        // 13) 동기화 완료 커스텀 이벤트 발행 (UI 실시간 갱신용)
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('charles-cloud-synced', { detail: { userId: uid } }));
         }
@@ -691,9 +791,14 @@ const StorageService = {
           if (data.streak_count !== undefined && data.streak_count !== null) streakCount = data.streak_count;
           if (data.daily_counts && typeof data.daily_counts === 'object') {
             todayRead = data.daily_counts[todayStr] || 0;
+            if (data.daily_counts.__talent_data__ && data.daily_counts.__talent_data__.equipped) {
+              equipped = data.daily_counts.__talent_data__.equipped;
+            }
           }
-          if (data.equipped && typeof data.equipped === 'object') {
+          if (data.equipped && typeof data.equipped === 'object' && Object.keys(data.equipped).length > 0) {
             equipped = data.equipped;
+          }
+          if (equipped && Object.keys(equipped).length > 0) {
             try {
               localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
             } catch (e) {}
@@ -811,6 +916,11 @@ const StorageService = {
 
             if (row.daily_counts && typeof row.daily_counts === 'object') {
               todayRead = row.daily_counts[todayStr] || 0;
+              if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.equipped) {
+                if (!row.equipped || Object.keys(equipped).length === 0) {
+                  equipped = row.daily_counts.__talent_data__.equipped;
+                }
+              }
             }
 
             // 로컬 스토리지 캐시 최신화
@@ -820,8 +930,8 @@ const StorageService = {
               if (row.daily_counts) {
                 localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(row.daily_counts));
               }
-              if (row.equipped) {
-                localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(row.equipped));
+              if (equipped && Object.keys(equipped).length > 0) {
+                localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
               }
             } catch (e) {}
 
@@ -943,6 +1053,8 @@ if (typeof window !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       StorageService.flushCloudSync();
+    } else if (document.visibilityState === 'visible') {
+      StorageService.syncFromCloud();
     }
   });
 }

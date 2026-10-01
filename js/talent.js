@@ -65,6 +65,7 @@ const TalentService = {
   setTalents(amount) {
     const safeAmount = Math.max(0, parseInt(amount, 10) || 0);
     localStorage.setItem(this.getUserKey('talents'), String(safeAmount));
+    localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
       StorageService.scheduleCloudSync();
     }
@@ -98,6 +99,7 @@ const TalentService = {
 
   saveInventory(list) {
     localStorage.setItem(this.getUserKey('inventory'), JSON.stringify(list || []));
+    localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
       StorageService.scheduleCloudSync();
     }
@@ -122,6 +124,11 @@ const TalentService = {
 
     // 구매 후 자동 착용
     this.equipItem(itemId);
+
+    // 구매 즉시 클라우드에 인벤토리 및 잔액 확정 전송
+    if (typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
+      StorageService.saveToCloud();
+    }
 
     return { success: true, item };
   },
@@ -154,6 +161,7 @@ const TalentService = {
 
   saveEquipped(equipped) {
     localStorage.setItem(this.getUserKey('equipped'), JSON.stringify(equipped || {}));
+    localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
       StorageService.scheduleCloudSync();
     }
@@ -201,6 +209,7 @@ const TalentService = {
 
   saveClaimedRecord(rec) {
     localStorage.setItem(this.getUserKey('quest_claims'), JSON.stringify(rec || {}));
+    localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
       StorageService.scheduleCloudSync();
     }
@@ -349,6 +358,11 @@ const TalentService = {
 
     this.saveClaimedRecord(claims);
     this.addTalents(quest.reward);
+
+    // 즉시 클라우드에 퀘스트 수령 및 달란트 잔액을 확정 전송하여 다른 기기 중복 수령 방지
+    if (typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
+      StorageService.saveToCloud();
+    }
 
     return {
       success: true,

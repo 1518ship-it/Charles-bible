@@ -359,6 +359,17 @@ const App = {
       this.renderStats();
       this.renderSocial();
       this.renderProfile();
+      this.renderHomeTalents();
+
+      // 모달/창이 열려있는 경우 실시간 상태 반영
+      const questModal = document.getElementById('quest-modal-overlay');
+      if (questModal && questModal.style.display !== 'none') {
+        this.renderQuestsModal();
+      }
+      const shopView = document.getElementById('talent-shop-view');
+      if (shopView && shopView.classList.contains('active')) {
+        this.renderTalentShop(this.currentShopTab || 'store');
+      }
     });
 
     // 하단 탭 버튼 클릭
@@ -889,6 +900,14 @@ const App = {
     this.renderQuestsModal();
     modal.style.display = 'flex';
     RetroAudio.click();
+
+    // 기기 간 퀘스트 수령 및 달란트 동기화를 위해 백그라운드 클라우드 갱신
+    if (typeof StorageService !== 'undefined' && StorageService.syncFromCloud) {
+      StorageService.syncFromCloud().then(() => {
+        this.renderQuestsModal();
+        this.renderHomeTalents();
+      });
+    }
   },
 
   closeQuestsModal() {
@@ -1013,6 +1032,14 @@ const App = {
     this.renderTalentShop(tab);
     shopView.classList.add('active');
     RetroAudio.click();
+
+    // 기기 간 달란트 잔액 및 인벤토리 동기화를 위해 백그라운드 클라우드 갱신
+    if (typeof StorageService !== 'undefined' && StorageService.syncFromCloud) {
+      StorageService.syncFromCloud().then(() => {
+        this.renderTalentShop(this.currentShopTab || 'store');
+        this.renderHomeTalents();
+      });
+    }
   },
 
   closeTalentShop() {
