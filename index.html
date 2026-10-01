@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json?v=3.2">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=3.5">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=3.6">
 </head>
 <body>
 
@@ -153,7 +153,7 @@
           <!-- 양 아래의 Charles is ____ 문구 & 물음표 버튼 -->
           <div class="charles-status-wrap">
             <div id="charles-status-title" class="charles-status-title">
-              <span id="charles-status-text">Charles is starving...</span>
+              <span id="charles-status-text">Charles is starving.</span>
               <button id="btn-charles-help" class="btn-charles-help" type="button" title="찰스 성장 조건 알아보기">
                 <svg class="pixel-icon" viewBox="0 0 10 10" width="10" height="10" shape-rendering="crispEdges">
                   <rect x="3" y="0" width="4" height="1" fill="currentColor" />
@@ -284,7 +284,7 @@
             </div>
           </div>
           <div class="profile-charles-badge" id="profile-charles-badge">
-            1단계 · starving 🌾
+            1단계 · 배고픈 찰스 🌾
           </div>
         </div>
 
@@ -1134,31 +1134,60 @@
             <div class="evolution-col">
               <div class="evolution-mini-graphic" id="evolution-slot-1"></div>
               <span class="evolution-col-stage">1단계</span>
-              <span class="evolution-col-name">배고픔</span>
+              <span class="evolution-col-name">배고픈 찰스</span>
             </div>
             <div class="evolution-col-arrow">➔</div>
             <div class="evolution-col">
               <div class="evolution-mini-graphic" id="evolution-slot-2"></div>
               <span class="evolution-col-stage">2단계</span>
-              <span class="evolution-col-name">풀먹음</span>
+              <span class="evolution-col-name">풀먹는 찰스</span>
             </div>
             <div class="evolution-col-arrow">➔</div>
             <div class="evolution-col">
               <div class="evolution-mini-graphic" id="evolution-slot-3"></div>
               <span class="evolution-col-stage">3단계</span>
-              <span class="evolution-col-name">행복</span>
+              <span class="evolution-col-name">행복한 찰스</span>
             </div>
             <div class="evolution-col-arrow">➔</div>
             <div class="evolution-col">
               <div class="evolution-mini-graphic" id="evolution-slot-4"></div>
               <span class="evolution-col-stage">4단계</span>
-              <span class="evolution-col-name">복슬</span>
+              <span class="evolution-col-name">풍성한 찰스</span>
             </div>
             <div class="evolution-col-arrow">➔</div>
             <div class="evolution-col gold">
               <div class="evolution-mini-graphic" id="evolution-slot-5"></div>
               <span class="evolution-col-stage gold">5단계 👑</span>
-              <span class="evolution-col-name gold">천사</span>
+              <span class="evolution-col-name gold">성령충만 찰스</span>
+            </div>
+          </div>
+
+          <!-- 단계별 문구 안내 -->
+          <div class="evolution-status-phrases">
+            <div class="phrase-row">
+              <span class="phrase-step">1단계</span>
+              <span class="phrase-name">배고픈 찰스</span>
+              <span class="phrase-en">Charles is starving.</span>
+            </div>
+            <div class="phrase-row">
+              <span class="phrase-step">2단계</span>
+              <span class="phrase-name">풀먹는 찰스</span>
+              <span class="phrase-en">Charles is chewing the Word.</span>
+            </div>
+            <div class="phrase-row">
+              <span class="phrase-step">3단계</span>
+              <span class="phrase-name">행복한 찰스</span>
+              <span class="phrase-en">Charles is joyful.</span>
+            </div>
+            <div class="phrase-row">
+              <span class="phrase-step">4단계</span>
+              <span class="phrase-name">풍성한 찰스</span>
+              <span class="phrase-en">Charles is extra fluffy.</span>
+            </div>
+            <div class="phrase-row gold">
+              <span class="phrase-step gold">5단계 👑</span>
+              <span class="phrase-name gold">성령충만 찰스</span>
+              <span class="phrase-en gold">Charles is blessed.</span>
             </div>
           </div>
 
@@ -1166,11 +1195,11 @@
           <div class="help-rules-compact-list">
             <div class="rule-compact-row down">
               <span class="rule-compact-badge">0장</span>
-              <span class="rule-compact-text">이전 단계로 <strong>1단계 하락</strong> (최하 1단계)</span>
+              <span class="rule-compact-text">이전 단계로 <strong>1단계 하락</strong> (최하 1단계 배고픈 찰스)</span>
             </div>
             <div class="rule-compact-row maintain">
               <span class="rule-compact-badge">1 ~ 2장</span>
-              <span class="rule-compact-text">현재 단계 <strong>유지</strong> (단, 5단계 제외)</span>
+              <span class="rule-compact-text">현재 단계 <strong>유지</strong> (단, 5단계 성령충만 제외)</span>
             </div>
             <div class="rule-compact-row up">
               <span class="rule-compact-badge">3 ~ 4장</span>
@@ -1178,7 +1207,7 @@
             </div>
             <div class="rule-compact-row gold">
               <span class="rule-compact-badge gold">5장 이상</span>
-              <span class="rule-compact-text">최고 <strong>5단계 유지 및 승급</strong> 👑 (5단계에서 5장 미만 시 4단계 하락)</span>
+              <span class="rule-compact-text">최고 <strong>5단계(성령충만 찰스) 유지 및 승급</strong> 👑 (5단계에서 5장 미만 시 4단계 하락)</span>
             </div>
           </div>
         </div>
@@ -1360,10 +1389,10 @@
   <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 앱 제어 -->
   <script src="data/bible-nt-bundle.js?v=3.3"></script>
   <script src="js/bible-data.js?v=3.3"></script>
-  <script src="js/charles-pixel.js?v=3.3"></script>
+  <script src="js/charles-pixel.js?v=3.6"></script>
   <script src="js/auth.js?v=3.3"></script>
   <script src="js/storage.js?v=3.3"></script>
-  <script src="js/app.js?v=3.3"></script>
+  <script src="js/app.js?v=3.6"></script>
 
 </body>
 </html>

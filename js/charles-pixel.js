@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Charles' Bible - 심플 & 큐트 픽셀 양 찰스 (Simple & Cute Charles the Sheep)
  * 미니멀하고 귀여운 흑백 도트 캐릭터 및 5단계 상태
  */
@@ -6,28 +6,43 @@
 const CHARLES_STAGES = {
   1: {
     stage: 1,
-    title: "Charles is starving...",
-    level: 1
+    name: "배고픈 찰스",
+    title: "Charles is starving.",
+    badge: "starving",
+    level: 1,
+    desc: "말씀이 고픈 아기 찰스"
   },
   2: {
     stage: 2,
-    title: "Charles is chewing the Word",
-    level: 2
+    name: "풀먹는 찰스",
+    title: "Charles is chewing the Word.",
+    badge: "chewing",
+    level: 2,
+    desc: "말씀을 냠냠 먹는 찰스"
   },
   3: {
     stage: 3,
-    title: "Charles is happy",
-    level: 3
+    name: "행복한 찰스",
+    title: "Charles is joyful.",
+    badge: "joyful",
+    level: 3,
+    desc: "기쁨이 가득한 찰스"
   },
   4: {
     stage: 4,
-    title: "Charles is fluffy",
-    level: 4
+    name: "풍성한 찰스",
+    title: "Charles is extra fluffy.",
+    badge: "fluffy",
+    level: 4,
+    desc: "말씀으로 복슬복슬해진 찰스"
   },
   5: {
     stage: 5,
-    title: "Charles is holy & full of grace",
-    level: 5
+    name: "성령충만 찰스",
+    title: "Charles is blessed.",
+    badge: "blessed",
+    level: 5,
+    desc: "은혜와 축복이 넘치는 찰스"
   }
 };
 
@@ -69,7 +84,7 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'cute-idle') {
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" 
          class="charles-svg ${animClass}" 
-         style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 220px; display: block; margin: 0 auto;">
+         style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 150px; display: block; margin: 0 auto;">
       ${rects}
     </svg>
   `;
