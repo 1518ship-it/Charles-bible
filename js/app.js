@@ -416,7 +416,40 @@ const App = {
       });
     }
 
-    // 소식 및 알림 닫기는 msgCloseBtn 및 바깥 클릭으로 처리됨
+    // 메세지 상세 내용 전용 모달 창 이벤트 바인딩
+    const msgDetailOverlay = document.getElementById('message-detail-modal-overlay');
+    const btnBackToList = document.getElementById('btn-back-to-message-list');
+    const btnCloseDetail = document.getElementById('btn-close-message-detail');
+    const btnConfirmDetail = document.getElementById('btn-confirm-message-detail');
+    const btnDeleteCurrent = document.getElementById('btn-delete-current-message');
+
+    if (btnBackToList) {
+      btnBackToList.addEventListener('click', () => {
+        this.closeMessageDetail(true);
+      });
+    }
+    if (btnCloseDetail) {
+      btnCloseDetail.addEventListener('click', () => {
+        this.closeMessageDetail(false);
+      });
+    }
+    if (btnConfirmDetail) {
+      btnConfirmDetail.addEventListener('click', () => {
+        this.closeMessageDetail(false);
+      });
+    }
+    if (btnDeleteCurrent) {
+      btnDeleteCurrent.addEventListener('click', () => {
+        this.deleteCurrentDetailMessage();
+      });
+    }
+    if (msgDetailOverlay) {
+      msgDetailOverlay.addEventListener('click', (e) => {
+        if (e.target === msgDetailOverlay) {
+          this.closeMessageDetail(false);
+        }
+      });
+    }
 
     // 찰스 육성 가이드 모달 열기/닫기
     const charlesHelpBtn = document.getElementById('btn-charles-help');
@@ -2318,6 +2351,7 @@ const App = {
 
   // ==================== 소식 및 알림 & 운영자 메시지 관리 ====================
   cloudAdminMessages: [],
+  currentDetailMessage: null,
 
   // Supabase admin_messages 테이블에서 공지사항 및 1:1 쪽지 가져오기
   async fetchCloudAdminMessages() {
@@ -2338,7 +2372,7 @@ const App = {
 
       const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (!error && Array.isArray(data)) {
         this.cloudAdminMessages = data;
@@ -2377,30 +2411,166 @@ const App = {
     this.updateUnreadNotificationDot();
   },
 
-  // 메세지 클릭 시 제목 아래로 본문이 부드럽게 펼쳐지는 아코디언 토글
-  toggleAdminMessage(id) {
-    const card = document.querySelector(`.notif-admin-item[data-msg-id="${id}"]`);
-    if (!card) return;
+  // 로컬에서 사용자가 삭제한 메시지 ID 목록 관리
+  getDeletedAdminMsgIds() {
+    try {
+      return JSON.parse(localStorage.getItem('charles_deleted_admin_msg_ids') || '[]');
+    } catch (e) {
+      return [];
+    }
+  },
 
-    const isExpanding = !card.classList.contains('expanded');
-    card.classList.toggle('expanded');
+  isMessageDeleted(id) {
+    const deletedIds = this.getDeletedAdminMsgIds();
+    return deletedIds.includes(String(id));
+  },
 
-    // 열릴 때 읽음 처리
-    if (isExpanding) {
-      this.markAdminMsgRead(id);
-      card.classList.remove('unread');
-      card.classList.add('read');
-      const unreadStatus = card.querySelector('.msg-unread-status');
-      if (unreadStatus) {
-        unreadStatus.style.color = '#AAA';
-        unreadStatus.style.fontWeight = 'normal';
-        unreadStatus.textContent = '읽음 ✓';
-      }
-      const toggleText = card.querySelector('.notif-admin-toggle-icon span:first-child');
-      if (toggleText) toggleText.textContent = '닫기';
+  // 운영자 공지 및 어린양의 메세지(1:1 쪽지) 삭제
+  deleteAdminMessage(id) {
+    if (!confirm('이 메세지를 보관함에서 삭제하시겠습니까?')) {
+      return;
+    }
+
+    const deletedIds = this.getDeletedAdminMsgIds();
+    if (!deletedIds.includes(String(id))) {
+      deletedIds.push(String(id));
+      localStorage.setItem('charles_deleted_admin_msg_ids', JSON.stringify(deletedIds));
+    }
+
+    // 상세 모달이 열려있다면 닫고 목록으로 복귀
+    const detailOverlay = document.getElementById('message-detail-modal-overlay');
+    if (detailOverlay && detailOverlay.style.display === 'flex') {
+      this.closeMessageDetail(true);
+    }
+
+    this.renderNotifications();
+    this.updateUnreadNotificationDot();
+    this.showToast('메세지가 삭제되었습니다.');
+  },
+
+  // 기본 시스템 알림 삭제
+  deleteNotification(id) {
+    if (!confirm('이 알림을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    const notifs = this.getNotifications();
+    const updated = notifs.filter(n => n.id !== id);
+    localStorage.setItem('charles_notifications', JSON.stringify(updated));
+
+    // 상세 모달이 열려있다면 닫고 목록으로 복귀
+    const detailOverlay = document.getElementById('message-detail-modal-overlay');
+    if (detailOverlay && detailOverlay.style.display === 'flex') {
+      this.closeMessageDetail(true);
+    }
+
+    this.renderNotifications();
+    this.updateUnreadNotificationDot();
+    this.showToast('알림이 삭제되었습니다.');
+  },
+
+  // 현재 열려있는 상세 보기 창의 메시지 삭제
+  deleteCurrentDetailMessage() {
+    if (!this.currentDetailMessage) return;
+    if (this.currentDetailMessage.isSystem) {
+      this.deleteNotification(this.currentDetailMessage.id);
     } else {
-      const toggleText = card.querySelector('.notif-admin-toggle-icon span:first-child');
-      if (toggleText) toggleText.textContent = '내용';
+      this.deleteAdminMessage(this.currentDetailMessage.id);
+    }
+  },
+
+  // 새로운 창으로 메세지 내용 크게 보기 (긴 본문 완벽 스크롤 지원)
+  openMessageDetail(id, isSystem = false) {
+    const detailOverlay = document.getElementById('message-detail-modal-overlay');
+    const contentEl = document.getElementById('message-detail-content');
+    const listOverlay = document.getElementById('message-modal-overlay');
+
+    if (!detailOverlay || !contentEl) return;
+
+    let msgData = null;
+
+    if (isSystem) {
+      const notifs = this.getNotifications();
+      const item = notifs.find(n => n.id === id);
+      if (!item) return;
+      this.markNotifRead(id);
+      msgData = {
+        id: item.id,
+        isSystem: true,
+        title: item.title || '시스템 알림',
+        badge: '🔔 시스템 알림',
+        badgeClass: 'badge-all',
+        time: item.time || '오늘',
+        sender: '양떼목장 찰스',
+        content: item.text || ''
+      };
+    } else {
+      const msgs = this.cloudAdminMessages || [];
+      const item = msgs.find(m => String(m.id) === String(id));
+      if (!item) return;
+      this.markAdminMsgRead(id);
+      const isUserMsg = item.target_type === 'USER';
+      const dateStr = item.created_at ? new Date(item.created_at).toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) : '방금 전';
+
+      msgData = {
+        id: item.id,
+        isSystem: false,
+        title: item.title || '(제목 없음)',
+        badge: isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지',
+        badgeClass: isUserMsg ? 'badge-user' : 'badge-all',
+        time: dateStr,
+        sender: item.sender_name || '양떼목장 운영자',
+        content: item.content || ''
+      };
+    }
+
+    this.currentDetailMessage = msgData;
+
+    const safeContent = (msgData.content || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+
+    contentEl.innerHTML = `
+      <div class="message-detail-meta-box">
+        <div style="margin-bottom: 8px;">
+          <span class="notif-badge ${msgData.badgeClass}">${msgData.badge}</span>
+        </div>
+        <div class="message-detail-title">${msgData.title}</div>
+        <div class="message-detail-info-row">
+          <span>보낸이: <strong>${msgData.sender}</strong></span>
+          <span>${msgData.time}</span>
+        </div>
+      </div>
+      <div class="message-detail-content-text">${safeContent}</div>
+    `;
+
+    // 목록 창은 닫고 상세 창 표시
+    if (listOverlay) listOverlay.style.display = 'none';
+    detailOverlay.style.display = 'flex';
+  },
+
+  // 메세지 상세 창 닫기
+  closeMessageDetail(backToList = false) {
+    const detailOverlay = document.getElementById('message-detail-modal-overlay');
+    if (detailOverlay) {
+      detailOverlay.style.display = 'none';
+    }
+    this.currentDetailMessage = null;
+
+    if (backToList) {
+      const listOverlay = document.getElementById('message-modal-overlay');
+      if (listOverlay) {
+        listOverlay.style.display = 'flex';
+        this.renderNotifications();
+      }
     }
   },
 
@@ -2409,20 +2579,23 @@ const App = {
       {
         id: 'n1',
         icon: '🐑',
-        text: '서원경 청년부 양떼목장에 오신 것을 환영합니다!',
+        title: '서원경 청년부 양떼목장 환영',
+        text: '서원경 청년부 양떼목장에 오신 것을 환영합니다! 말씀과 함께 풍성한 은혜를 누리세요.',
         time: '방금 전',
         read: false
       },
       {
         id: 'n2',
         icon: '📖',
-        text: '말씀양 찰스가 오늘의 성경 통독을 기다리고 있어요.',
+        title: '오늘의 성경 통독',
+        text: '말씀양 찰스가 오늘의 성경 통독을 기다리고 있어요. 매일 말씀을 먹이고 찰스를 성장시켜 보세요!',
         time: '오늘',
         read: false
       },
       {
         id: 'n3',
         icon: '🌿',
+        title: '청년부 축복의 메세지',
         text: '오늘 하루도 말씀 안에서 승리하는 청년부가 되길 축복합니다 ✨',
         time: '오늘',
         read: true
@@ -2463,9 +2636,11 @@ const App = {
     const notifs = this.getNotifications();
     const hasUnreadSys = notifs.some(n => !n.read);
 
-    // 2) 클라우드 운영자 공지 및 어린양의 메세지 중 안 읽은 것
+    // 2) 클라우드 운영자 공지 및 어린양의 메세지 중 안 읽은 것 (삭제된 것 제외)
     const readIds = this.getReadAdminMsgIds();
-    const hasUnreadAdmin = (this.cloudAdminMessages || []).some(m => !readIds.includes(String(m.id)));
+    const deletedIds = this.getDeletedAdminMsgIds();
+    const activeAdminMsgs = (this.cloudAdminMessages || []).filter(m => !deletedIds.includes(String(m.id)));
+    const hasUnreadAdmin = activeAdminMsgs.some(m => !readIds.includes(String(m.id)));
 
     dot.style.display = (hasUnreadSys || hasUnreadAdmin) ? 'block' : 'none';
   },
@@ -2475,19 +2650,20 @@ const App = {
     if (!listEl) return;
 
     const notifs = this.getNotifications();
-    const adminMsgs = this.cloudAdminMessages || [];
+    const deletedIds = this.getDeletedAdminMsgIds();
+    const adminMsgs = (this.cloudAdminMessages || []).filter(m => !deletedIds.includes(String(m.id)));
     const readIds = this.getReadAdminMsgIds();
 
     this.updateUnreadNotificationDot();
 
     if (notifs.length === 0 && adminMsgs.length === 0) {
-      listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 32px 0; font-size: 13px;">새로운 알림이 없습니다.</div>';
+      listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 36px 0; font-size: 13px;">받은 메세지가 없습니다.</div>';
       return;
     }
 
     let html = '';
 
-    // 1. 운영자 공지사항 및 어린양의 메세지(1:1) 목록 상단 렌더링 (제목 우선 & 클릭 시 본문 펼침)
+    // 1. 운영자 공지사항 및 어린양의 메세지(1:1 쪽지)
     if (adminMsgs.length > 0) {
       adminMsgs.forEach(m => {
         const isRead = readIds.includes(String(m.id));
@@ -2503,14 +2679,8 @@ const App = {
           minute: '2-digit'
         }) : '방금 전';
 
-        const safeContent = (m.content || '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/\n/g, '<br>');
-
         html += `
-          <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" data-msg-id="${m.id}" onclick="App.toggleAdminMessage('${m.id}')">
+          <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" data-msg-id="${m.id}" onclick="App.openMessageDetail('${m.id}')">
             <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${isUserMsg ? '💌' : '📢'}</div>
             <div class="notif-content" style="width: 100%;">
               <div class="notif-admin-header-row">
@@ -2519,21 +2689,20 @@ const App = {
               </div>
               <div class="notif-admin-title-row">
                 <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
-                <div class="notif-admin-toggle-icon">
-                  <span>내용</span> <span style="font-size: 9px;">▼</span>
+                <div class="notif-card-actions">
+                  <button type="button" class="btn-notif-view" onclick="event.stopPropagation(); App.openMessageDetail('${m.id}');">
+                    <span>내용 보기</span> <span>➔</span>
+                  </button>
+                  <button type="button" class="btn-notif-delete-card" title="메세지 삭제" onclick="event.stopPropagation(); App.deleteAdminMessage('${m.id}');">
+                    🗑️
+                  </button>
                 </div>
               </div>
               <div class="notif-admin-footer-row">
-                <span>보낸이: ${m.sender_name || '운영자'}</span>
+                <span>보낸이: ${m.sender_name || '양떼목장'}</span>
                 <span class="msg-unread-status" style="font-size: 11px; ${!isRead ? 'font-weight: 700; color: #E74C3C;' : 'color: #AAA;'}">
                   ${!isRead ? '● 읽지 않음' : '읽음 ✓'}
                 </span>
-              </div>
-              <div class="notif-admin-body-wrap">
-                <div class="notif-admin-body">${safeContent}</div>
-                <div style="text-align: right; margin-top: 5px;">
-                  <span style="font-size: 11px; color: #888; text-decoration: underline;">▲ 닫기</span>
-                </div>
               </div>
             </div>
           </div>
@@ -2541,17 +2710,27 @@ const App = {
       });
     }
 
-    // 2. 기본 시스템 알림 렌더링
-    html += notifs.map(n => `
-      <div class="notif-item ${n.read ? 'read' : 'unread'}" onclick="App.markNotifRead('${n.id}')" style="cursor: pointer; padding: 10px 8px; border-radius: 8px; margin-bottom: 6px; ${n.read ? '' : 'background: var(--color-badge-bg);'}">
-        <div class="notif-icon">${n.icon}</div>
-        <div class="notif-content">
-          <div class="notif-text" style="${n.read ? 'color: var(--text-muted);' : 'font-weight: 600;'}">${n.text}</div>
-          <div class="notif-time">${n.time}</div>
+    // 2. 기본 시스템 알림
+    if (notifs.length > 0) {
+      html += notifs.map(n => `
+        <div class="notif-item ${n.read ? 'read' : 'unread'}" onclick="App.openMessageDetail('${n.id}', true)" style="cursor: pointer; padding: 10px 10px; border-radius: 10px; margin-bottom: 6px; ${n.read ? 'background: #FAF8F5;' : 'background: #FFF9E6; border: 1px solid #FFE0B2;'}">
+          <div class="notif-icon">${n.icon}</div>
+          <div class="notif-content" style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+              <span style="font-size: 13px; ${n.read ? 'color: var(--text-color);' : 'font-weight: 700; color: #222;'}">${n.title || n.text.slice(0, 18)}</span>
+              <button type="button" class="btn-notif-delete-card" title="알림 삭제" onclick="event.stopPropagation(); App.deleteNotification('${n.id}');" style="padding: 2px 5px; font-size: 10px;">
+                🗑️
+              </button>
+            </div>
+            <div class="notif-text" style="font-size: 12px; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${n.text}</div>
+            <div class="notif-time" style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+              <span>${n.time}</span>
+              <span style="font-size: 11px; color: #2E7D32; font-weight: 600;">상세보기 ➔</span>
+            </div>
+          </div>
         </div>
-        ${!n.read ? '<span style="width: 7px; height: 7px; border-radius: 50%; background: #E74C3C; display: inline-block; margin-top: 4px; flex-shrink: 0;"></span>' : ''}
-      </div>
-    `).join('');
+      `).join('');
+    }
 
     listEl.innerHTML = html;
   },

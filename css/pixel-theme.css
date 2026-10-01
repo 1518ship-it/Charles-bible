@@ -1757,6 +1757,12 @@ body {
   transition: all 0.2s ease;
   cursor: pointer;
   user-select: none;
+  position: relative;
+}
+
+.notif-item.notif-admin-item:hover {
+  border-color: #FFB74D;
+  background: #FFFBF0;
 }
 
 .notif-item.notif-admin-item:active {
@@ -1772,6 +1778,10 @@ body {
 .notif-item.notif-admin-item.notif-type-user {
   background: #FFF5F7;
   border-color: #F8BBD0;
+}
+.notif-item.notif-admin-item.notif-type-user:hover {
+  border-color: #F06292;
+  background: #FFF0F4;
 }
 .notif-item.notif-admin-item.notif-type-user.unread {
   background: #FFF0F4;
@@ -1812,74 +1822,192 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  margin-bottom: 6px;
 }
 
 .notif-admin-title {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #222222;
   line-height: 1.4;
   flex: 1;
+  word-break: break-word;
 }
 
-.notif-admin-toggle-icon {
-  font-size: 11px;
-  color: #888888;
-  transition: transform 0.25s ease;
+.notif-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+.btn-notif-view {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2E7D32;
+  background: #E8F5E9;
+  border: 1px solid #C8E6C9;
+  border-radius: 6px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   gap: 3px;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 2px 6px;
-  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.notif-item.notif-admin-item.expanded .notif-admin-toggle-icon {
-  background: rgba(0, 0, 0, 0.08);
-  color: #111111;
+.btn-notif-view:hover {
+  background: #C8E6C9;
 }
 
-.notif-admin-body-wrap {
-  display: none;
-  animation: fadeInDown 0.2s ease forwards;
+.notif-type-user .btn-notif-view {
+  color: #C2185B;
+  background: #FCE4EC;
+  border-color: #F8BBD0;
+}
+.notif-type-user .btn-notif-view:hover {
+  background: #F8BBD0;
 }
 
-.notif-item.notif-admin-item.expanded .notif-admin-body-wrap {
-  display: block;
+.btn-notif-delete-card {
+  font-size: 11px;
+  color: #888;
+  background: #FFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  padding: 3px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.notif-admin-body {
-  font-size: 13px;
-  color: #333333;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px 12px;
-  border-radius: 8px;
-  margin-top: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+.btn-notif-delete-card:hover {
+  color: #E74C3C;
+  border-color: #FFCDD2;
+  background: #FFEBEE;
 }
 
 .notif-admin-footer-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 6px;
   font-size: 11px;
   color: #888;
+}
+
+/* ==================== 메세지 상세 보기 전용 모달 스타일 ==================== */
+.message-detail-sheet {
+  max-width: 440px;
+  width: 92%;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--card-bg, #FFFFFF);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  animation: slideUp 0.2s ease-out;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.btn-msg-back {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2E7D32;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-msg-back:hover {
+  background: rgba(46, 125, 50, 0.08);
+}
+
+.message-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 16px 18px;
+  max-height: calc(86vh - 125px);
+  box-sizing: border-box;
+}
+
+.message-detail-meta-box {
+  background: var(--color-badge-bg, #F9F9F9);
+  border: 1px solid var(--border-color, #EAEAEA);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.message-detail-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-color, #222222);
+  line-height: 1.45;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.message-detail-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-muted, #777777);
+}
+
+.message-detail-content-text {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text-color, #222222);
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 4px 2px 20px 2px;
+}
+
+.message-detail-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+  border-top: 1px solid var(--border-color, #EAEAEA);
+  background: var(--card-bg, #FFFFFF);
+  flex-shrink: 0;
+}
+
+.btn-msg-delete {
+  background: #FFEDED;
+  color: #E74C3C;
+  border: 1.5px solid #FFCDD2;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-msg-delete:hover {
+  background: #FFCDD2;
+  color: #C0392B;
+}
+
+.btn-msg-delete:active {
+  transform: scale(0.96);
 }
 
 /* ==================== 5. TAB: PROFILE (내 정보 / 잔디 달력) ==================== */
