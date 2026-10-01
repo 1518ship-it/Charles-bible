@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json?v=3.2">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=4.7">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=4.8">
 </head>
 <body>
 
@@ -26,31 +26,46 @@
       <div class="header-left"></div>
       <div class="header-actions">
         <button id="btn-open-messages" class="btn-msg-icon" title="메시지 및 알림">
-          <!-- 💬 귀여운 하트 말풍선 (16x16 픽셀 도트) -->
-          <svg class="pixel-icon" viewBox="0 0 16 16" width="22" height="22" shape-rendering="crispEdges">
-            <!-- 말풍선 상단/좌우 둥근 외곽선 -->
-            <rect x="3" y="1" width="10" height="1" fill="currentColor" />
-            <rect x="1" y="2" width="2" height="1" fill="currentColor" />
-            <rect x="13" y="2" width="2" height="1" fill="currentColor" />
-            <rect x="0" y="3" width="1" height="7" fill="currentColor" />
-            <rect x="15" y="3" width="1" height="7" fill="currentColor" />
-            <rect x="1" y="10" width="2" height="1" fill="currentColor" />
-            <rect x="13" y="10" width="2" height="1" fill="currentColor" />
-            <!-- 말풍선 몸체 채움 -->
-            <rect x="1" y="3" width="14" height="7" fill="var(--card-bg, #fff)" />
-            <rect x="3" y="2" width="10" height="1" fill="var(--card-bg, #fff)" />
-            <!-- 말풍선 속 사랑스러운 핑크 하트 (💖) -->
-            <rect x="5" y="4" width="2" height="1" fill="#FF5E57" />
-            <rect x="9" y="4" width="2" height="1" fill="#FF5E57" />
-            <rect x="4" y="5" width="8" height="2" fill="#FF5E57" />
-            <rect x="5" y="7" width="6" height="1" fill="#FF5E57" />
-            <rect x="6" y="8" width="4" height="1" fill="#FF5E57" />
-            <rect x="7" y="9" width="2" height="1" fill="#FF5E57" />
-            <!-- 말풍선 하단 꼬리 -->
-            <rect x="3" y="11" width="3" height="1" fill="currentColor" />
-            <rect x="8" y="11" width="6" height="1" fill="currentColor" />
-            <rect x="3" y="12" width="3" height="1" fill="currentColor" />
-            <rect x="4" y="13" width="2" height="1" fill="currentColor" />
+          <!-- 💌 골드 실링 편지 봉투 픽셀 아이콘 (18x12 도트) -->
+          <svg class="pixel-icon" viewBox="0 0 18 12" width="24" height="16" shape-rendering="crispEdges">
+            <!-- 편지 봉투 흰색 몸체 -->
+            <rect x="1" y="1" width="16" height="10" fill="#FFFFFF" />
+            
+            <!-- 외곽 상하좌우 프레임 -->
+            <rect x="0" y="0" width="18" height="1" fill="currentColor" />
+            <rect x="0" y="11" width="18" height="1" fill="currentColor" />
+            <rect x="0" y="0" width="1" height="12" fill="currentColor" />
+            <rect x="17" y="0" width="1" height="12" fill="currentColor" />
+            
+            <!-- 모서리 내부 두께 -->
+            <rect x="1" y="1" width="1" height="1" fill="currentColor" />
+            <rect x="16" y="1" width="1" height="1" fill="currentColor" />
+            <rect x="1" y="10" width="1" height="1" fill="currentColor" />
+            <rect x="16" y="10" width="1" height="1" fill="currentColor" />
+            
+            <!-- 대각선 플랩 라인 (위쪽 대각선 V형) -->
+            <rect x="2" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="14" y="2" width="2" height="1" fill="currentColor" />
+            <rect x="4" y="3" width="2" height="1" fill="currentColor" />
+            <rect x="12" y="3" width="2" height="1" fill="currentColor" />
+            <rect x="6" y="4" width="2" height="1" fill="currentColor" />
+            <rect x="10" y="4" width="2" height="1" fill="currentColor" />
+            
+            <!-- 대각선 하단 라인 (아래쪽 대각선 ㅅ형) -->
+            <rect x="2" y="9" width="2" height="1" fill="currentColor" />
+            <rect x="14" y="9" width="2" height="1" fill="currentColor" />
+            <rect x="4" y="8" width="2" height="1" fill="currentColor" />
+            <rect x="12" y="8" width="2" height="1" fill="currentColor" />
+            <rect x="6" y="7" width="1" height="1" fill="currentColor" />
+            <rect x="11" y="7" width="1" height="1" fill="currentColor" />
+            <rect x="7" y="6" width="1" height="1" fill="currentColor" />
+            <rect x="10" y="6" width="1" height="1" fill="currentColor" />
+            
+            <!-- 중앙 2x2 골드 실링 왁스 (빛 하이라이트 포함) -->
+            <rect x="8" y="5" width="1" height="1" fill="#FFEA6C" />
+            <rect x="9" y="5" width="1" height="1" fill="#FFC000" />
+            <rect x="8" y="6" width="1" height="1" fill="#FFC000" />
+            <rect x="9" y="6" width="1" height="1" fill="#FFC000" />
           </svg>
           <span class="msg-unread-dot"></span>
         </button>
@@ -1106,22 +1121,34 @@
       <div class="modal-sheet">
         <div class="modal-header">
           <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
-            <svg class="pixel-icon" viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
-              <rect x="5" y="0" width="2" height="1" fill="#F4D03F" />
-              <rect x="4" y="1" width="4" height="2" fill="#F4D03F" />
-              <rect x="3" y="3" width="6" height="4" fill="#F4D03F" />
-              <rect x="1" y="7" width="10" height="2" fill="#F4D03F" />
-              <rect x="5" y="9" width="2" height="2" fill="#E67E22" />
-              <!-- 외곽선 -->
-              <rect x="5" y="0" width="2" height="1" fill="currentColor" />
-              <rect x="4" y="1" width="1" height="2" fill="currentColor" />
-              <rect x="7" y="1" width="1" height="2" fill="currentColor" />
-              <rect x="3" y="3" width="1" height="4" fill="currentColor" />
-              <rect x="8" y="3" width="1" height="4" fill="currentColor" />
-              <rect x="0" y="7" width="1" height="2" fill="currentColor" />
-              <rect x="11" y="7" width="1" height="2" fill="currentColor" />
-              <rect x="1" y="9" width="10" height="1" fill="currentColor" />
-              <rect x="5" y="11" width="2" height="1" fill="currentColor" />
+            <svg class="pixel-icon" viewBox="0 0 18 12" width="20" height="14" shape-rendering="crispEdges">
+              <rect x="1" y="1" width="16" height="10" fill="#FFFFFF" />
+              <rect x="0" y="0" width="18" height="1" fill="currentColor" />
+              <rect x="0" y="11" width="18" height="1" fill="currentColor" />
+              <rect x="0" y="0" width="1" height="12" fill="currentColor" />
+              <rect x="17" y="0" width="1" height="12" fill="currentColor" />
+              <rect x="1" y="1" width="1" height="1" fill="currentColor" />
+              <rect x="16" y="1" width="1" height="1" fill="currentColor" />
+              <rect x="1" y="10" width="1" height="1" fill="currentColor" />
+              <rect x="16" y="10" width="1" height="1" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="14" y="2" width="2" height="1" fill="currentColor" />
+              <rect x="4" y="3" width="2" height="1" fill="currentColor" />
+              <rect x="12" y="3" width="2" height="1" fill="currentColor" />
+              <rect x="6" y="4" width="2" height="1" fill="currentColor" />
+              <rect x="10" y="4" width="2" height="1" fill="currentColor" />
+              <rect x="2" y="9" width="2" height="1" fill="currentColor" />
+              <rect x="14" y="9" width="2" height="1" fill="currentColor" />
+              <rect x="4" y="8" width="2" height="1" fill="currentColor" />
+              <rect x="12" y="8" width="2" height="1" fill="currentColor" />
+              <rect x="6" y="7" width="1" height="1" fill="currentColor" />
+              <rect x="11" y="7" width="1" height="1" fill="currentColor" />
+              <rect x="7" y="6" width="1" height="1" fill="currentColor" />
+              <rect x="10" y="6" width="1" height="1" fill="currentColor" />
+              <rect x="8" y="5" width="1" height="1" fill="#FFEA6C" />
+              <rect x="9" y="5" width="1" height="1" fill="#FFC000" />
+              <rect x="8" y="6" width="1" height="1" fill="#FFC000" />
+              <rect x="9" y="6" width="1" height="1" fill="#FFC000" />
             </svg>
             <span>소식 및 알림</span>
           </div>
@@ -1547,13 +1574,13 @@
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
-  <script src="data/bible-nt-bundle.js?v=4.7"></script>
-  <script src="js/bible-data.js?v=4.7"></script>
-  <script src="js/charles-pixel.js?v=4.7"></script>
-  <script src="js/auth.js?v=4.7"></script>
-  <script src="js/storage.js?v=4.7"></script>
-  <script src="js/talent.js?v=4.7"></script>
-  <script src="js/app.js?v=4.7"></script>
+  <script src="data/bible-nt-bundle.js?v=4.8"></script>
+  <script src="js/bible-data.js?v=4.8"></script>
+  <script src="js/charles-pixel.js?v=4.8"></script>
+  <script src="js/auth.js?v=4.8"></script>
+  <script src="js/storage.js?v=4.8"></script>
+  <script src="js/talent.js?v=4.8"></script>
+  <script src="js/app.js?v=4.8"></script>
 
 </body>
 </html>
