@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3.2">
   <link rel="alternate icon" type="image/png" href="favicon-32x32.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
-  <link rel="stylesheet" href="css/admin.css?v=3.2">
+  <link rel="stylesheet" href="css/admin.css?v=4.6">
 </head>
 <body>
 
@@ -156,13 +156,86 @@
         </div>
       </div>
 
-      <!-- 3. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & user_reading_state) -->
+      <!-- 3. 📢 유저 공지사항 & 1:1 메시지 발송 센터 -->
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>☁️</span> Supabase 오늘 통독 & 달란트 요약 테이블(VIEW) 생성 SQL
+          <span>📢</span> 유저 공지사항 & 1:1 메시지 발송 센터
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 16px;">
+          전체 성도에게 전할 공지사항이나 특정 성도에게 보내는 1:1 격려 쪽지를 발송할 수 있습니다. 성도 앱 상단의 <strong>💬 하트 말풍선</strong>에 알림(레드닷)이 표시됩니다.
+        </p>
+
+        <!-- 메시지 작성 폼 -->
+        <form id="form-send-admin-message" style="background: #FAFAFA; border: 1px solid var(--admin-border); border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+          <!-- 발송 대상 선택 (라디오) -->
+          <div class="admin-form-group">
+            <label class="admin-label">발송 대상 선택</label>
+            <div class="msg-type-selector">
+              <label class="msg-type-option active" id="label-msg-type-all">
+                <input type="radio" name="msg-target-type" value="ALL" checked>
+                <span>📢 전체 유저 공지</span>
+              </label>
+              <label class="msg-type-option" id="label-msg-type-user">
+                <input type="radio" name="msg-target-type" value="USER">
+                <span>💌 특정 성도 1:1 쪽지</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 특정 성도 선택 드롭다운 (1:1 선택 시 표시) -->
+          <div class="admin-form-group" id="group-target-user-select" style="display: none;">
+            <label class="admin-label">받는 성도 선택</label>
+            <select id="select-msg-target-user" class="admin-select" style="font-size: 14px; font-weight: 600;">
+              <option value="">성도를 선택하세요...</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 12px;" class="admin-form-group">
+            <div style="flex: 2;">
+              <label class="admin-label">공지 / 메시지 제목</label>
+              <input type="text" id="input-msg-title" class="admin-input" placeholder="예: [청년부 공지] 이번 주 통독 모임 안내 / 성도님을 응원합니다!" required>
+            </div>
+            <div style="flex: 1;">
+              <label class="admin-label">발신자 명</label>
+              <input type="text" id="input-msg-sender" class="admin-input" value="운영자" required>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">메시지 본문 내용</label>
+            <textarea id="input-msg-content" class="admin-textarea" rows="4" placeholder="성도들에게 전달할 따뜻한 격려나 공지 내용을 작성해주세요." required></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="submit" id="btn-submit-message" class="admin-btn admin-btn-primary" style="padding: 10px 20px; font-size: 14px;">
+              🚀 메시지 발송하기
+            </button>
+          </div>
+        </form>
+
+        <!-- 최근 발송 내역 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-weight: 700; font-size: 14px; color: #333;">
+              📋 최근 발송된 메시지 및 공지 내역 (<span id="count-sent-messages">0</span>건)
+            </div>
+            <button type="button" id="btn-refresh-messages" class="admin-btn admin-btn-sm" style="font-size: 12px;">
+              🔄 내역 새로고침
+            </button>
+          </div>
+          <div id="admin-sent-messages-list">
+            <div style="text-align: center; color: #888; padding: 20px; font-size: 13px;">발송 내역을 불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & admin_messages) -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span>☁️</span> Supabase 오늘 통독 & 달란트 요약 테이블(VIEW) 및 메시지 테이블 생성 SQL
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 10px;">
-          Supabase 페이지의 <strong>[Table Editor]</strong>에서 유저별 오늘 읽은 장수, 달란트, 연속 접속일을 별도 테이블로 바로 보실 수 있도록 아래 SQL을 Supabase <strong>[SQL Editor]</strong>에서 1회 실행해 주세요.
+          Supabase 페이지의 <strong>[Table Editor]</strong>에서 유저별 오늘 읽은 장수, 달란트, 연속 접속일을 별도 테이블로 바로 보거나 공지/쪽지 기능을 활성화하려면 아래 SQL을 Supabase <strong>[SQL Editor]</strong>에서 1회 실행해 주세요.
         </p>
         <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 컬럼 안전 추가
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
@@ -180,15 +253,15 @@ DROP POLICY IF EXISTS "user_reading_state_select_policy" ON public.user_reading_
 DROP POLICY IF EXISTS "user_reading_state_insert_policy" ON public.user_reading_state;
 DROP POLICY IF EXISTS "user_reading_state_update_policy" ON public.user_reading_state;
 
--- (1) 조회 허용: 성도 간 통독 현황 공유 및 랭킹 조회를 위해 공개 읽기 허용
+-- (1) 조회 허용
 CREATE POLICY "user_reading_state_select_policy" 
 ON public.user_reading_state FOR SELECT USING (true);
 
--- (2) 추가 허용: 유효한 user_id가 있는 정상 통독 데이터만 신규 저장 허용
+-- (2) 추가 허용
 CREATE POLICY "user_reading_state_insert_policy" 
 ON public.user_reading_state FOR INSERT WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
 
--- (3) 수정 허용: 유효한 user_id 행에 대해서만 업데이트 허용
+-- (3) 수정 허용
 CREATE POLICY "user_reading_state_update_policy" 
 ON public.user_reading_state FOR UPDATE 
 USING (user_id IS NOT NULL AND length(user_id) > 0)
@@ -267,10 +340,41 @@ FROM public.user_reading_state r
 LEFT JOIN public.members m ON r.user_id = m.id
 ORDER BY today_read_chapters DESC, streak_days DESC, talents DESC;
 
--- 4. 뷰 조회 권한 부여 (Supabase Studio 대시보드 및 API 연동)
 GRANT SELECT ON public.user_today_summary TO anon, authenticated, service_role;
 
--- 5. [Linter 보안 경고 일괄 해결] 미사용 레거시 SECURITY DEFINER 함수 정리
+-- 4. [운영자 공지사항 및 1:1 메시지(쪽지) 테이블 생성 & RLS 보안 설정]
+CREATE TABLE IF NOT EXISTS public.admin_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  target_type text NOT NULL CHECK (target_type IN ('ALL', 'USER')),
+  target_user_id text NULL,
+  title text NOT NULL,
+  content text NOT NULL,
+  sender_name text NOT NULL DEFAULT '운영자',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_messages_target ON public.admin_messages (target_type, target_user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_messages_created_at ON public.admin_messages (created_at DESC);
+
+ALTER TABLE public.admin_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "admin_messages_select_policy" ON public.admin_messages;
+DROP POLICY IF EXISTS "admin_messages_insert_policy" ON public.admin_messages;
+DROP POLICY IF EXISTS "admin_messages_delete_policy" ON public.admin_messages;
+
+CREATE POLICY "admin_messages_select_policy" 
+ON public.admin_messages FOR SELECT USING (true);
+
+CREATE POLICY "admin_messages_insert_policy" 
+ON public.admin_messages FOR INSERT 
+WITH CHECK (title IS NOT NULL AND length(title) > 0);
+
+CREATE POLICY "admin_messages_delete_policy" 
+ON public.admin_messages FOR DELETE USING (true);
+
+GRANT ALL ON public.admin_messages TO anon, authenticated, service_role;
+
+-- 5. [Linter 보안 경고 일괄 해결] 미사용 레거시 함수 정리
 DROP FUNCTION IF EXISTS public.verify_signup_code(text);
 DROP FUNCTION IF EXISTS public.verify_admin_code(text);
 DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
@@ -417,6 +521,55 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
     </div>
   </div>
 
+  <!-- ==================== 💌 성도 1:1 쪽지 즉시 발송 모달 ==================== -->
+  <div id="modal-direct-message" class="admin-modal-overlay">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <span>💌</span> <span id="modal-direct-msg-title">성도 1:1 쪽지 발송</span>
+        </div>
+        <button type="button" class="admin-modal-close" data-close-modal="modal-direct-message">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-user-info-box">
+          <div>
+            <div style="font-size: 15px; font-weight: 800;" id="modal-direct-msg-user-name">-</div>
+            <div style="font-size: 11px; color: #666;" id="modal-direct-msg-user-id">-</div>
+          </div>
+          <div style="text-align: right;">
+            <span class="msg-badge-user">1:1 개인 쪽지</span>
+          </div>
+        </div>
+
+        <form id="form-direct-message">
+          <input type="hidden" id="input-direct-msg-user-id">
+
+          <div style="display: flex; gap: 10px;" class="admin-form-group">
+            <div style="flex: 2;">
+              <label class="admin-label">쪽지 제목</label>
+              <input type="text" id="input-direct-msg-title" class="admin-input" placeholder="예: 성도님, 오늘 통독도 함께 힘내요!" required>
+            </div>
+            <div style="flex: 1;">
+              <label class="admin-label">발신자 명</label>
+              <input type="text" id="input-direct-msg-sender" class="admin-input" value="운영자" required>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">쪽지 본문 내용</label>
+            <textarea id="input-direct-msg-content" class="admin-textarea" rows="4" placeholder="성도님께 전달할 격려와 축복의 메시지를 작성해주세요." required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn" data-close-modal="modal-direct-message">취소</button>
+        <button type="button" id="btn-send-direct-message" class="admin-btn admin-btn-primary">
+          💌 쪽지 발송하기
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 알림 토스트 컨테이너 -->
   <div id="admin-toast-container" class="admin-toast-container"></div>
 
@@ -425,12 +578,12 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=4.1"></script>
-  <script src="js/charles-pixel.js?v=4.1"></script>
-  <script src="js/auth.js?v=4.1"></script>
-  <script src="js/storage.js?v=4.1"></script>
-  <script src="js/talent.js?v=4.1"></script>
-  <script src="js/admin.js?v=4.1"></script>
+  <script src="js/bible-data.js?v=4.6"></script>
+  <script src="js/charles-pixel.js?v=4.6"></script>
+  <script src="js/auth.js?v=4.6"></script>
+  <script src="js/storage.js?v=4.6"></script>
+  <script src="js/talent.js?v=4.6"></script>
+  <script src="js/admin.js?v=4.6"></script>
 
 </body>
 </html>

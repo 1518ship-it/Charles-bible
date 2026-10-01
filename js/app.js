@@ -43,6 +43,12 @@ const App = {
         console.warn('초기 클라우드 동기화 건너뜀 (로컬 스토리지 사용):', err);
       }
     }
+
+    // 📢 운영자 전체 공지 및 1:1 쪽지 조회 & 알림 뱃지 업데이트
+    this.fetchCloudAdminMessages();
+    setInterval(() => {
+      this.fetchCloudAdminMessages();
+    }, 60000);
   },
 
   loadSavedFontSize() {
@@ -222,6 +228,7 @@ const App = {
             }
 
             this.renderAll();
+            this.fetchCloudAdminMessages();
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}!`);
           } else {
@@ -390,6 +397,7 @@ const App = {
     if (msgBtn && msgOverlay) {
       msgBtn.addEventListener('click', () => {
         msgOverlay.style.display = 'flex';
+        this.fetchCloudAdminMessages();
         this.renderNotifications();
       });
     }
@@ -2308,7 +2316,68 @@ const App = {
     }
   },
 
-  // ==================== 소식 및 알림 관리 ====================
+  // ==================== 소식 및 알림 & 운영자 메시지 관리 ====================
+  cloudAdminMessages: [],
+
+  // Supabase admin_messages 테이블에서 공지사항 및 1:1 쪽지 가져오기
+  async fetchCloudAdminMessages() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+      return;
+    }
+
+    try {
+      const user = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+      let query = supabaseClient.from('admin_messages').select('*');
+
+      if (user && user.id) {
+        // 전체 공지(ALL) 또는 현재 사용자 본인(USER)에게 온 쪽지
+        query = query.or(`target_type.eq.ALL,target_user_id.eq.${user.id}`);
+      } else {
+        query = query.eq('target_type', 'ALL');
+      }
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!error && Array.isArray(data)) {
+        this.cloudAdminMessages = data;
+        this.updateUnreadNotificationDot();
+        // 모달이 열려있는 상태라면 바로 렌더링 갱신
+        const msgOverlay = document.getElementById('message-modal-overlay');
+        if (msgOverlay && msgOverlay.style.display === 'flex') {
+          this.renderNotifications();
+        }
+      }
+    } catch (err) {
+      // 테이블 미존재 등 예외 발생 시 조용히 무시 (콘솔 로그만 남김)
+      console.warn('admin_messages 조회 건너뜀:', err);
+    }
+  },
+
+  getReadAdminMsgIds() {
+    try {
+      return JSON.parse(localStorage.getItem('charles_read_admin_msg_ids') || '[]');
+    } catch (e) {
+      return [];
+    }
+  },
+
+  isMessageRead(id) {
+    const readIds = this.getReadAdminMsgIds();
+    return readIds.includes(String(id));
+  },
+
+  markAdminMsgRead(id) {
+    const readIds = this.getReadAdminMsgIds();
+    if (!readIds.includes(String(id))) {
+      readIds.push(String(id));
+      localStorage.setItem('charles_read_admin_msg_ids', JSON.stringify(readIds));
+    }
+    this.updateUnreadNotificationDot();
+    this.renderNotifications();
+  },
+
   getNotifications() {
     const defaultNotifs = [
       {
@@ -2363,9 +2432,16 @@ const App = {
   updateUnreadNotificationDot() {
     const dot = document.querySelector('.msg-unread-dot');
     if (!dot) return;
+
+    // 1) 기본 시스템 알림 중 안 읽은 것
     const notifs = this.getNotifications();
-    const hasUnread = notifs.some(n => !n.read);
-    dot.style.display = hasUnread ? 'block' : 'none';
+    const hasUnreadSys = notifs.some(n => !n.read);
+
+    // 2) 클라우드 운영자 공지 및 1:1 쪽지 중 안 읽은 것
+    const readIds = this.getReadAdminMsgIds();
+    const hasUnreadAdmin = (this.cloudAdminMessages || []).some(m => !readIds.includes(String(m.id)));
+
+    dot.style.display = (hasUnreadSys || hasUnreadAdmin) ? 'block' : 'none';
   },
 
   renderNotifications() {
@@ -2373,14 +2449,62 @@ const App = {
     if (!listEl) return;
 
     const notifs = this.getNotifications();
+    const adminMsgs = this.cloudAdminMessages || [];
+    const readIds = this.getReadAdminMsgIds();
+
     this.updateUnreadNotificationDot();
 
-    if (notifs.length === 0) {
+    if (notifs.length === 0 && adminMsgs.length === 0) {
       listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 32px 0; font-size: 13px;">새로운 알림이 없습니다.</div>';
       return;
     }
 
-    listEl.innerHTML = notifs.map(n => `
+    let html = '';
+
+    // 1. 운영자 공지사항 및 1:1 쪽지 목록 상단 렌더링
+    if (adminMsgs.length > 0) {
+      adminMsgs.forEach(m => {
+        const isRead = readIds.includes(String(m.id));
+        const isUserMsg = m.target_type === 'USER';
+        const badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
+        const badgeText = isUserMsg ? '💌 1:1 쪽지' : '📢 전체 공지';
+        const cardClass = isUserMsg ? 'notif-type-user' : '';
+
+        const dateStr = m.created_at ? new Date(m.created_at).toLocaleString('ko-KR', {
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : '방금 전';
+
+        const safeContent = (m.content || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\n/g, '<br>');
+
+        html += `
+          <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" onclick="App.markAdminMsgRead('${m.id}')" style="cursor: pointer;">
+            <div class="notif-icon">${isUserMsg ? '💌' : '📢'}</div>
+            <div class="notif-content" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="notif-badge ${badgeClass}">${badgeText}</span>
+                <span class="notif-time">${dateStr}</span>
+              </div>
+              <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
+              <div class="notif-admin-body">${safeContent}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <span style="font-size: 11px; color: #888;">보낸이: ${m.sender_name || '운영자'}</span>
+                ${!isRead ? '<span style="font-size: 11px; font-weight: 700; color: #E74C3C;">● 읽지 않음 (터치 시 읽음)</span>' : '<span style="font-size: 11px; color: #AAA;">읽음 ✓</span>'}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // 2. 기본 시스템 알림 렌더링
+    html += notifs.map(n => `
       <div class="notif-item ${n.read ? 'read' : 'unread'}" onclick="App.markNotifRead('${n.id}')" style="cursor: pointer; padding: 10px 8px; border-radius: 8px; margin-bottom: 6px; ${n.read ? '' : 'background: var(--color-badge-bg);'}">
         <div class="notif-icon">${n.icon}</div>
         <div class="notif-content">
@@ -2390,6 +2514,8 @@ const App = {
         ${!n.read ? '<span style="width: 7px; height: 7px; border-radius: 50%; background: #E74C3C; display: inline-block; margin-top: 4px; flex-shrink: 0;"></span>' : ''}
       </div>
     `).join('');
+
+    listEl.innerHTML = html;
   },
 
   markNotifRead(id) {

@@ -132,7 +132,48 @@ ORDER BY today_read_chapters DESC, streak_days DESC, talents DESC;
 GRANT SELECT ON public.user_today_summary TO anon, authenticated, service_role;
 
 -- 5. [Linter 보안 경고 일괄 해결] 미사용 레거시 SECURITY DEFINER 함수 정리
--- (외부 anon 호출이 열려 있어 Supabase에서 경고를 발생시키는 3개 미사용 함수 완전 제거)
 DROP FUNCTION IF EXISTS public.verify_signup_code(text);
 DROP FUNCTION IF EXISTS public.verify_admin_code(text);
 DROP FUNCTION IF EXISTS public.record_member_login(text);
+
+-- ==============================================================================
+-- 6. [운영자 공지사항 및 1:1 메시지(쪽지) 테이블 생성 & RLS 보안 설정]
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.admin_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  target_type text NOT NULL CHECK (target_type IN ('ALL', 'USER')),
+  target_user_id text NULL,
+  title text NOT NULL,
+  content text NOT NULL,
+  sender_name text NOT NULL DEFAULT '운영자',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- 빠른 검색을 위한 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_admin_messages_target ON public.admin_messages (target_type, target_user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_messages_created_at ON public.admin_messages (created_at DESC);
+
+-- RLS 보안 활성화 및 정책 설정
+ALTER TABLE public.admin_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "admin_messages_select_policy" ON public.admin_messages;
+DROP POLICY IF EXISTS "admin_messages_insert_policy" ON public.admin_messages;
+DROP POLICY IF EXISTS "admin_messages_delete_policy" ON public.admin_messages;
+
+-- (1) 조회 허용: 성도 앱에서 전체 공지('ALL') 및 본인 대상 쪽지('USER') 조회
+CREATE POLICY "admin_messages_select_policy" 
+ON public.admin_messages FOR SELECT 
+USING (true);
+
+-- (2) 추가 허용: 관리자 콘솔에서 공지 및 쪽지 발송 허용
+CREATE POLICY "admin_messages_insert_policy" 
+ON public.admin_messages FOR INSERT 
+WITH CHECK (title IS NOT NULL AND length(title) > 0);
+
+-- (3) 삭제 허용: 관리자 콘솔에서 발송한 메시지 취소/삭제 허용
+CREATE POLICY "admin_messages_delete_policy" 
+ON public.admin_messages FOR DELETE 
+USING (true);
+
+-- 모든 권한 부여
+GRANT ALL ON public.admin_messages TO anon, authenticated, service_role;

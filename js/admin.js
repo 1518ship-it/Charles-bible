@@ -23,6 +23,7 @@ const AdminApp = {
     this.checkAdminAuth();
     this.bindEvents();
     this.bindModalEvents();
+    this.bindMessageEvents();
   },
 
   // ==================== 1. 관리자 인증 검증 ====================
@@ -350,8 +351,14 @@ const AdminApp = {
     // 셀 필터 드롭다운 옵션 갱신
     this.populateCellFilterOptions();
 
+    // 메시지 발송 대상 성도 드롭다운 옵션 갱신
+    this.populateMessageTargetUserOptions();
+
     // 성도 목록 테이블 렌더링
     this.renderFilteredTable();
+
+    // 최근 발송 메시지 내역 불러오기
+    this.loadSentMessages();
   },
 
   // 셀 목록 드롭다운 채우기
@@ -473,6 +480,9 @@ const AdminApp = {
               <button type="button" class="admin-btn admin-btn-sm admin-btn-warning btn-action-talent" data-uid="${u.id}" title="달란트 지급 및 수정">
                 🪙 달란트
               </button>
+              <button type="button" class="admin-btn admin-btn-sm btn-action-msg" data-uid="${u.id}" title="1:1 쪽지 발송">
+                💌 쪽지
+              </button>
               <button type="button" class="admin-btn admin-btn-sm btn-action-member" data-uid="${u.id}" title="계정 및 비밀번호 관리">
                 ⚙️ 관리
               </button>
@@ -487,6 +497,13 @@ const AdminApp = {
       btn.addEventListener('click', () => {
         const uid = btn.dataset.uid;
         this.openTalentModal(uid);
+      });
+    });
+
+    userTableBody.querySelectorAll('.btn-action-msg').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const uid = btn.dataset.uid;
+        this.openDirectMessageModal(uid);
       });
     });
 
@@ -784,6 +801,409 @@ const AdminApp = {
     } finally {
       delBtn.disabled = false;
       delBtn.textContent = '🗑️ 이 성도 계정 영구 삭제';
+    }
+  },
+
+  // ==================== 8. 📢 유저 공지사항 & 1:1 메시지 발송 센터 ====================
+  bindMessageEvents() {
+    // 1) 발송 대상 라디오 전환 (전체 공지 vs 1:1 쪽지)
+    const radioTargets = document.querySelectorAll('input[name="msg-target-type"]');
+    const groupTargetUser = document.getElementById('group-target-user-select');
+    const labelAll = document.getElementById('label-msg-type-all');
+    const labelUser = document.getElementById('label-msg-type-user');
+
+    radioTargets.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'ALL') {
+          if (groupTargetUser) groupTargetUser.style.display = 'none';
+          if (labelAll) labelAll.classList.add('active');
+          if (labelUser) labelUser.classList.remove('active');
+        } else {
+          if (groupTargetUser) groupTargetUser.style.display = 'block';
+          if (labelUser) labelUser.classList.add('active');
+          if (labelAll) labelAll.classList.remove('active');
+        }
+      });
+    });
+
+    // 2) 메인 메시지 발송 폼 제출
+    const formMsg = document.getElementById('form-send-admin-message');
+    if (formMsg) {
+      formMsg.addEventListener('submit', (e) => this.handleSendAdminMessage(e));
+    }
+
+    // 3) 발송 내역 새로고침 버튼
+    const refreshMsgBtn = document.getElementById('btn-refresh-messages');
+    if (refreshMsgBtn) {
+      refreshMsgBtn.addEventListener('click', () => {
+        RetroAudio.click();
+        this.loadSentMessages();
+      });
+    }
+
+    // 4) 빠른 1:1 쪽지 모달 발송 버튼
+    const sendDirectBtn = document.getElementById('btn-send-direct-message');
+    if (sendDirectBtn) {
+      sendDirectBtn.addEventListener('click', () => this.handleSendDirectMessage());
+    }
+  },
+
+  // 발송 대상 성도 드롭다운 목록 채우기
+  populateMessageTargetUserOptions() {
+    const select = document.getElementById('select-msg-target-user');
+    if (!select) return;
+
+    const currentVal = select.value;
+    const sorted = [...this.allUsers].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
+
+    let html = '<option value="">성도를 선택하세요...</option>';
+    sorted.forEach(u => {
+      html += `<option value="${u.id}">${u.name} (${u.id}) - ${u.cell || '미지정'}</option>`;
+    });
+
+    select.innerHTML = html;
+    if (currentVal) select.value = currentVal;
+  },
+
+  // 특정 성도에게 보내는 1:1 쪽지 모달 열기 (성도 명부 행의 [💌 쪽지] 클릭 시)
+  openDirectMessageModal(uid) {
+    const user = this.allUsers.find(u => u.id === uid);
+    const userName = user ? user.name : uid;
+    const cellName = user && user.cell ? user.cell : '미지정';
+
+    const inputUid = document.getElementById('input-direct-msg-user-id');
+    const dispName = document.getElementById('modal-direct-msg-user-name');
+    const dispId = document.getElementById('modal-direct-msg-user-id');
+    const inputTitle = document.getElementById('input-direct-msg-title');
+    const inputSender = document.getElementById('input-direct-msg-sender');
+    const inputContent = document.getElementById('input-direct-msg-content');
+
+    if (inputUid) inputUid.value = uid;
+    if (dispName) dispName.textContent = `${userName} 성도님`;
+    if (dispId) dispId.textContent = `@${uid} · 소속: ${cellName}`;
+    if (inputTitle) inputTitle.value = `[쪽지] ${userName} 성도님, 오늘 통독도 응원합니다!`;
+    if (inputSender) inputSender.value = '운영자';
+    if (inputContent) {
+      inputContent.value = '';
+      setTimeout(() => inputContent.focus(), 100);
+    }
+
+    this.openModal('modal-direct-message');
+  },
+
+  // 메인 폼 메시지 발송 처리 (전체 공지 or 1:1 쪽지)
+  async handleSendAdminMessage(e) {
+    e.preventDefault();
+
+    const targetTypeRadio = document.querySelector('input[name="msg-target-type"]:checked');
+    const targetType = targetTypeRadio ? targetTypeRadio.value : 'ALL';
+    const targetUserSelect = document.getElementById('select-msg-target-user');
+    const targetUserId = targetType === 'USER' ? (targetUserSelect ? targetUserSelect.value : '') : null;
+
+    if (targetType === 'USER' && !targetUserId) {
+      alert('1:1 쪽지를 받을 성도를 선택해 주세요!');
+      if (targetUserSelect) targetUserSelect.focus();
+      return;
+    }
+
+    const titleInput = document.getElementById('input-msg-title');
+    const senderInput = document.getElementById('input-msg-sender');
+    const contentInput = document.getElementById('input-msg-content');
+    const submitBtn = document.getElementById('btn-submit-message');
+
+    const title = (titleInput ? titleInput.value : '').trim();
+    const sender = (senderInput ? senderInput.value : '').trim() || '운영자';
+    const content = (contentInput ? contentInput.value : '').trim();
+
+    if (!title || !content) {
+      alert('제목과 본문 내용을 모두 입력해 주세요.');
+      return;
+    }
+
+    const userObj = targetType === 'USER' ? this.allUsers.find(u => u.id === targetUserId) : null;
+    const targetName = userObj ? `${userObj.name}(${userObj.id})` : targetUserId;
+    const targetDesc = targetType === 'ALL' ? '📢 전체 유저' : `💌 ${targetName} 성도님`;
+
+    if (!confirm(`[${targetDesc}] 에게 메시지를 발송하시겠습니까?\n\n제목: ${title}`)) {
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ 발송 중...';
+
+    try {
+      let isSentToCloud = false;
+
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from('admin_messages')
+          .insert([{
+            target_type: targetType,
+            target_user_id: targetUserId,
+            title: title,
+            sender_name: sender,
+            content: content
+          }])
+          .select();
+
+        if (error) {
+          if (error.code === '42P01' || (error.message && error.message.includes('relation "admin_messages" does not exist'))) {
+            throw new Error('Supabase에 admin_messages 테이블이 아직 생성되지 않았습니다.\n\n하단의 4번 [SQL 쿼리 복사하기] 버튼을 누르고 Supabase [SQL Editor]에서 실행해 주세요!');
+          }
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          isSentToCloud = true;
+        }
+      }
+
+      // 로컬 스토리지에도 최근 발송 내역 백업
+      this.saveLocalSentMessage({
+        id: 'local_' + Date.now(),
+        target_type: targetType,
+        target_user_id: targetUserId,
+        title: title,
+        sender_name: sender,
+        content: content,
+        created_at: new Date().toISOString()
+      });
+
+      RetroAudio.success();
+      this.showToast(`🚀 [${targetDesc}] 에게 메시지가 발송되었습니다!`, 'success');
+
+      // 입력란 초기화
+      if (titleInput) titleInput.value = '';
+      if (contentInput) contentInput.value = '';
+
+      // 발송 내역 갱신
+      this.loadSentMessages();
+    } catch (err) {
+      console.error('메시지 발송 오류:', err);
+      RetroAudio.error();
+      alert('메시지 발송 실패:\n\n' + (err.message || err));
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '🚀 메시지 발송하기';
+    }
+  },
+
+  // 빠른 1:1 쪽지 모달 발송 처리
+  async handleSendDirectMessage() {
+    const uid = document.getElementById('input-direct-msg-user-id').value;
+    const title = (document.getElementById('input-direct-msg-title').value || '').trim();
+    const sender = (document.getElementById('input-direct-msg-sender').value || '').trim() || '운영자';
+    const content = (document.getElementById('input-direct-msg-content').value || '').trim();
+
+    if (!uid) {
+      alert('대상 성도 정보가 올바르지 않습니다.');
+      return;
+    }
+    if (!title || !content) {
+      alert('쪽지 제목과 본문을 모두 입력해 주세요.');
+      return;
+    }
+
+    const user = this.allUsers.find(u => u.id === uid);
+    const userName = user ? user.name : uid;
+
+    const btn = document.getElementById('btn-send-direct-message');
+    btn.disabled = true;
+    btn.textContent = '⏳ 쪽지 발송 중...';
+
+    try {
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from('admin_messages')
+          .insert([{
+            target_type: 'USER',
+            target_user_id: uid,
+            title: title,
+            sender_name: sender,
+            content: content
+          }])
+          .select();
+
+        if (error) {
+          if (error.code === '42P01' || (error.message && error.message.includes('relation "admin_messages" does not exist'))) {
+            throw new Error('Supabase에 admin_messages 테이블이 아직 생성되지 않았습니다.\n\n하단의 4번 [SQL 쿼리 복사하기] 버튼을 누르고 Supabase [SQL Editor]에서 실행해 주세요!');
+          }
+          throw error;
+        }
+      }
+
+      this.saveLocalSentMessage({
+        id: 'local_' + Date.now(),
+        target_type: 'USER',
+        target_user_id: uid,
+        title: title,
+        sender_name: sender,
+        content: content,
+        created_at: new Date().toISOString()
+      });
+
+      this.closeModal('modal-direct-message');
+      RetroAudio.success();
+      this.showToast(`💌 [${userName}] 성도님께 1:1 쪽지가 발송되었습니다!`, 'success');
+
+      this.loadSentMessages();
+    } catch (err) {
+      console.error('1:1 쪽지 발송 실패:', err);
+      RetroAudio.error();
+      alert('쪽지 발송 실패:\n\n' + (err.message || err));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💌 쪽지 발송하기';
+    }
+  },
+
+  // 로컬 백업 저장
+  saveLocalSentMessage(msg) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
+      saved.unshift(msg);
+      localStorage.setItem('charles_admin_sent_messages', JSON.stringify(saved.slice(0, 50)));
+    } catch (e) {}
+  },
+
+  // 최근 발송된 메시지 목록 조회 및 렌더링
+  async loadSentMessages() {
+    const listEl = document.getElementById('admin-sent-messages-list');
+    const countEl = document.getElementById('count-sent-messages');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div style="text-align: center; color: #888; padding: 20px; font-size: 13px;">발송 내역을 불러오는 중...</div>';
+
+    let messages = [];
+    let isCloudLoaded = false;
+
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('admin_messages')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (!error && Array.isArray(data)) {
+          messages = data;
+          isCloudLoaded = true;
+        } else if (error) {
+          console.warn('Supabase admin_messages 조회 실패:', error);
+        }
+      } catch (err) {
+        console.warn('Supabase admin_messages fetch error:', err);
+      }
+    }
+
+    if (!isCloudLoaded || messages.length === 0) {
+      try {
+        const localSaved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
+        if (messages.length === 0) {
+          messages = localSaved;
+        }
+      } catch (e) {}
+    }
+
+    if (countEl) countEl.textContent = messages.length;
+
+    if (messages.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; color: #888; padding: 24px; font-size: 13px; background: #FFF; border: 1px dashed #DDD; border-radius: 6px;">
+          아직 발송된 공지사항 또는 1:1 메시지가 없습니다.<br>
+          <span style="font-size: 11px; color: #AAA;">(위 폼에서 메시지를 작성해 발송해 보세요!)</span>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = messages.map(msg => {
+      const isAll = msg.target_type === 'ALL';
+      let targetBadge = '';
+      if (isAll) {
+        targetBadge = '<span class="msg-badge-all">📢 전체 공지</span>';
+      } else {
+        const u = this.allUsers.find(user => user.id === msg.target_user_id);
+        const name = u ? `${u.name}(${u.id})` : (msg.target_user_id || '성도');
+        targetBadge = `<span class="msg-badge-user">💌 1:1 쪽지 · ${name}</span>`;
+      }
+
+      const dateStr = msg.created_at ? new Date(msg.created_at).toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) : '-';
+
+      const safeContent = (msg.content || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
+
+      return `
+        <div class="sent-msg-item" data-msg-id="${msg.id}">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              ${targetBadge}
+              <span style="font-size: 12px; font-weight: 700; color: #333;">보낸이: ${msg.sender_name || '운영자'}</span>
+              <span style="font-size: 11px; color: #888;">${dateStr}</span>
+            </div>
+            <button type="button" class="admin-btn admin-btn-sm admin-btn-danger btn-delete-msg" data-msg-id="${msg.id}" style="padding: 3px 8px; font-size: 11px;">
+              🗑️ 삭제
+            </button>
+          </div>
+          <div style="font-weight: 700; font-size: 14px; color: #111; margin-bottom: 4px;">
+            ${msg.title || '(제목 없음)'}
+          </div>
+          <div style="font-size: 13px; color: #444; line-height: 1.5; background: #FAFAFA; padding: 8px 10px; border-radius: 4px; border: 1px solid #EAEAEA;">
+            ${safeContent}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 삭제 버튼 이벤트 바인딩
+    listEl.querySelectorAll('.btn-delete-msg').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.msgId;
+        this.handleDeleteMessage(id);
+      });
+    });
+  },
+
+  // 발송된 메시지 삭제 처리
+  async handleDeleteMessage(msgId) {
+    if (!confirm('정말 이 메시지를 삭제하시겠습니까?\n\n삭제 시 성도 앱에서도 즉시 제거됩니다.')) {
+      return;
+    }
+
+    try {
+      if (typeof supabaseClient !== 'undefined' && supabaseClient && !msgId.startsWith('local_')) {
+        const { error } = await supabaseClient
+          .from('admin_messages')
+          .delete()
+          .eq('id', msgId);
+
+        if (error) throw error;
+      }
+
+      // 로컬 스토리지에서도 제거
+      try {
+        const saved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
+        const updated = saved.filter(m => m.id !== msgId);
+        localStorage.setItem('charles_admin_sent_messages', JSON.stringify(updated));
+      } catch (e) {}
+
+      RetroAudio.success();
+      this.showToast('🗑️ 메시지가 삭제되었습니다.', 'info');
+      this.loadSentMessages();
+    } catch (err) {
+      console.error('메시지 삭제 실패:', err);
+      RetroAudio.error();
+      alert('메시지 삭제 중 오류가 발생했습니다: ' + (err.message || err));
     }
   }
 };

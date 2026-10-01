@@ -431,6 +431,108 @@ body {
   background: #B71C1C;
 }
 
+/* ==================== 공지 및 메시지 발송 센터 스타일 ==================== */
+.msg-type-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.msg-type-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F7F7F7;
+  border: 1.5px solid var(--admin-border);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.msg-type-radio-label:hover {
+  background: #EFEFEF;
+}
+
+.msg-type-radio-label input[type="radio"]:checked + span {
+  color: #111111;
+}
+
+.msg-type-radio-label.active {
+  background: #111111;
+  color: #FFFFFF;
+  border-color: #111111;
+}
+
+.admin-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--main-font);
+  font-size: 13px;
+  border: 1.5px solid var(--admin-border);
+  outline: none;
+  background: #FFFFFF;
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+
+.sent-msg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sent-msg-item {
+  border: 1.5px solid #E0E0E0;
+  background: #FAFAFA;
+  padding: 12px 14px;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.sent-msg-item:hover {
+  border-color: #111111;
+}
+
+.msg-badge-all {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #E3F2FD;
+  border: 1px solid #90CAF9;
+  color: #1565C0;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 3px;
+}
+
+.msg-badge-user {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #FCE4EC;
+  border: 1px solid #F48FB1;
+  color: #C2185B;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 3px;
+}
+
+.btn-action-msg {
+  background: #FFF3E0;
+  border-color: #FFB74D;
+  color: #E65100;
+}
+.btn-action-msg:hover {
+  background: #FFE0B2;
+}
+
 @media (max-width: 600px) {
   .admin-header {
     flex-direction: column;
