@@ -167,6 +167,7 @@ ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS talents
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS equipped jsonb DEFAULT '{}'::jsonb;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS quest_claims jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS today_read_chapters integer DEFAULT 0;
 
 -- 2. [RLS 보안 경고 해결] 무제한 FOR ALL (true) 정책 제거 및 목적별 안전 정책으로 세분화
 ALTER TABLE public.user_reading_state ENABLE ROW LEVEL SECURITY;
@@ -202,7 +203,9 @@ SELECT
   COALESCE(m.name, r.user_id) AS name,
   COALESCE(m.cell, '미지정') AS cell,
   COALESCE(
-    NULLIF(r.daily_counts ->> (CURRENT_DATE AT TIME ZONE 'Asia/Seoul')::text, '')::integer, 
+    NULLIF(r.daily_counts ->> to_char(now() AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD'), '')::integer,
+    NULLIF(r.daily_counts ->> CURRENT_DATE::text, '')::integer,
+    r.today_read_chapters,
     0
   ) AS today_read_chapters,
   COALESCE(

@@ -472,26 +472,28 @@ const StorageService = {
         updated_at: new Date().toISOString()
       };
 
-      // Supabase 테이블에 개별 달란트 컬럼이 존재하는 경우 함께 전송
+      // Supabase 테이블에 개별 달란트 및 오늘 읽은 장수 컬럼이 존재하는 경우 함께 전송
       if (this._supportsTalentColumns !== false) {
         payload.talents = talentPayload.talents;
         payload.equipped = talentPayload.equipped;
         payload.inventory = talentPayload.inventory;
         payload.quest_claims = talentPayload.quest_claims;
+        payload.today_read_chapters = this.getTodayReadCount();
       }
 
       let { error } = await supabaseClient
         .from('user_reading_state')
         .upsert(payload, { onConflict: 'user_id' });
 
-      // Supabase 테이블에 달란트/아이템 개별 컬럼이 아직 없을 경우의 자동 폴백
+      // Supabase 테이블에 달란트/아이템/오늘읽은장수 개별 컬럼이 아직 없을 경우의 자동 폴백
       if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
         this._supportsTalentColumns = false;
-        console.warn('☁️ Supabase 테이블에 달란트 개별 컬럼 미존재 감지 -> daily_counts JSONB 임베딩으로 안전하게 동기화합니다.');
+        console.warn('☁️ Supabase 테이블에 개별 컬럼 미존재 감지 -> daily_counts JSONB 임베딩으로 안전하게 동기화합니다.');
         delete payload.talents;
         delete payload.equipped;
         delete payload.inventory;
         delete payload.quest_claims;
+        delete payload.today_read_chapters;
         const retryRes = await supabaseClient
           .from('user_reading_state')
           .upsert(payload, { onConflict: 'user_id' });

@@ -8,11 +8,12 @@
 -- 4. 왼쪽 메뉴의 [Table Editor]를 누르면 'user_today_summary' 테이블(뷰)이 바로 나타납니다.
 -- ==============================================================================
 
--- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 컬럼 안전 추가
+-- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 및 오늘읽은장수 컬럼 안전 추가
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS equipped jsonb DEFAULT '{}'::jsonb;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS quest_claims jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS today_read_chapters integer DEFAULT 0;
 
 -- 2. [RLS 보안 경고 해결] 무제한 FOR ALL (true) 정책 제거 및 목적별 안전 정책으로 세분화
 -- (DELETE 정책을 부여하지 않아, 외부 anon 키를 통한 악의적 전체 삭제를 원천 방지합니다)
@@ -44,9 +45,8 @@ USING (user_id IS NOT NULL AND length(user_id) > 0)
 WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
 
 -- 3. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
--- security_invoker = true 설정으로 Linter 보안 검사를 100% 통과합니다.
--- Supabase Table Editor에서 'user_today_summary'를 누르면 별도 테이블로 바로 확인할 수 있습니다.
--- 자정(00:00 KST)이 지나면 오늘 읽은 장수가 한국 시간 기준으로 자동 0으로 리셋되어 언제나 정확합니다.
+-- 한국 시간(KST) YYYY-MM-DD 포맷을 정확히 매칭하여 오늘 읽은 장수가 친구창과 100% 일치합니다.
+-- security_invoker = true 설정으로 Supabase Linter 보안 검사를 통과합니다.
 DROP VIEW IF EXISTS public.user_today_summary CASCADE;
 
 CREATE OR REPLACE VIEW public.user_today_summary
@@ -57,7 +57,9 @@ SELECT
   COALESCE(m.name, r.user_id) AS name,
   COALESCE(m.cell, '미지정') AS cell,
   COALESCE(
-    NULLIF(r.daily_counts ->> (CURRENT_DATE AT TIME ZONE 'Asia/Seoul')::text, '')::integer, 
+    NULLIF(r.daily_counts ->> to_char(now() AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD'), '')::integer,
+    NULLIF(r.daily_counts ->> CURRENT_DATE::text, '')::integer,
+    r.today_read_chapters,
     0
   ) AS today_read_chapters,
   COALESCE(
