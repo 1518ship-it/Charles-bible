@@ -109,7 +109,7 @@ const TalentService = {
     if (this.hasItem(itemId)) return { success: false, error: '이미 보유한 아이템입니다.' };
     
     if (!this.spendTalents(item.price)) {
-      return { success: false, error: `달란트가 부족합니다. (필요: ${item.price} 🪙)` };
+      return { success: false, error: `달란트가 부족합니다. (필요: ${item.price} 달란트)` };
     }
 
     const inv = this.getInventory();

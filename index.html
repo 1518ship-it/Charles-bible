@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json?v=3.2">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=3.9">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=4.0">
 </head>
 <body>
 
@@ -172,7 +172,7 @@
         <div class="home-bottom-actions">
           <!-- 하단 좌측: 달란트 버튼 (상점 & 옷장) -->
           <button id="btn-home-talents" class="home-talent-btn" type="button" title="달란트 상점 & 옷장">
-            <span class="talent-coin-icon">🪙</span>
+            <span class="talent-coin-icon"><span class="pixel-wooden-fence"></span></span>
             <span id="home-talent-count" class="talent-count-num">0</span>
           </button>
 
@@ -1470,7 +1470,7 @@
       <div class="modal-sheet talent-shop-sheet">
         <div class="modal-header">
           <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
-            <span style="font-size: 17px;">🪙</span>
+            <span class="talent-coin-icon coin-lg"><span class="pixel-wooden-fence"></span></span>
             <span>달란트 상점 & 옷장</span>
           </div>
           <button id="btn-close-shop-modal" class="btn-icon-close" type="button" aria-label="닫기" title="닫기">
@@ -1495,7 +1495,7 @@
             </div>
             <div class="shop-balance-badge">
               <span>보유 달란트:</span>
-              <span id="shop-balance-count">🪙 0</span>
+              <span id="shop-balance-count"><span class="talent-coin-icon coin-sm"><span class="pixel-wooden-fence"></span></span> 0</span>
             </div>
           </div>
 
@@ -1526,7 +1526,7 @@
         </div>
         <div class="nt-reward-box">
           <span>🎉 완독 특별 보상:</span>
-          <span>+100 🪙 달란트 지급!</span>
+          <span>+100 <span class="talent-coin-icon coin-sm"><span class="pixel-wooden-fence"></span></span> 달란트 지급!</span>
         </div>
         <button id="btn-close-nt-celebration" class="btn-modal-confirm" type="button" style="background: #111; color: #fff;">
           감사의 찬양과 함께 확인
@@ -1543,11 +1543,11 @@
   <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
   <script src="data/bible-nt-bundle.js?v=3.3"></script>
   <script src="js/bible-data.js?v=3.3"></script>
-  <script src="js/charles-pixel.js?v=3.9"></script>
+  <script src="js/charles-pixel.js?v=4.0"></script>
   <script src="js/auth.js?v=3.3"></script>
-  <script src="js/storage.js?v=3.9"></script>
-  <script src="js/talent.js?v=3.9"></script>
-  <script src="js/app.js?v=3.9"></script>
+  <script src="js/storage.js?v=4.0"></script>
+  <script src="js/talent.js?v=4.0"></script>
+  <script src="js/app.js?v=4.0"></script>
 
 </body>
 </html>

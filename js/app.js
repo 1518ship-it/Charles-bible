@@ -827,6 +827,12 @@ const App = {
   // ==================== 8. 달란트(Talent) & 퀘스트 & 커스터마이징 매니저 ====================
   currentShopTab: 'store',
 
+  // 달란트 픽셀 코인 HTML 생성 헬퍼
+  getTalentCoinIcon(size = 'sm') {
+    const sizeClass = size === 'lg' ? 'coin-lg' : (size === 'sm' ? 'coin-sm' : '');
+    return `<span class="talent-coin-icon ${sizeClass}"><span class="pixel-wooden-fence"></span></span>`;
+  },
+
   renderHomeTalents() {
     if (typeof TalentService === 'undefined') return;
 
@@ -880,7 +886,7 @@ const App = {
       if (q.status === 'claimed') {
         btnHtml = `<button class="btn-quest-action claimed" disabled type="button">수령 완료 ✓</button>`;
       } else if (q.status === 'ready') {
-        btnHtml = `<button class="btn-quest-action ready" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 🪙</button>`;
+        btnHtml = `<button class="btn-quest-action ready" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 ${this.getTalentCoinIcon('sm')}</button>`;
       } else {
         btnHtml = `<button class="btn-quest-action progress" disabled type="button">${q.current}/${q.target} ${q.unit}</button>`;
       }
@@ -896,7 +902,7 @@ const App = {
             </div>
             <div class="quest-card-status-text">
               <span>진행도: ${q.current}/${q.target} ${q.unit} (${percent}%)</span>
-              <span style="font-weight: 800; color: #D68910;">+${q.reward} 🪙</span>
+              <span style="font-weight: 800; color: #D68910; display: inline-flex; align-items: center; gap: 4px;">+${q.reward} ${this.getTalentCoinIcon('sm')}</span>
             </div>
           </div>
           ${btnHtml}
@@ -958,7 +964,7 @@ const App = {
       }
       RetroAudio.success();
     } else {
-      this.showToast(`🎉 [${res.quest.title}] 완료! +${res.reward} 달란트(🪙) 수령!`);
+      this.showToast(`🎉 [${res.quest.title}] 완료! +${res.reward} 달란트 수령!`);
       RetroAudio.click();
     }
 
@@ -1000,7 +1006,7 @@ const App = {
     const balance = TalentService.getTalents();
     const balanceEl = document.getElementById('shop-balance-count');
     if (balanceEl) {
-      balanceEl.textContent = `🪙 ${balance.toLocaleString()}`;
+      balanceEl.innerHTML = `${this.getTalentCoinIcon('sm')} ${balance.toLocaleString()}`;
     }
 
     // 3) 피팅룸 찰스 아바타 렌더링
@@ -1027,7 +1033,7 @@ const App = {
         if (isOwned) {
           btnHtml = `<button class="shop-item-btn equipped" type="button" disabled>보유중 ✓</button>`;
         } else {
-          btnHtml = `<button class="shop-item-btn buy" type="button" onclick="App.buyTalentItem('${item.id}')">구매 (${item.price} 🪙)</button>`;
+          btnHtml = `<button class="shop-item-btn buy" type="button" onclick="App.buyTalentItem('${item.id}')">구매 (${item.price} ${this.getTalentCoinIcon('sm')})</button>`;
         }
 
         return `
