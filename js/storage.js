@@ -425,6 +425,8 @@ const StorageService = {
 
   // ==================== 6. Supabase 클라우드 동기화 ====================
   _syncTimeout: null,
+  _supportsTalentColumns: null, // null: 미확인, true: 지원, false: 기본 컬럼만 사용
+
   scheduleCloudSync() {
     if (this._syncTimeout) clearTimeout(this._syncTimeout);
     this._syncTimeout = setTimeout(() => {
@@ -434,9 +436,9 @@ const StorageService = {
 
   async saveToCloud() {
     const uid = this.getCurrentUserId();
-    if (!uid || uid === 'guest') return;
+    if (!uid || uid === 'guest') return false;
 
-    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return false;
 
     try {
       const payload = {
@@ -449,20 +451,25 @@ const StorageService = {
         max_streak: this.getStreakInfo().maxStreak || 0,
         last_evaluated_date: localStorage.getItem(this.getUserKey('last_evaluated_date')) || this.getYesterdayDateStr(),
         last_read_date: this.getTodayDateStr(),
-        talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : 0,
-        equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
-        inventory: typeof TalentService !== 'undefined' ? TalentService.getInventory() : [],
-        quest_claims: typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : {},
         updated_at: new Date().toISOString()
       };
+
+      // 달란트/아이템 컬럼 지원 여부 확인 후 추가 (미지원 확인 시 400 에러 사전 방지)
+      if (this._supportsTalentColumns !== false) {
+        payload.talents = typeof TalentService !== 'undefined' ? TalentService.getTalents() : 0;
+        payload.equipped = typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {};
+        payload.inventory = typeof TalentService !== 'undefined' ? TalentService.getInventory() : [];
+        payload.quest_claims = typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : {};
+      }
 
       let { error } = await supabaseClient
         .from('user_reading_state')
         .upsert(payload, { onConflict: 'user_id' });
 
       // Supabase 테이블에 달란트/아이템 관련 컬럼이 아직 없을 경우의 자동 폴백
-      if (error && (error.code === '42703' || (error.message && error.message.includes('column')))) {
-        console.warn('☁️ Supabase 컬럼 미생성 감지, 기본 통독 컬럼만으로 동기화 재시도합니다.');
+      if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+        this._supportsTalentColumns = false;
+        console.warn('☁️ Supabase 테이블에 달란트 컬럼 미존재 감지 -> 기본 통독 컬럼만으로 동기화합니다.');
         delete payload.talents;
         delete payload.equipped;
         delete payload.inventory;
@@ -471,28 +478,34 @@ const StorageService = {
           .from('user_reading_state')
           .upsert(payload, { onConflict: 'user_id' });
         error = retryRes.error;
+      } else if (!error && this._supportsTalentColumns === null) {
+        this._supportsTalentColumns = true;
       }
 
       if (error) {
-        // 테이블이 아직 없으면 안내 로그만 기록
         if (error.code === '42P01') {
           console.warn('☁️ Supabase에 user_reading_state 테이블이 없습니다. 관리자 사이트의 쿼리를 확인하세요.');
         } else {
-          console.warn('☁️ Cloud sync warning:', error.message);
+          console.warn('☁️ Cloud sync warning:', error.message || error);
         }
+        return false;
       } else {
-        console.log('☁️ Supabase에 유저 통독 및 달란트 상태 동기화 완료:', uid);
+        const readCount = Object.keys(payload.read_progress || {}).length;
+        const todayCount = (payload.daily_counts || {})[this.getTodayDateStr()] || 0;
+        console.log(`☁️ Supabase 동기화 완료: [${uid}] - 총 ${readCount}장 읽음, 오늘 ${todayCount}장 읽음`);
+        return true;
       }
     } catch (err) {
       console.warn('☁️ Cloud sync error:', err);
+      return false;
     }
   },
 
   async syncFromCloud(userId) {
     const uid = userId || this.getCurrentUserId();
-    if (!uid || uid === 'guest') return;
+    if (!uid || uid === 'guest') return false;
 
-    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return false;
 
     try {
       const { data, error } = await supabaseClient
@@ -502,43 +515,104 @@ const StorageService = {
         .maybeSingle();
 
       if (!error && data) {
-        console.log('☁️ Supabase에서 유저 통독 데이터 수신:', uid);
-        if (data.read_progress) {
-          localStorage.setItem(`charles_user_${uid}_progress`, JSON.stringify(data.read_progress));
+        console.log('☁️ Supabase에서 유저 통독 데이터 수신 및 양방향 병합:', uid);
+
+        let hasNewerLocalData = false;
+
+        // 1) 성경 진행도 (read_progress) 양방향 합집합 병합
+        const localProgress = this.getProgress();
+        const remoteProgress = (data.read_progress && typeof data.read_progress === 'object') ? data.read_progress : {};
+        const mergedProgress = { ...remoteProgress, ...localProgress };
+        
+        if (Object.keys(mergedProgress).length > Object.keys(remoteProgress).length) {
+          hasNewerLocalData = true;
         }
-        if (data.daily_counts) {
-          localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(data.daily_counts));
+        localStorage.setItem(`charles_user_${uid}_progress`, JSON.stringify(mergedProgress));
+
+        // 2) 일별 읽은 장수 (daily_counts) 날짜별 최대값 보존 병합
+        const localDaily = this.getDailyCounts();
+        const remoteDaily = (data.daily_counts && typeof data.daily_counts === 'object') ? data.daily_counts : {};
+        const mergedDaily = { ...remoteDaily };
+        for (const [dateStr, count] of Object.entries(localDaily)) {
+          const rCount = remoteDaily[dateStr] || 0;
+          if (count > rCount) {
+            hasNewerLocalData = true;
+          }
+          mergedDaily[dateStr] = Math.max(rCount, count);
         }
-        if (data.read_history) {
-          localStorage.setItem(`charles_user_${uid}_history`, JSON.stringify(data.read_history));
+        localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(mergedDaily));
+
+        // 3) 읽은 히스토리 (read_history) 중복 없이 병합
+        const localHistory = this.getHistory();
+        const remoteHistory = Array.isArray(data.read_history) ? data.read_history : [];
+        const seenKeys = new Set();
+        const mergedHistory = [];
+        for (const h of [...localHistory, ...remoteHistory]) {
+          if (!h || !h.date) continue;
+          const k = `${h.date}_${h.bookId}_${h.chapter}`;
+          if (!seenKeys.has(k)) {
+            seenKeys.add(k);
+            mergedHistory.push(h);
+          }
         }
-        if (data.charles_stage) {
-          localStorage.setItem(`charles_user_${uid}_stage`, String(data.charles_stage));
-        }
+        mergedHistory.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+        localStorage.setItem(`charles_user_${uid}_history`, JSON.stringify(mergedHistory));
+
+        // 4) 찰스 단계 (charles_stage)
+        const localStage = parseInt(localStorage.getItem(`charles_user_${uid}_stage`) || '1', 10);
+        const remoteStage = data.charles_stage || 1;
+        const finalStage = Math.max(localStage, remoteStage);
+        localStorage.setItem(`charles_user_${uid}_stage`, String(finalStage));
+
+        // 5) 마지막 평가일
         if (data.last_evaluated_date) {
           localStorage.setItem(`charles_user_${uid}_last_evaluated_date`, String(data.last_evaluated_date));
         }
-        if (data.streak_count !== undefined) {
-          localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify({
-            count: data.streak_count || 0,
-            maxStreak: data.max_streak || 0,
-            lastDate: data.last_read_date || null
-          }));
-        }
+
+        // 6) 스트릭 정보 (streak_count, max_streak)
+        const localStreakInfo = this.getStreakInfo();
+        const remoteStreak = data.streak_count || 0;
+        const remoteMaxStreak = data.max_streak || 0;
+        localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify({
+          count: Math.max(localStreakInfo.count || 0, remoteStreak),
+          maxStreak: Math.max(localStreakInfo.maxStreak || 0, remoteMaxStreak),
+          lastDate: data.last_read_date || localStreakInfo.lastDate || null
+        }));
+
+        // 7) 달란트 / 아이템 / 인벤토리 / 퀘스트 병합
         if (data.talents !== undefined && data.talents !== null) {
-          localStorage.setItem(`charles_user_${uid}_talents`, String(data.talents));
+          const localTalents = parseInt(localStorage.getItem(`charles_user_${uid}_talents`) || '0', 10);
+          localStorage.setItem(`charles_user_${uid}_talents`, String(Math.max(localTalents, data.talents)));
         }
-        if (data.equipped) {
-          localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(data.equipped));
+        if (data.equipped && typeof data.equipped === 'object') {
+          const localEq = localStorage.getItem(`charles_user_${uid}_equipped`);
+          if (!localEq) {
+            localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(data.equipped));
+          }
         }
-        if (data.inventory) {
-          localStorage.setItem(`charles_user_${uid}_inventory`, JSON.stringify(data.inventory));
+        if (Array.isArray(data.inventory)) {
+          const localInv = JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]');
+          const combinedInv = Array.from(new Set([...data.inventory, ...localInv]));
+          localStorage.setItem(`charles_user_${uid}_inventory`, JSON.stringify(combinedInv));
         }
-        if (data.quest_claims) {
-          localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify(data.quest_claims));
+        if (data.quest_claims && typeof data.quest_claims === 'object') {
+          const localClaims = JSON.parse(localStorage.getItem(`charles_user_${uid}_quest_claims`) || '{}');
+          localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify({ ...data.quest_claims, ...localClaims }));
         }
-        // 자정 평가 재확인
+
+        // 8) 자정 평가 재확인
         this.evaluateCharlesMidnight();
+
+        // 9) 로컬에 새로운 읽음 기록이 있었다면 원격 Supabase도 최신 병합본으로 즉시 갱신
+        if (hasNewerLocalData) {
+          this.scheduleCloudSync();
+        }
+
+        // 10) 동기화 완료 커스텀 이벤트 발행 (UI 실시간 갱신용)
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('charles-cloud-synced', { detail: { userId: uid } }));
+        }
+
         return true;
       }
     } catch (err) {
@@ -696,9 +770,13 @@ const StorageService = {
     // 2) Supabase에서 1회의 단일 쿼리로 전체 친구 상태 일괄(Batch) 조회!
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
       try {
+        const selectFields = (this._supportsTalentColumns === false)
+          ? 'user_id, charles_stage, streak_count, daily_counts'
+          : 'user_id, charles_stage, streak_count, daily_counts, equipped';
+
         let query = supabaseClient
           .from('user_reading_state')
-          .select('user_id, charles_stage, streak_count, daily_counts, equipped');
+          .select(selectFields);
 
         // 100명 이하일 때는 in 필터, 그 이상이거나 빈 목록이면 전체 테이블 1회 조회
         if (cleanIds.length > 0 && cleanIds.length <= 100) {
@@ -708,7 +786,8 @@ const StorageService = {
         let { data, error } = await query;
 
         // equipped 컬럼 없을 시 fallback
-        if (error && error.message && (error.message.includes('equipped') || error.code === '42703')) {
+        if (error && (error.code === 'PGRST204' || error.code === '42703' || (error.message && (error.message.includes('equipped') || error.message.includes('column'))))) {
+          this._supportsTalentColumns = false;
           let fallbackQuery = supabaseClient
             .from('user_reading_state')
             .select('user_id, charles_stage, streak_count, daily_counts');
@@ -842,8 +921,31 @@ const StorageService = {
     localStorage.removeItem(`charles_user_${uid}_inventory`);
     localStorage.removeItem(`charles_user_${uid}_quest_claims`);
     this.scheduleCloudSync();
+  },
+
+  // 예약된 동기화 즉시 강제 전송
+  flushCloudSync() {
+    if (this._syncTimeout) {
+      clearTimeout(this._syncTimeout);
+      this._syncTimeout = null;
+      return this.saveToCloud();
+    }
+    return Promise.resolve(false);
   }
 };
+
+// 탭 닫기 또는 백그라운드 전환 시 미전송된 통독 데이터 즉시 플러시
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    StorageService.flushCloudSync();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      StorageService.flushCloudSync();
+    }
+  });
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { StorageService, STORAGE_KEYS };

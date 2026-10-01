@@ -358,7 +358,7 @@ const AuthService = {
         const { data, error } = await db
           .from('members')
           .select('*')
-          .eq('id', cleanId)
+          .ilike('id', cleanId)
           .eq('password', cleanPw)
           .maybeSingle();
 
@@ -375,14 +375,14 @@ const AuthService = {
           // Supabase 최근 접속일 갱신 (비동기 백그라운드)
           db.from('members')
             .update({ last_login_at: userSession.lastLoginAt })
-            .eq('id', cleanId)
+            .eq('id', data.id)
             .then();
 
           // 로컬 세션 저장
           localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_USER, JSON.stringify(userSession));
 
           if (typeof StorageService !== 'undefined' && StorageService.syncFromCloud) {
-            StorageService.syncFromCloud(userSession.id);
+            await StorageService.syncFromCloud(userSession.id);
           }
 
           RetroAudio.success();
@@ -412,7 +412,7 @@ const AuthService = {
     localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_USER, JSON.stringify(matchedUser));
 
     if (typeof StorageService !== 'undefined' && StorageService.syncFromCloud) {
-      StorageService.syncFromCloud(matchedUser.id);
+      await StorageService.syncFromCloud(matchedUser.id);
     }
 
     RetroAudio.success();

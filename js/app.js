@@ -22,7 +22,7 @@ const App = {
   calendarMonth: new Date().getMonth() + 1,
   selectedDateStr: null,
 
-  init() {
+  async init() {
     this.selectedDateStr = StorageService.getTodayDateStr();
     this.initAuth();
     this.loadSavedFontSize();
@@ -30,6 +30,19 @@ const App = {
     this.applySavedTheme();
     this.renderAll();
     this.updateUnreadNotificationDot();
+
+    // ☁️ 이미 로그인된 사용자의 경우 Supabase에서 최신 통독 진행도 및 오늘 읽은 장수 실시간 동기화
+    if (AuthService.isAuthenticated()) {
+      try {
+        const synced = await StorageService.syncFromCloud();
+        if (synced) {
+          this.renderAll();
+          console.log('☁️ [초기화] Supabase로부터 최신 통독 진행도 및 오늘 읽은 장수가 동기화되었습니다.');
+        }
+      } catch (err) {
+        console.warn('초기 클라우드 동기화 건너뜀 (로컬 스토리지 사용):', err);
+      }
+    }
   },
 
   loadSavedFontSize() {
@@ -200,6 +213,14 @@ const App = {
           if (result.success) {
             if (loginErrText) loginErrText.classList.remove('active');
             gateOverlay.style.display = 'none';
+
+            // 로그인 직후 최신 클라우드 통독 데이터 동기화 완료 대기 후 렌더링
+            try {
+              await StorageService.syncFromCloud(result.user.id);
+            } catch (syncErr) {
+              console.warn('로그인 클라우드 동기화 경고:', syncErr);
+            }
+
             this.renderAll();
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}!`);
@@ -297,6 +318,14 @@ const App = {
           if (result.success) {
             if (signupErrText) signupErrText.classList.remove('active');
             gateOverlay.style.display = 'none';
+
+            // 신규 가입 시 초기 통독 상태 즉시 Supabase 클라우드에 생성/동기화
+            try {
+              await StorageService.saveToCloud();
+            } catch (saveErr) {
+              console.warn('신규 가입 초기 상태 저장 경고:', saveErr);
+            }
+
             this.renderAll();
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
@@ -323,6 +352,15 @@ const App = {
 
   // ==================== 이벤트 바인딩 ====================
   bindEvents() {
+    // Supabase 데이터 동기화 완료 이벤트 수신 시 화면 실시간 리렌더링
+    window.addEventListener('charles-cloud-synced', () => {
+      this.renderHome();
+      this.renderBibleList();
+      this.renderStats();
+      this.renderSocial();
+      this.renderProfile();
+    });
+
     // 하단 탭 버튼 클릭
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
