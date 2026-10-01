@@ -891,9 +891,7 @@ const App = {
       }
     }
 
-    const html = shelves.map((shelf, shelfIdx) => {
-      const isTopShelf = (shelfIdx === 0);
-
+    const html = shelves.map(shelf => {
       // 1) 캐릭터 슬롯 3개
       const charSlotsHtml = shelf.map(f => {
         if (f.isEmpty) {
@@ -915,10 +913,6 @@ const App = {
                   <span class="pasture-crown-icon">👑</span>
                   <span class="pasture-me-pill">나</span>
                 </div>
-              ` : f.accessory ? `
-                <div class="pasture-accessory-wrap" title="${f.accessory.name}">
-                  ${f.accessory.icon}
-                </div>
               ` : ''}
               <div class="pasture-sheep-svg-wrap">
                 ${visual.svg}
@@ -938,8 +932,8 @@ const App = {
           `;
         }
         return `
-          <div class="pasture-dirt-cell" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
-            <span class="pasture-char-name">${f.callName}</span>
+          <div class="pasture-dirt-cell ${f.isMe ? 'is-me' : ''}" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
+            <span class="pasture-char-name ${f.isMe ? 'is-me' : ''}">${f.callName}</span>
           </div>
         `;
       }).join('');
@@ -978,29 +972,6 @@ const App = {
 
       return `
         <div class="pasture-shelf">
-          <!-- 0층 좌측 버스 정류장 푯말 -->
-          ${isTopShelf ? `
-            <div class="pasture-bus-stop" onclick="App.showToast('🚏 서원경 정류장: 매일 말씀으로 하나되는 목장입니다 🌿')" title="서원경 정류장">
-              <div class="bus-stop-sign">
-                <svg viewBox="0 0 12 12" width="16" height="16" shape-rendering="crispEdges">
-                  <rect x="3" y="1" width="6" height="1" fill="#ffffff" />
-                  <rect x="1" y="2" width="10" height="1" fill="#ffffff" />
-                  <rect x="1" y="3" width="10" height="4" fill="#ffffff" />
-                  <rect x="3" y="4" width="2" height="2" fill="#1565c0" />
-                  <rect x="7" y="4" width="2" height="2" fill="#1565c0" />
-                  <rect x="2" y="6" width="1" height="1" fill="#ffb6c1" />
-                  <rect x="9" y="6" width="1" height="1" fill="#ffb6c1" />
-                  <rect x="5" y="6" width="2" height="1" fill="#1565c0" />
-                  <rect x="2" y="8" width="8" height="1" fill="#ffffff" />
-                  <rect x="3" y="9" width="2" height="1" fill="#1565c0" />
-                  <rect x="7" y="9" width="2" height="1" fill="#1565c0" />
-                </svg>
-              </div>
-              <div class="bus-stop-pole"></div>
-              <div class="bus-stop-base"></div>
-            </div>
-          ` : ''}
-
           <!-- 상단: 3명의 캐릭터 슬롯 -->
           <div class="pasture-shelf-characters">
             ${charSlotsHtml}
