@@ -602,48 +602,45 @@ body {
   align-items: center;
 }
 
-/* 내 캐릭터 머리 위 왕관 플로팅 */
-.pasture-crown-wrap {
+/* 내 캐릭터 머리 위 'me' 이름표 (검은색 바탕, 흰색 글씨) */
+.pasture-me-tag-wrap {
   position: absolute;
-  top: -19px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: pastureFloatCrown 1.8s ease-in-out infinite;
   z-index: 10;
   pointer-events: none;
+  animation: pastureFloatMe 2s ease-in-out infinite;
 }
 
-.pasture-crown-icon {
-  font-size: 18px;
-  filter: drop-shadow(0 2px 5px rgba(241, 196, 15, 0.7));
-}
-
-.pasture-me-pill {
-  position: absolute;
-  bottom: -4px;
-  background: #f1c40f;
-  color: #111;
-  font-size: 9px;
+.pasture-me-badge {
+  background: #111111;
+  color: #ffffff;
+  font-size: 9.5px;
   font-weight: 800;
-  padding: 1px 4px;
-  border-radius: 6px;
-  border: 1px solid #b7950b;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  padding: 1.5px 6.5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  line-height: 1.15;
+  text-transform: lowercase;
 }
 
-/* 친구 악세사리 플로팅 */
-.pasture-accessory-wrap {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
-  pointer-events: none;
-  z-index: 10;
-  animation: pastureBobAccessory 2.2s ease-in-out infinite;
+@keyframes pastureFloatMe {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-2px); }
+}
+
+/* 기존 왕관 및 악세사리 완전 비활성화 */
+.pasture-crown-wrap,
+.pasture-accessory-wrap,
+.pasture-bus-stop {
+  display: none !important;
 }
 
 .pasture-sheep-svg-wrap {

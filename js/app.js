@@ -823,8 +823,7 @@ const App = {
           isMe,
           stage,
           streakCount,
-          todayRead,
-          accessory: this.getFriendAccessory(u, isMe, stage)
+          todayRead
         };
       });
     };
@@ -848,7 +847,6 @@ const App = {
             f.stage = state.stage || f.stage || 1;
             f.streakCount = state.streakCount !== undefined ? state.streakCount : f.streakCount;
             f.todayRead = state.todayRead !== undefined ? state.todayRead : f.todayRead;
-            f.accessory = this.getFriendAccessory(f, f.isMe, f.stage);
           }
         } catch (e) {}
       }));
@@ -909,9 +907,8 @@ const App = {
           <div class="pasture-char-slot" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
             <div class="pasture-sheep-box">
               ${isMe ? `
-                <div class="pasture-crown-wrap">
-                  <span class="pasture-crown-icon">👑</span>
-                  <span class="pasture-me-pill">나</span>
+                <div class="pasture-me-tag-wrap">
+                  <span class="pasture-me-badge">me</span>
                 </div>
               ` : ''}
               <div class="pasture-sheep-svg-wrap">
