@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Charles' Bible - 심플 & 큐트 픽셀 양 찰스 (Simple & Cute Charles the Sheep)
  * 미니멀하고 귀여운 흑백 도트 캐릭터 및 5단계 상태
  */
@@ -200,23 +200,18 @@ function getCharlesVisual(stage = 1, scale = 8) {
   const info = CHARLES_STAGES[safeStage];
 
   let pixelMap = SIMPLE_PIXEL_STAGE_1;
-  let animClass = 'cute-breathe';
 
   if (safeStage === 2) {
     pixelMap = SIMPLE_PIXEL_STAGE_2;
-    animClass = 'cute-chew';
   } else if (safeStage === 3) {
     pixelMap = SIMPLE_PIXEL_STAGE_3;
-    animClass = 'cute-bounce';
   } else if (safeStage === 4) {
     pixelMap = SIMPLE_PIXEL_STAGE_4;
-    animClass = 'cute-hop';
   } else if (safeStage === 5) {
     pixelMap = SIMPLE_PIXEL_STAGE_5;
-    animClass = 'cute-float';
   }
 
-  const svg = renderSimplePixelGrid(pixelMap, scale, animClass);
+  const svg = renderSimplePixelGrid(pixelMap, scale, 'charles-static');
 
   return {
     stage: safeStage,

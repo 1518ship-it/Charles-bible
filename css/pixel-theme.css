@@ -336,46 +336,17 @@ body {
   transform: none;
 }
 
-/* 귀여운 미니멀 애니메이션 */
-.cute-breathe {
-  animation: cuteBreathe 2s infinite ease-in-out;
-}
-.cute-chew {
-  animation: cuteChew 1s infinite steps(2);
-}
-.cute-bounce {
-  animation: cuteBounce 1.2s infinite ease-in-out;
-}
-.cute-hop {
-  animation: cuteHop 0.9s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
-}
-.cute-float {
-  animation: cuteFloat 2s infinite ease-in-out;
-}
-
-@keyframes cuteBreathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.97) translateY(2px); }
-}
-
-@keyframes cuteChew {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
-@keyframes cuteBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes cuteHop {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
-}
-
-@keyframes cuteFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+/* 찰스 기본 애니메이션 (위아래 움직임 모션 비활성화) */
+.cute-breathe,
+.cute-chew,
+.cute-bounce,
+.cute-hop,
+.cute-float,
+.charles-svg,
+.charles-static,
+.pasture-sheep-svg-wrap svg {
+  animation: none !important;
+  transform: none !important;
 }
 
 /* ==================== TAB: SOCIAL (소셜 / 친구 목록) ==================== */
@@ -622,7 +593,7 @@ body {
   justify-content: center;
   z-index: 10;
   pointer-events: none;
-  animation: pastureFloatMe 2s ease-in-out infinite;
+  animation: none !important;
 }
 
 .pasture-me-badge {
