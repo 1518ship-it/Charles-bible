@@ -445,19 +445,29 @@ const AuthService = {
     }
 
     const db = this.getDb();
+    let cloudSuccess = false;
+    let cloudError = null;
+
     if (db) {
       try {
-        await db.from('app_config').upsert({
-          key: 'signup_code',
-          value: cleanKey
-        });
+        const { error } = await db.from('app_config').upsert(
+          { key: 'signup_code', value: cleanKey },
+          { onConflict: 'key' }
+        );
+        if (error) {
+          cloudError = error.message;
+          console.warn('Supabase setMasterKey error:', error);
+        } else {
+          cloudSuccess = true;
+        }
       } catch (err) {
-        console.warn('Supabase setMasterKey error:', err);
+        cloudError = err.message || String(err);
+        console.warn('Supabase setMasterKey exception:', err);
       }
     }
 
     localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_CUSTOM_MASTER_KEY, cleanKey);
-    return { success: true };
+    return { success: true, cloudSuccess, cloudError };
   },
 
   // 관리자용: 관리자 코드 변경 (Supabase + 로컬 동시 반영)
@@ -468,19 +478,29 @@ const AuthService = {
     }
 
     const db = this.getDb();
+    let cloudSuccess = false;
+    let cloudError = null;
+
     if (db) {
       try {
-        await db.from('app_config').upsert({
-          key: 'admin_code',
-          value: cleanKey
-        });
+        const { error } = await db.from('app_config').upsert(
+          { key: 'admin_code', value: cleanKey },
+          { onConflict: 'key' }
+        );
+        if (error) {
+          cloudError = error.message;
+          console.warn('Supabase setAdminKey error:', error);
+        } else {
+          cloudSuccess = true;
+        }
       } catch (err) {
-        console.warn('Supabase setAdminKey error:', err);
+        cloudError = err.message || String(err);
+        console.warn('Supabase setAdminKey exception:', err);
       }
     }
 
     localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_CUSTOM_ADMIN_KEY, cleanKey);
-    return { success: true };
+    return { success: true, cloudSuccess, cloudError };
   }
 };
 

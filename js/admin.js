@@ -65,7 +65,11 @@ const AdminApp = {
         const res = await AuthService.setMasterKey(newKeyInput.value);
         if (res.success) {
           RetroAudio.success();
-          this.showToast(`가입코드가 [${newKeyInput.value}] 로 변경되었습니다.`, 'success');
+          if (res.cloudError) {
+            alert(`⚠️ 로컬에는 저장되었으나, Supabase RLS 정책 제한으로 클라우드 DB 저장이 실패했습니다.\n\nSupabase [SQL Editor]에서 app_config RLS 정책 SQL을 실행해 주세요!\n(원인: ${res.cloudError})`);
+          } else {
+            this.showToast(`가입코드가 [${newKeyInput.value}] 로 변경되었습니다. (클라우드 반영 완료)`, 'success');
+          }
           newKeyInput.value = '';
           this.refreshDashboard();
         } else {
@@ -98,7 +102,11 @@ const AdminApp = {
         const res = await AuthService.setAdminKey(newKeyInput.value);
         if (res.success) {
           RetroAudio.success();
-          this.showToast(`관리자 코드가 [${newKeyInput.value}] 로 변경되었습니다.`, 'success');
+          if (res.cloudError) {
+            alert(`⚠️ 로컬에는 저장되었으나, Supabase RLS 정책 제한으로 클라우드 DB 저장이 실패했습니다.\n\nSupabase [SQL Editor]에서 app_config RLS 정책 SQL을 실행해 주세요!\n(원인: ${res.cloudError})`);
+          } else {
+            this.showToast(`관리자 코드가 [${newKeyInput.value}] 로 변경되었습니다. (클라우드 반영 완료)`, 'success');
+          }
           newKeyInput.value = '';
           this.refreshDashboard();
         } else {

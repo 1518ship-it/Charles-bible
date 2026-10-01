@@ -218,6 +218,25 @@ CREATE POLICY "members_delete_policy"
 ON public.members FOR DELETE 
 USING (id IS NOT NULL AND length(id) > 0);
 
+-- 2-3. [app_config 테이블 보안 RLS 정책 - 가입코드 및 관리자 코드 저장 허용]
+ALTER TABLE IF EXISTS public.app_config ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "app_config_select_policy" ON public.app_config;
+DROP POLICY IF EXISTS "app_config_insert_policy" ON public.app_config;
+DROP POLICY IF EXISTS "app_config_update_policy" ON public.app_config;
+
+CREATE POLICY "app_config_select_policy" 
+ON public.app_config FOR SELECT USING (true);
+
+CREATE POLICY "app_config_insert_policy" 
+ON public.app_config FOR INSERT 
+WITH CHECK (key IS NOT NULL AND length(key) > 0);
+
+CREATE POLICY "app_config_update_policy" 
+ON public.app_config FOR UPDATE 
+USING (key IS NOT NULL AND length(key) > 0)
+WITH CHECK (key IS NOT NULL AND length(key) > 0);
+
 -- 3. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
 DROP VIEW IF EXISTS public.user_today_summary CASCADE;
 

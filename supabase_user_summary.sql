@@ -73,6 +73,29 @@ CREATE POLICY "members_delete_policy"
 ON public.members FOR DELETE 
 USING (id IS NOT NULL AND length(id) > 0);
 
+-- 2-3. [app_config 테이블 보안 RLS 정책 - 가입코드 및 관리자 코드 저장 허용]
+ALTER TABLE IF EXISTS public.app_config ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "app_config_select_policy" ON public.app_config;
+DROP POLICY IF EXISTS "app_config_insert_policy" ON public.app_config;
+DROP POLICY IF EXISTS "app_config_update_policy" ON public.app_config;
+
+-- (1) 조회 허용: 가입코드 및 관리자 코드 확인
+CREATE POLICY "app_config_select_policy" 
+ON public.app_config FOR SELECT 
+USING (true);
+
+-- (2) 추가 허용
+CREATE POLICY "app_config_insert_policy" 
+ON public.app_config FOR INSERT 
+WITH CHECK (key IS NOT NULL AND length(key) > 0);
+
+-- (3) 수정 허용: 관리자 콘솔에서 가입코드 및 관리자 코드 변경 허용
+CREATE POLICY "app_config_update_policy" 
+ON public.app_config FOR UPDATE 
+USING (key IS NOT NULL AND length(key) > 0)
+WITH CHECK (key IS NOT NULL AND length(key) > 0);
+
 -- 3. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
 -- 한국 시간(KST) YYYY-MM-DD 포맷을 정확히 매칭하여 오늘 읽은 장수가 친구창과 100% 일치합니다.
 -- security_invoker = true 설정으로 Supabase Linter 보안 검사를 통과합니다.
