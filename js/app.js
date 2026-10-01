@@ -425,6 +425,28 @@ const App = {
       });
     }
 
+    // 말씀 발자국 안내 팝업 모달 닫기
+    const footprintModal = document.getElementById('footprint-modal-overlay');
+    const closeFootprintBtn = document.getElementById('btn-close-footprint-modal');
+    const confirmFootprintBtn = document.getElementById('btn-confirm-footprint-modal');
+    if (closeFootprintBtn) {
+      closeFootprintBtn.addEventListener('click', () => {
+        this.closeWordFootprint();
+      });
+    }
+    if (confirmFootprintBtn) {
+      confirmFootprintBtn.addEventListener('click', () => {
+        this.closeWordFootprint();
+      });
+    }
+    if (footprintModal) {
+      footprintModal.addEventListener('click', (e) => {
+        if (e.target === footprintModal) {
+          this.closeWordFootprint();
+        }
+      });
+    }
+
     // 달력 이전달/다음달/오늘 버튼
     const calPrevBtn = document.getElementById('calendar-btn-prev');
     const calNextBtn = document.getElementById('calendar-btn-next');
@@ -1031,13 +1053,28 @@ const App = {
     this.renderPastureShelves(filtered);
   },
 
-  // 찰스 5단계 진화 갤러리 모달 오픈
-  openEvolutionModal() {
-    const modal = document.getElementById('evolution-guide-modal');
+  // 말씀 발자국 안내 팝업 모달 오픈
+  openWordFootprint() {
+    RetroAudio.click();
+    const modal = document.getElementById('footprint-modal-overlay');
     if (modal) {
       modal.style.display = 'flex';
-      RetroAudio.click();
+    } else {
+      this.showToast('말씀 발자국은 아직 준비중이에요!');
     }
+  },
+
+  closeWordFootprint() {
+    RetroAudio.click();
+    const modal = document.getElementById('footprint-modal-overlay');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  },
+
+  // 하위 호환
+  openEvolutionModal() {
+    this.openWordFootprint();
   },
 
   // 친구 초대 링크 복사
