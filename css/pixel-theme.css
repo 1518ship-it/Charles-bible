@@ -2970,3 +2970,425 @@ body {
   opacity: 0.85;
 }
 
+/* ==================== 홈 화면 하단 플로팅 액션 바 (메뉴 위 라인) ==================== */
+.home-bottom-actions {
+  position: absolute;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 12px);
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 24;
+}
+
+.home-talent-btn {
+  pointer-events: auto;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  padding: 6px 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--text-color);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.home-talent-btn:hover {
+  transform: scale(1.05);
+}
+
+.home-talent-btn:active {
+  transform: scale(0.95);
+}
+
+.talent-coin-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.home-quest-btn {
+  pointer-events: auto;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.home-quest-btn:hover {
+  transform: scale(1.08);
+}
+
+.home-quest-btn:active {
+  transform: scale(0.94);
+}
+
+.quest-notify-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #E74C3C;
+  border-radius: 50%;
+  border: 2px solid var(--card-bg);
+  animation: questPulse 1.5s infinite;
+}
+
+@keyframes questPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+/* ==================== 말씀 퀘스트 모달 ==================== */
+.quest-modal-sheet {
+  max-width: 440px;
+  padding: 16px 18px calc(24px + env(safe-area-inset-bottom, 16px));
+  max-height: min(85dvh, 620px);
+}
+
+.quest-category-header {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin: 14px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.quest-category-header:first-of-type {
+  margin-top: 4px;
+}
+
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.quest-card.ready {
+  border-color: #F1C40F;
+  background: rgba(241, 196, 15, 0.05);
+}
+
+.quest-card.claimed {
+  opacity: 0.65;
+}
+
+.quest-card-icon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.quest-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quest-card-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.quest-progress-bar-wrap {
+  height: 6px;
+  background: var(--color-badge-bg);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 3px;
+}
+
+.quest-progress-bar-fill {
+  height: 100%;
+  background: var(--text-color);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.quest-progress-bar-fill.ready {
+  background: #27AE60;
+}
+
+.quest-progress-bar-fill.gold {
+  background: #F1C40F;
+}
+
+.quest-card-status-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-quest-action {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.btn-quest-action.ready {
+  background: #F1C40F;
+  color: #111111;
+  box-shadow: 0 2px 6px rgba(241, 196, 15, 0.4);
+  animation: questClaimPulse 1.4s infinite;
+}
+
+@keyframes questClaimPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.btn-quest-action.progress {
+  background: var(--color-badge-bg);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.btn-quest-action.claimed {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  cursor: default;
+  font-weight: 600;
+}
+
+/* ==================== 달란트 상점 & 옷장 모달 ==================== */
+.talent-shop-sheet {
+  max-width: 440px;
+  padding: 16px 18px calc(24px + env(safe-area-inset-bottom, 16px));
+  max-height: min(85dvh, 640px);
+}
+
+.shop-dressing-room {
+  background: var(--color-badge-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.shop-preview-avatar {
+  width: 100px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shop-preview-avatar svg {
+  max-width: 90px !important;
+  height: auto;
+}
+
+.shop-balance-badge {
+  margin-top: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.shop-tab-nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.shop-tab-btn {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  background: var(--color-badge-bg);
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.shop-tab-btn.active {
+  background: var(--color-inverted-bg);
+  color: var(--color-inverted-text);
+}
+
+.shop-items-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.shop-item-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.shop-item-icon {
+  font-size: 30px;
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.shop-item-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.shop-item-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.25;
+  height: 25px;
+}
+
+.shop-item-btn {
+  width: 100%;
+  padding: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.shop-item-btn.buy {
+  background: var(--color-inverted-bg);
+  color: var(--color-inverted-text);
+}
+
+.shop-item-btn.equip {
+  background: #27AE60;
+  color: #FFFFFF;
+}
+
+.shop-item-btn.equipped {
+  background: transparent;
+  border: 1.5px solid #27AE60;
+  color: #27AE60;
+  font-weight: 800;
+}
+
+.shop-item-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==================== 신약 완독 대형 축하 모달 ==================== */
+.nt-celebration-sheet {
+  max-width: 380px;
+  margin: auto;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(241, 196, 15, 0.08) 100%);
+  border: 2px solid #F1C40F;
+  box-shadow: 0 10px 40px rgba(241, 196, 15, 0.35);
+  animation: slideUp 0.22s ease-out;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.nt-celebration-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-color);
+  margin: 10px 0 6px;
+}
+
+.nt-celebration-verse {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  background: var(--color-badge-bg);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-style: italic;
+}
+
+.nt-reward-box {
+  background: #F1C40F;
+  color: #111111;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(241, 196, 15, 0.4);
+}
+

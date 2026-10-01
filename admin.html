@@ -158,7 +158,7 @@
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 10px;">
           각 유저의 고유 찰스 단계 및 날짜별 통독 장수를 Supabase 클라우드에 영구 저장하기 위해, Supabase SQL Editor에서 아래 쿼리를 1회 실행해 주세요. (미실행 시 브라우저 로컬 저장소로 안전하게 작동합니다.)
         </p>
-        <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 유저별 통독 상태 및 찰스 육성 기록 테이블 생성
+        <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 유저별 통독 상태, 찰스 육성 및 달란트/아이템 기록 테이블 생성
 CREATE TABLE IF NOT EXISTS public.user_reading_state (
   user_id text PRIMARY KEY,
   charles_stage integer DEFAULT 1,
@@ -169,8 +169,18 @@ CREATE TABLE IF NOT EXISTS public.user_reading_state (
   max_streak integer DEFAULT 0,
   last_evaluated_date text,
   last_read_date text,
+  talents integer DEFAULT 0,
+  equipped jsonb DEFAULT '{}'::jsonb,
+  inventory jsonb DEFAULT '[]'::jsonb,
+  quest_claims jsonb DEFAULT '{}'::jsonb,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
 );
+
+-- 기존에 테이블을 이미 생성했던 분들을 위한 추가 컬럼 적용 (안전 실행)
+ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
+ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS equipped jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE public.user_reading_state ADD COLUMN IF NOT EXISTS quest_claims jsonb DEFAULT '{}'::jsonb;
 
 -- RLS 활성화 및 권한 설정
 ALTER TABLE public.user_reading_state ENABLE ROW LEVEL SECURITY;

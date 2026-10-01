@@ -449,12 +449,29 @@ const StorageService = {
         max_streak: this.getStreakInfo().maxStreak || 0,
         last_evaluated_date: localStorage.getItem(this.getUserKey('last_evaluated_date')) || this.getYesterdayDateStr(),
         last_read_date: this.getTodayDateStr(),
+        talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : 0,
+        equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
+        inventory: typeof TalentService !== 'undefined' ? TalentService.getInventory() : [],
+        quest_claims: typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : {},
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabaseClient
+      let { error } = await supabaseClient
         .from('user_reading_state')
         .upsert(payload, { onConflict: 'user_id' });
+
+      // Supabase 테이블에 달란트/아이템 관련 컬럼이 아직 없을 경우의 자동 폴백
+      if (error && (error.code === '42703' || (error.message && error.message.includes('column')))) {
+        console.warn('☁️ Supabase 컬럼 미생성 감지, 기본 통독 컬럼만으로 동기화 재시도합니다.');
+        delete payload.talents;
+        delete payload.equipped;
+        delete payload.inventory;
+        delete payload.quest_claims;
+        const retryRes = await supabaseClient
+          .from('user_reading_state')
+          .upsert(payload, { onConflict: 'user_id' });
+        error = retryRes.error;
+      }
 
       if (error) {
         // 테이블이 아직 없으면 안내 로그만 기록
@@ -464,7 +481,7 @@ const StorageService = {
           console.warn('☁️ Cloud sync warning:', error.message);
         }
       } else {
-        console.log('☁️ Supabase에 유저 통독 상태 동기화 완료:', uid);
+        console.log('☁️ Supabase에 유저 통독 및 달란트 상태 동기화 완료:', uid);
       }
     } catch (err) {
       console.warn('☁️ Cloud sync error:', err);
@@ -508,6 +525,18 @@ const StorageService = {
             lastDate: data.last_read_date || null
           }));
         }
+        if (data.talents !== undefined && data.talents !== null) {
+          localStorage.setItem(`charles_user_${uid}_talents`, String(data.talents));
+        }
+        if (data.equipped) {
+          localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(data.equipped));
+        }
+        if (data.inventory) {
+          localStorage.setItem(`charles_user_${uid}_inventory`, JSON.stringify(data.inventory));
+        }
+        if (data.quest_claims) {
+          localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify(data.quest_claims));
+        }
         // 자정 평가 재확인
         this.evaluateCharlesMidnight();
         return true;
@@ -529,7 +558,8 @@ const StorageService = {
         userId: uid,
         stage: this.getCharlesStage(),
         streakCount: this.getStreakInfo().count || 0,
-        todayRead: this.getTodayReadCount()
+        todayRead: this.getTodayReadCount(),
+        equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}
       };
     }
 
@@ -537,6 +567,7 @@ const StorageService = {
     let stage = 1;
     let streakCount = 0;
     let todayRead = 0;
+    let equipped = {};
 
     try {
       const s = localStorage.getItem(`charles_user_${uid}_stage`);
@@ -553,22 +584,45 @@ const StorageService = {
         const parsed = JSON.parse(dc);
         if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
       }
+
+      const eq = localStorage.getItem(`charles_user_${uid}_equipped`);
+      if (eq) {
+        const parsed = JSON.parse(eq);
+        if (parsed && typeof parsed === 'object') equipped = parsed;
+      }
     } catch (e) {}
 
     // 3) Supabase user_reading_state 테이블에서 최신 원격 조회
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
       try {
-        const { data, error } = await supabaseClient
+        let { data, error } = await supabaseClient
           .from('user_reading_state')
-          .select('charles_stage, streak_count, daily_counts')
+          .select('charles_stage, streak_count, daily_counts, equipped')
           .eq('user_id', uid)
           .maybeSingle();
+
+        // equipped 컬럼이 아직 DB에 없을 경우 fallback
+        if (error && error.message && (error.message.includes('equipped') || error.code === '42703')) {
+          const fallback = await supabaseClient
+            .from('user_reading_state')
+            .select('charles_stage, streak_count, daily_counts')
+            .eq('user_id', uid)
+            .maybeSingle();
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (!error && data) {
           if (data.charles_stage) stage = data.charles_stage;
           if (data.streak_count !== undefined && data.streak_count !== null) streakCount = data.streak_count;
           if (data.daily_counts && typeof data.daily_counts === 'object') {
             todayRead = data.daily_counts[todayStr] || 0;
+          }
+          if (data.equipped && typeof data.equipped === 'object') {
+            equipped = data.equipped;
+            try {
+              localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
+            } catch (e) {}
           }
         }
       } catch (err) {
@@ -580,7 +634,8 @@ const StorageService = {
       userId: uid,
       stage,
       streakCount,
-      todayRead
+      todayRead,
+      equipped
     };
   },
 
@@ -601,7 +656,8 @@ const StorageService = {
           userId: uid,
           stage: this.getCharlesStage(),
           streakCount: this.getStreakInfo().count || 0,
-          todayRead: this.getTodayReadCount()
+          todayRead: this.getTodayReadCount(),
+          equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}
         };
         return;
       }
@@ -609,6 +665,7 @@ const StorageService = {
       let stage = 1;
       let streakCount = 0;
       let todayRead = 0;
+      let equipped = {};
 
       try {
         const s = localStorage.getItem(`charles_user_${uid}_stage`);
@@ -625,9 +682,15 @@ const StorageService = {
           const parsed = JSON.parse(dc);
           if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
         }
+
+        const eq = localStorage.getItem(`charles_user_${uid}_equipped`);
+        if (eq) {
+          const parsed = JSON.parse(eq);
+          if (parsed && typeof parsed === 'object') equipped = parsed;
+        }
       } catch (e) {}
 
-      stateMap[uid] = { userId: uid, stage, streakCount, todayRead };
+      stateMap[uid] = { userId: uid, stage, streakCount, todayRead, equipped };
     });
 
     // 2) Supabase에서 1회의 단일 쿼리로 전체 친구 상태 일괄(Batch) 조회!
@@ -635,14 +698,27 @@ const StorageService = {
       try {
         let query = supabaseClient
           .from('user_reading_state')
-          .select('user_id, charles_stage, streak_count, daily_counts');
+          .select('user_id, charles_stage, streak_count, daily_counts, equipped');
 
         // 100명 이하일 때는 in 필터, 그 이상이거나 빈 목록이면 전체 테이블 1회 조회
         if (cleanIds.length > 0 && cleanIds.length <= 100) {
           query = query.in('user_id', cleanIds);
         }
 
-        const { data, error } = await query;
+        let { data, error } = await query;
+
+        // equipped 컬럼 없을 시 fallback
+        if (error && error.message && (error.message.includes('equipped') || error.code === '42703')) {
+          let fallbackQuery = supabaseClient
+            .from('user_reading_state')
+            .select('user_id, charles_stage, streak_count, daily_counts');
+          if (cleanIds.length > 0 && cleanIds.length <= 100) {
+            fallbackQuery = fallbackQuery.in('user_id', cleanIds);
+          }
+          const res = await fallbackQuery;
+          data = res.data;
+          error = res.error;
+        }
 
         if (!error && Array.isArray(data)) {
           data.forEach(row => {
@@ -652,6 +728,8 @@ const StorageService = {
             let stage = row.charles_stage || 1;
             let streakCount = (row.streak_count !== undefined && row.streak_count !== null) ? row.streak_count : 0;
             let todayRead = 0;
+            let equipped = (row.equipped && typeof row.equipped === 'object') ? row.equipped : {};
+
             if (row.daily_counts && typeof row.daily_counts === 'object') {
               todayRead = row.daily_counts[todayStr] || 0;
             }
@@ -663,9 +741,12 @@ const StorageService = {
               if (row.daily_counts) {
                 localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(row.daily_counts));
               }
+              if (row.equipped) {
+                localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(row.equipped));
+              }
             } catch (e) {}
 
-            stateMap[uid] = { userId: uid, stage, streakCount, todayRead };
+            stateMap[uid] = { userId: uid, stage, streakCount, todayRead, equipped };
           });
         }
       } catch (err) {
@@ -681,14 +762,18 @@ const StorageService = {
     const uid = this.getCurrentUserId();
     const data = {
       app: "Charles' Bible",
-      version: "2.0.0",
+      version: "2.1.0",
       userId: uid,
       exportedAt: new Date().toISOString(),
       stage: this.getCharlesStage(),
       progress: this.getProgress(),
       dailyCounts: this.getDailyCounts(),
       history: this.getHistory(),
-      streak: this.getStreakInfo()
+      streak: this.getStreakInfo(),
+      talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : 0,
+      equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
+      inventory: typeof TalentService !== 'undefined' ? TalentService.getInventory() : [],
+      questClaims: typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : {}
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -724,6 +809,18 @@ const StorageService = {
       if (jsonData.stage) {
         localStorage.setItem(`charles_user_${uid}_stage`, String(jsonData.stage));
       }
+      if (jsonData.talents !== undefined && typeof TalentService !== 'undefined') {
+        TalentService.setTalents(jsonData.talents);
+      }
+      if (jsonData.equipped && typeof TalentService !== 'undefined') {
+        TalentService.saveEquipped(jsonData.equipped);
+      }
+      if (jsonData.inventory && typeof TalentService !== 'undefined') {
+        TalentService.saveInventory(jsonData.inventory);
+      }
+      if (jsonData.questClaims && typeof TalentService !== 'undefined') {
+        TalentService.saveClaimedRecord(jsonData.questClaims);
+      }
       this.evaluateCharlesMidnight();
       this.scheduleCloudSync();
       return { success: true };
@@ -740,6 +837,10 @@ const StorageService = {
     localStorage.removeItem(`charles_user_${uid}_streak`);
     localStorage.removeItem(`charles_user_${uid}_stage`);
     localStorage.removeItem(`charles_user_${uid}_last_evaluated_date`);
+    localStorage.removeItem(`charles_user_${uid}_talents`);
+    localStorage.removeItem(`charles_user_${uid}_equipped`);
+    localStorage.removeItem(`charles_user_${uid}_inventory`);
+    localStorage.removeItem(`charles_user_${uid}_quest_claims`);
     this.scheduleCloudSync();
   }
 };

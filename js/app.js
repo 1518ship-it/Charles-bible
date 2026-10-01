@@ -447,6 +447,81 @@ const App = {
       });
     }
 
+    // ==================== 말씀 퀘스트 & 업적 모달 열기/닫기 ====================
+    const btnHomeQuests = document.getElementById('btn-home-quests');
+    const questModal = document.getElementById('quest-modal-overlay');
+    const closeQuestBtn = document.getElementById('btn-close-quest-modal');
+
+    if (btnHomeQuests) {
+      btnHomeQuests.addEventListener('click', () => {
+        this.openQuestsModal();
+      });
+    }
+    if (closeQuestBtn && questModal) {
+      closeQuestBtn.addEventListener('click', () => {
+        this.closeQuestsModal();
+      });
+    }
+    if (questModal) {
+      questModal.addEventListener('click', (e) => {
+        if (e.target === questModal) {
+          this.closeQuestsModal();
+        }
+      });
+    }
+
+    // ==================== 달란트 상점 & 옷장 피팅룸 모달 열기/닫기 ====================
+    const btnHomeTalents = document.getElementById('btn-home-talents');
+    const shopModal = document.getElementById('talent-shop-modal');
+    const closeShopBtn = document.getElementById('btn-close-shop-modal');
+
+    if (btnHomeTalents) {
+      btnHomeTalents.addEventListener('click', () => {
+        this.openTalentShop('store');
+      });
+    }
+    if (closeShopBtn && shopModal) {
+      closeShopBtn.addEventListener('click', () => {
+        this.closeTalentShop();
+      });
+    }
+    if (shopModal) {
+      shopModal.addEventListener('click', (e) => {
+        if (e.target === shopModal) {
+          this.closeTalentShop();
+        }
+      });
+    }
+
+    const tabStore = document.getElementById('shop-tab-store');
+    const tabCloset = document.getElementById('shop-tab-closet');
+    if (tabStore) {
+      tabStore.addEventListener('click', () => {
+        this.renderTalentShop('store');
+      });
+    }
+    if (tabCloset) {
+      tabCloset.addEventListener('click', () => {
+        this.renderTalentShop('closet');
+      });
+    }
+
+    // ==================== 신약 완독 대형 축하 모달 닫기 ====================
+    const ntModal = document.getElementById('nt-grand-celebration-modal');
+    const closeNtBtn = document.getElementById('btn-close-nt-celebration');
+    if (closeNtBtn && ntModal) {
+      closeNtBtn.addEventListener('click', () => {
+        ntModal.style.display = 'none';
+      });
+    }
+    if (ntModal) {
+      ntModal.addEventListener('click', (e) => {
+        if (e.target === ntModal) {
+          ntModal.style.display = 'none';
+        }
+      });
+    }
+
     // 달력 이전달/다음달/오늘 버튼
     const calPrevBtn = document.getElementById('calendar-btn-prev');
     const calNextBtn = document.getElementById('calendar-btn-next');
@@ -694,7 +769,8 @@ const App = {
   // ==================== 홈 화면 렌더링 (화면 중앙 대형 찰스 & Charles is____ & 오늘 말씀 게이지) ====================
   renderHome() {
     const stageNum = StorageService.getCharlesStage();
-    const visual = getCharlesVisual(stageNum);
+    const equipped = (typeof TalentService !== 'undefined') ? TalentService.getEquipped() : {};
+    const visual = getCharlesVisual(stageNum, 10, equipped);
 
     // 1) 찰스 위: 오늘 읽은 말씀 게이지 (최대 5장)
     const todayRead = StorageService.getTodayReadCount();
@@ -730,7 +806,10 @@ const App = {
       statusTextEl.textContent = visual.info.title;
     }
 
-    // 4) 성장 가이드 프리뷰 미리 렌더링
+    // 4) 달란트 잔액 & 퀘스트 레드닷 알림 버튼 렌더링
+    this.renderHomeTalents();
+
+    // 5) 성장 가이드 프리뷰 미리 렌더링
     this.renderCharlesEvolutionPreview();
   },
 
@@ -743,6 +822,290 @@ const App = {
         slot.innerHTML = visual.svg;
       }
     }
+  },
+
+  // ==================== 8. 달란트(Talent) & 퀘스트 & 커스터마이징 매니저 ====================
+  currentShopTab: 'store',
+
+  renderHomeTalents() {
+    if (typeof TalentService === 'undefined') return;
+
+    // 1) 달란트 잔액 표시
+    const balance = TalentService.getTalents();
+    const talentCountEl = document.getElementById('home-talent-count');
+    if (talentCountEl) {
+      talentCountEl.textContent = balance.toLocaleString();
+    }
+
+    // 2) 미수령 퀘스트 여부에 따른 레드닷 알림 뱃지
+    const hasUnclaimed = TalentService.hasUnclaimedQuests();
+    const dotEl = document.getElementById('quest-notify-dot');
+    if (dotEl) {
+      dotEl.style.display = hasUnclaimed ? 'block' : 'none';
+    }
+  },
+
+  openQuestsModal() {
+    const modal = document.getElementById('quest-modal-overlay');
+    if (!modal) return;
+    this.renderQuestsModal();
+    modal.style.display = 'flex';
+    RetroAudio.click();
+  },
+
+  closeQuestsModal() {
+    const modal = document.getElementById('quest-modal-overlay');
+    if (modal) modal.style.display = 'none';
+    this.renderHomeTalents();
+  },
+
+  renderQuestsModal() {
+    if (typeof TalentService === 'undefined') return;
+    const container = document.getElementById('quest-list-container');
+    if (!container) return;
+
+    const quests = TalentService.getQuestsList();
+
+    // 그룹화: daily, weekly, achievement
+    const dailyQuests = quests.filter(q => q.type === 'daily');
+    const weeklyQuests = quests.filter(q => q.type === 'weekly');
+    const achieveQuests = quests.filter(q => q.type === 'achievement');
+
+    const renderQuestCard = (q) => {
+      const percent = Math.min(100, Math.max(0, Math.round((q.current / q.target) * 100)));
+      const isGold = q.type === 'achievement';
+      const fillClass = q.status === 'ready' ? (isGold ? 'gold' : 'ready') : '';
+
+      let btnHtml = '';
+      if (q.status === 'claimed') {
+        btnHtml = `<button class="btn-quest-action claimed" disabled type="button">수령 완료 ✓</button>`;
+      } else if (q.status === 'ready') {
+        btnHtml = `<button class="btn-quest-action ready" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 🪙</button>`;
+      } else {
+        btnHtml = `<button class="btn-quest-action progress" disabled type="button">${q.current}/${q.target} ${q.unit}</button>`;
+      }
+
+      return `
+        <div class="quest-card ${q.status}">
+          <div class="quest-card-icon">${q.icon}</div>
+          <div class="quest-card-content">
+            <div class="quest-card-title">${q.title}</div>
+            <div class="quest-card-desc">${q.desc}</div>
+            <div class="quest-progress-bar-wrap">
+              <div class="quest-progress-bar-fill ${fillClass}" style="width: ${percent}%;"></div>
+            </div>
+            <div class="quest-card-status-text">
+              <span>진행도: ${q.current}/${q.target} ${q.unit} (${percent}%)</span>
+              <span style="font-weight: 800; color: #D68910;">+${q.reward} 🪙</span>
+            </div>
+          </div>
+          ${btnHtml}
+        </div>
+      `;
+    };
+
+    let html = '';
+
+    if (dailyQuests.length > 0) {
+      html += `
+        <div class="quest-category-header">
+          <span>☀️</span> 일일 퀘스트 (매일 자정 갱신)
+        </div>
+        <div class="quest-list">
+          ${dailyQuests.map(renderQuestCard).join('')}
+        </div>
+      `;
+    }
+
+    if (weeklyQuests.length > 0) {
+      html += `
+        <div class="quest-category-header">
+          <span>🔥</span> 주간 퀘스트 (연속 통독 도전)
+        </div>
+        <div class="quest-list">
+          ${weeklyQuests.map(renderQuestCard).join('')}
+        </div>
+      `;
+    }
+
+    if (achieveQuests.length > 0) {
+      html += `
+        <div class="quest-category-header">
+          <span>👑</span> 영광의 업적 (평생 완독 대업)
+        </div>
+        <div class="quest-list">
+          ${achieveQuests.map(renderQuestCard).join('')}
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+  },
+
+  claimQuestReward(questId) {
+    if (typeof TalentService === 'undefined') return;
+    const res = TalentService.claimQuest(questId);
+    if (!res.success) {
+      this.showToast(res.error || '퀘스트를 수령할 수 없습니다.');
+      return;
+    }
+
+    // 신약 완독 대업적 수령 시 특수 대형 축하 모달 오픈
+    if (res.isNtComplete) {
+      const ntModal = document.getElementById('nt-grand-celebration-modal');
+      if (ntModal) {
+        ntModal.style.display = 'flex';
+      }
+      RetroAudio.success();
+    } else {
+      this.showToast(`🎉 [${res.quest.title}] 완료! +${res.reward} 달란트(🪙) 수령!`);
+      RetroAudio.click();
+    }
+
+    this.renderQuestsModal();
+    this.renderHomeTalents();
+    this.renderHome();
+  },
+
+  openTalentShop(tab = 'store') {
+    const modal = document.getElementById('talent-shop-modal');
+    if (!modal) return;
+    this.currentShopTab = tab;
+    this.renderTalentShop(tab);
+    modal.style.display = 'flex';
+    RetroAudio.click();
+  },
+
+  closeTalentShop() {
+    const modal = document.getElementById('talent-shop-modal');
+    if (modal) modal.style.display = 'none';
+    this.renderHome();
+  },
+
+  renderTalentShop(tab = 'store') {
+    if (typeof TalentService === 'undefined') return;
+    this.currentShopTab = tab;
+
+    // 1) 탭 버튼 상태 업데이트
+    const tabStore = document.getElementById('shop-tab-store');
+    const tabCloset = document.getElementById('shop-tab-closet');
+    if (tabStore) {
+      tabStore.classList.toggle('active', tab === 'store');
+    }
+    if (tabCloset) {
+      tabCloset.classList.toggle('active', tab === 'closet');
+    }
+
+    // 2) 잔액 업데이트
+    const balance = TalentService.getTalents();
+    const balanceEl = document.getElementById('shop-balance-count');
+    if (balanceEl) {
+      balanceEl.textContent = `🪙 ${balance.toLocaleString()}`;
+    }
+
+    // 3) 피팅룸 찰스 아바타 렌더링
+    const stage = StorageService.getCharlesStage();
+    const equipped = TalentService.getEquipped();
+    const previewVisual = getCharlesVisual(stage, 6, equipped);
+    const previewSlot = document.getElementById('shop-preview-avatar');
+    if (previewSlot) {
+      previewSlot.innerHTML = previewVisual.svg;
+    }
+
+    // 4) 아이템 그리드 렌더링
+    const grid = document.getElementById('shop-items-grid');
+    if (!grid) return;
+
+    const allItems = Object.values(TALENT_ITEMS);
+
+    if (tab === 'store') {
+      // 상점: 4개 아이템 전체 노출
+      grid.innerHTML = allItems.map(item => {
+        const isOwned = TalentService.hasItem(item.id);
+
+        let btnHtml = '';
+        if (isOwned) {
+          btnHtml = `<button class="shop-item-btn equipped" type="button" disabled>보유중 ✓</button>`;
+        } else {
+          btnHtml = `<button class="shop-item-btn buy" type="button" onclick="App.buyTalentItem('${item.id}')">구매 (${item.price} 🪙)</button>`;
+        }
+
+        return `
+          <div class="shop-item-card">
+            <div class="shop-item-icon">${item.icon}</div>
+            <div class="shop-item-name">${item.name}</div>
+            <div class="shop-item-desc">${item.desc}</div>
+            ${btnHtml}
+          </div>
+        `;
+      }).join('');
+    } else {
+      // 내 옷장: 보유한 아이템만 노출
+      const ownedItems = allItems.filter(item => TalentService.hasItem(item.id));
+
+      if (ownedItems.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: span 2; text-align: center; padding: 28px 10px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+            아직 보유한 아이템이 없습니다.<br>
+            상점에서 귀여운 아이템을 입양해 보세요! 🛍️✨
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = ownedItems.map(item => {
+        const isEquipped = TalentService.isEquipped(item.id);
+
+        let btnHtml = '';
+        if (isEquipped) {
+          btnHtml = `<button class="shop-item-btn equipped" type="button" onclick="App.toggleEquipTalentItem('${item.id}')">착용중 (해제)</button>`;
+        } else {
+          btnHtml = `<button class="shop-item-btn equip" type="button" onclick="App.toggleEquipTalentItem('${item.id}')">착용하기 ✨</button>`;
+        }
+
+        return `
+          <div class="shop-item-card">
+            <div class="shop-item-icon">${item.icon}</div>
+            <div class="shop-item-name">${item.name}</div>
+            <div class="shop-item-desc">${item.desc}</div>
+            ${btnHtml}
+          </div>
+        `;
+      }).join('');
+    }
+  },
+
+  buyTalentItem(itemId) {
+    if (typeof TalentService === 'undefined') return;
+    const res = TalentService.buyItem(itemId);
+    if (!res.success) {
+      this.showToast(res.error || '구매할 수 없습니다.');
+      RetroAudio.error();
+      return;
+    }
+
+    RetroAudio.success();
+    this.showToast(`🎉 '${res.item.name}' 구매 및 착용 완료!`);
+    this.renderTalentShop('store');
+    this.renderHome();
+  },
+
+  toggleEquipTalentItem(itemId) {
+    if (typeof TalentService === 'undefined') return;
+    const item = TALENT_ITEMS[itemId];
+    if (!item) return;
+
+    if (TalentService.isEquipped(itemId)) {
+      TalentService.unequipSlot(item.slot);
+      this.showToast(`${item.name} 착용을 해제했습니다.`);
+    } else {
+      TalentService.equipItem(itemId);
+      this.showToast(`✨ ${item.name}을(를) 착용했습니다!`);
+    }
+
+    RetroAudio.click();
+    this.renderTalentShop(this.currentShopTab || 'closet');
+    this.renderHome();
   },
 
   // ==================== 서원경 청년부 양떼목장 2D 플랫폼 화면 렌더링 ====================
@@ -818,10 +1181,12 @@ const App = {
         let streakCount = 0;
         let todayRead = 0;
 
+        let equipped = {};
         if (isMe) {
           stage = StorageService.getCharlesStage();
           streakCount = StorageService.getStreakInfo().count || 0;
           todayRead = StorageService.getTodayReadCount() || 0;
+          equipped = (typeof TalentService !== 'undefined') ? TalentService.getEquipped() : {};
         } else {
           try {
             const s = localStorage.getItem(`charles_user_${u.id}_stage`);
@@ -834,6 +1199,11 @@ const App = {
               const todayStr = StorageService.getTodayDateStr();
               if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
             }
+            const eq = localStorage.getItem(`charles_user_${u.id}_equipped`);
+            if (eq) {
+              const parsed = JSON.parse(eq);
+              if (parsed && typeof parsed === 'object') equipped = parsed;
+            }
           } catch (e) {}
         }
 
@@ -845,7 +1215,8 @@ const App = {
           isMe,
           stage,
           streakCount,
-          todayRead
+          todayRead,
+          equipped
         };
       });
     };
@@ -871,6 +1242,7 @@ const App = {
           f.stage = state.stage || f.stage || 1;
           f.streakCount = state.streakCount !== undefined ? state.streakCount : f.streakCount;
           f.todayRead = state.todayRead !== undefined ? state.todayRead : f.todayRead;
+          if (state.equipped) f.equipped = state.equipped;
         }
       });
 
@@ -923,7 +1295,7 @@ const App = {
           `;
         }
 
-        const visual = getCharlesVisual(f.stage || 1, 4);
+        const visual = getCharlesVisual(f.stage || 1, 4, f.equipped || {});
         const isMe = f.isMe;
 
         return `
@@ -1170,7 +1542,7 @@ const App = {
 
     // 2. 통독 정보 및 양의 상태 비동기 조회
     const state = await StorageService.getUserState(userId);
-    const visual = getCharlesVisual(state.stage);
+    const visual = getCharlesVisual(state.stage, 6, state.equipped || {});
 
     // 그래픽 주입
     const graphicSlot = document.getElementById('friend-modal-graphic');

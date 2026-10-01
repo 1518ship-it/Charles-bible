@@ -56,13 +56,110 @@ const CHARLES_STAGES = {
  * Y : Yellow / Gold (#F1C40F)
  * S : Green Sprout (#2ECC71)
  */
-function renderSimplePixelGrid(rows, scale = 9, animClass = 'cute-idle') {
+// ==================== 4종 테스트 악세사리 픽셀 레이어 렌더러 ====================
+
+// 1. 피크닉 데이지 풀밭 (Back / Floor)
+function renderAccessoryDaisyField(scale) {
+  let r = '';
+  const grass = '#2ECC71';
+  const darkGrass = '#27AE60';
+  const white = '#FFFFFF';
+  const yellow = '#F1C40F';
+  // 바닥 잔디 픽셀
+  for (let x = 0; x < 18; x += 2) {
+    r += `<rect x="${x * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${darkGrass}" />`;
+    if (x % 4 === 0) r += `<rect x="${x * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${grass}" />`;
+  }
+  // 좌측 데이지 꽃 (x=1, y=13)
+  r += `<rect x="${1 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${0 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  r += `<rect x="${2 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  r += `<rect x="${1 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  r += `<rect x="${1 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  // 우측 데이지 꽃 (x=16, y=13)
+  r += `<rect x="${16 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${15 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  r += `<rect x="${17 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  r += `<rect x="${16 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  r += `<rect x="${16 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${white}" />`;
+  return r;
+}
+
+// 2. 귀여운 밀짚모자 (Head)
+function renderAccessoryStrawHat(scale) {
+  let r = '';
+  // 모자 상단 (Crown)
+  for (let x = 6; x <= 11; x++) r += `<rect x="${x * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="#F4D03F" />`;
+  for (let x = 6; x <= 11; x++) r += `<rect x="${x * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="#F4D03F" />`;
+  // 모자 리본 띠 (Ribbon)
+  for (let x = 6; x <= 11; x++) r += `<rect x="${x * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="#8B4513" />`;
+  // 모자 챙 (Brim)
+  for (let x = 3; x <= 14; x++) r += `<rect x="${x * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="#F4D03F" />`;
+  // 챙 테두리 포인트
+  r += `<rect x="${2 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="#D4AC0D" />`;
+  r += `<rect x="${15 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="#D4AC0D" />`;
+  return r;
+}
+
+// 3. 둥근 범생이 안경 (Head)
+function renderAccessoryGlasses(scale) {
+  let r = '';
+  const c = '#111111';
+  // 좌측 림 (눈 cols 5~7)
+  r += `<rect x="${5 * scale}" y="${5 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${4 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${8 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${5 * scale}" y="${7 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  // 안경 다리/브릿지 (cols 8~9)
+  r += `<rect x="${8 * scale}" y="${6 * scale}" width="${2 * scale}" height="${scale}" fill="${c}" />`;
+  // 우측 림 (눈 cols 10~12)
+  r += `<rect x="${10 * scale}" y="${5 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${9 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${13 * scale}" y="${6 * scale}" width="${scale}" height="${scale}" fill="${c}" />`;
+  r += `<rect x="${10 * scale}" y="${7 * scale}" width="${3 * scale}" height="${scale}" fill="${c}" />`;
+  return r;
+}
+
+// 4. 작은 성경책 (Hold)
+function renderAccessoryBible(scale) {
+  let r = '';
+  // 보라색 성경책 표지 (Purple #6C3483)
+  for (let y = 9; y <= 13; y++) {
+    for (let x = 13; x <= 16; x++) {
+      r += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="#6C3483" />`;
+    }
+  }
+  // 책등 그림자 (#4A235A)
+  for (let y = 9; y <= 13; y++) {
+    r += `<rect x="${13 * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="#4A235A" />`;
+  }
+  // 책 하단 페이지 속지 (#FDFEFE)
+  for (let x = 14; x <= 16; x++) {
+    r += `<rect x="${x * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="#FDFEFE" />`;
+  }
+  // 금박 십자가 (#F1C40F)
+  for (let y = 10; y <= 12; y++) {
+    r += `<rect x="${15 * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="#F1C40F" />`;
+  }
+  r += `<rect x="${14 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="#F1C40F" />`;
+  r += `<rect x="${16 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="#F1C40F" />`;
+  return r;
+}
+
+function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', equipped = {}) {
   const width = rows[0].length;
   const height = rows.length;
   const svgWidth = width * scale;
   const svgHeight = height * scale;
 
-  let rects = '';
+  // Layer 1: Back / Floor 악세사리
+  let backRects = '';
+  if (equipped && equipped.back === 'back_daisy_field') {
+    backRects = renderAccessoryDaisyField(scale);
+  }
+
+  // Layer 2: 찰스 본체
+  let bodyRects = '';
   for (let y = 0; y < height; y++) {
     const row = rows[y];
     for (let x = 0; x < width; x++) {
@@ -77,15 +174,34 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'cute-idle') {
       else if (char === 'S') fill = '#2ECC71';
       else if (char === 'B') fill = '#111111';
 
-      rects += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="${fill}" />`;
+      bodyRects += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="${fill}" />`;
     }
+  }
+
+  // Layer 3: Head 악세사리
+  let headRects = '';
+  if (equipped) {
+    if (equipped.head === 'head_straw_hat') {
+      headRects = renderAccessoryStrawHat(scale);
+    } else if (equipped.head === 'head_glasses') {
+      headRects = renderAccessoryGlasses(scale);
+    }
+  }
+
+  // Layer 4: Hold 악세사리
+  let holdRects = '';
+  if (equipped && equipped.hold === 'hold_bible') {
+    holdRects = renderAccessoryBible(scale);
   }
 
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" 
          class="charles-svg ${animClass}" 
          style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 150px; display: block; margin: 0 auto;">
-      ${rects}
+      <g class="layer-back">${backRects}</g>
+      <g class="layer-body">${bodyRects}</g>
+      <g class="layer-head">${headRects}</g>
+      <g class="layer-hold">${holdRects}</g>
     </svg>
   `;
 }
@@ -195,7 +311,7 @@ const SIMPLE_PIXEL_STAGE_5 = [
 /**
  * 단계별 찰스 SVG 그래픽 및 메타 정보 반환
  */
-function getCharlesVisual(stage = 1, scale = 8) {
+function getCharlesVisual(stage = 1, scale = 8, equipped = null) {
   const safeStage = Math.max(1, Math.min(5, Math.floor(stage)));
   const info = CHARLES_STAGES[safeStage];
 
@@ -211,12 +327,18 @@ function getCharlesVisual(stage = 1, scale = 8) {
     pixelMap = SIMPLE_PIXEL_STAGE_5;
   }
 
-  const svg = renderSimplePixelGrid(pixelMap, scale, 'charles-static');
+  let activeEquipped = equipped;
+  if (!activeEquipped && typeof TalentService !== 'undefined' && TalentService.getEquipped) {
+    activeEquipped = TalentService.getEquipped();
+  }
+
+  const svg = renderSimplePixelGrid(pixelMap, scale, 'charles-static', activeEquipped || {});
 
   return {
     stage: safeStage,
     info,
-    svg
+    svg,
+    equipped: activeEquipped || {}
   };
 }
 

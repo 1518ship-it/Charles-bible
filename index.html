@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json?v=3.2">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=3.8">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=3.9">
 </head>
 <body>
 
@@ -166,6 +166,21 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- 홈 화면 하단 플로팅 액션 바 (하단 메뉴 바로 위 라인) -->
+        <div class="home-bottom-actions">
+          <!-- 하단 좌측: 달란트 버튼 (상점 & 옷장) -->
+          <button id="btn-home-talents" class="home-talent-btn" type="button" title="달란트 상점 & 옷장">
+            <span class="talent-coin-icon">🪙</span>
+            <span id="home-talent-count" class="talent-count-num">0</span>
+          </button>
+
+          <!-- 하단 우측: 두루마리 퀘스트 버튼 -->
+          <button id="btn-home-quests" class="home-quest-btn" type="button" title="말씀 퀘스트 & 업적">
+            <span class="quest-scroll-icon">📜</span>
+            <span id="quest-notify-dot" class="quest-notify-dot" style="display: none;"></span>
+          </button>
         </div>
       </section>
 
@@ -1417,19 +1432,122 @@
       </div>
     </div>
 
+    <!-- ==================== 1. 말씀 퀘스트 & 업적 모달 ==================== -->
+    <div id="quest-modal-overlay" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet quest-modal-sheet">
+        <div class="modal-header">
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
+            <span style="font-size: 17px;">📜</span>
+            <span>말씀 퀘스트 & 업적</span>
+          </div>
+          <button id="btn-close-quest-modal" class="btn-icon-close" type="button" aria-label="닫기" title="닫기">
+            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" style="padding: 4px 0 0;">
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-align: center;">
+            말씀을 통독하고 달성한 퀘스트를 클릭하여 달란트를 수령하세요! 🪙
+          </div>
+          <div id="quest-list-container" class="quest-list-container">
+            <!-- JS 동적 렌더링 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2. 달란트 상점 & 옷장 피팅룸 모달 ==================== -->
+    <div id="talent-shop-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet talent-shop-sheet">
+        <div class="modal-header">
+          <div style="font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 7px;">
+            <span style="font-size: 17px;">🪙</span>
+            <span>달란트 상점 & 옷장</span>
+          </div>
+          <button id="btn-close-shop-modal" class="btn-icon-close" type="button" aria-label="닫기" title="닫기">
+            <svg class="pixel-icon" viewBox="0 0 10 10" width="12" height="12" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="8" width="2" height="2" fill="currentColor" />
+              <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" style="padding: 4px 0 0;">
+          <!-- 상단 찰스 피팅룸 미리보기 -->
+          <div class="shop-dressing-room">
+            <div id="shop-preview-avatar" class="shop-preview-avatar">
+              <!-- JS SVG 주입 -->
+            </div>
+            <div class="shop-balance-badge">
+              <span>보유 달란트:</span>
+              <span id="shop-balance-count">🪙 0</span>
+            </div>
+          </div>
+
+          <!-- 탭: [ 🛍️ 상점 ] / [ 👒 내 옷장 ] -->
+          <div class="shop-tab-nav">
+            <button id="shop-tab-store" class="shop-tab-btn active" type="button">🛍️ 상점 (구매)</button>
+            <button id="shop-tab-closet" class="shop-tab-btn" type="button">👒 내 옷장 (착용)</button>
+          </div>
+
+          <!-- 아이템 목록 그리드 -->
+          <div id="shop-items-grid" class="shop-items-grid">
+            <!-- JS 동적 주입 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 3. 신약 완독 대형 축하 모달 ==================== -->
+    <div id="nt-grand-celebration-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-sheet nt-celebration-sheet">
+        <div style="font-size: 42px; margin-bottom: 4px; line-height: 1;">👑✨🐑</div>
+        <div class="nt-celebration-title">
+          할렐루야! 신약 260장 완독!
+        </div>
+        <div class="nt-celebration-verse">
+          "잘하였도다 착하고 충성된 종아<br>네가 적은 일에 충성하였으매<br>내가 많은 것을 네게 맡기리니<br>네 주인의 즐거움에 참여할지어다"<br>
+          <span style="font-size: 10.5px; opacity: 0.8;">- 마태복음 25:21 -</span>
+        </div>
+        <div class="nt-reward-box">
+          <span>🎉 완독 특별 보상:</span>
+          <span>+100 🪙 달란트 지급!</span>
+        </div>
+        <button id="btn-close-nt-celebration" class="btn-modal-confirm" type="button" style="background: #111; color: #fff;">
+          감사의 찬양과 함께 확인
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <!-- Supabase SDK & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
 
-  <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 앱 제어 -->
+  <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
   <script src="data/bible-nt-bundle.js?v=3.3"></script>
   <script src="js/bible-data.js?v=3.3"></script>
-  <script src="js/charles-pixel.js?v=3.7"></script>
+  <script src="js/charles-pixel.js?v=3.9"></script>
   <script src="js/auth.js?v=3.3"></script>
-  <script src="js/storage.js?v=3.3"></script>
-  <script src="js/app.js?v=3.8"></script>
+  <script src="js/storage.js?v=3.9"></script>
+  <script src="js/talent.js?v=3.9"></script>
+  <script src="js/app.js?v=3.9"></script>
 
 </body>
 </html>
