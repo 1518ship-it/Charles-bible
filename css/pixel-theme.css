@@ -219,7 +219,8 @@ body {
 
 /* 양 아래의 Charles is ____ 문구 & 물음표 버튼 */
 .charles-status-wrap {
-  margin-top: 10px;
+  margin-top: 26px;
+  margin-bottom: -16px;
   display: flex;
   flex-direction: column;
   align-items: center;
