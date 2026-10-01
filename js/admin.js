@@ -695,12 +695,16 @@ const AdminApp = {
       }
 
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
           .from('members')
           .update(updatePayload)
-          .eq('id', uid);
+          .eq('id', uid)
+          .select();
 
         if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error('Supabase RLS 보안 정책으로 인해 데이터베이스 수정이 차단되었습니다 (0 rows updated).\n\n관리자 콘솔 하단의 SQL 쿼리(또는 안내받으신 members RLS SQL)를 Supabase [SQL Editor]에서 1회 실행해 주세요!');
+        }
       }
 
       // 로컬 allUsers 상태 갱신
@@ -761,8 +765,11 @@ const AdminApp = {
         // 1) user_reading_state 삭제
         await supabaseClient.from('user_reading_state').delete().eq('user_id', uid);
         // 2) members 삭제
-        const { error } = await supabaseClient.from('members').delete().eq('id', uid);
+        const { data, error } = await supabaseClient.from('members').delete().eq('id', uid).select();
         if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error('Supabase RLS 보안 정책으로 인해 성도 삭제가 차단되었습니다 (0 rows deleted).\n\nSupabase [SQL Editor]에서 members RLS 정책 SQL을 실행해 주세요!');
+        }
       }
 
       // 로컬 스토리지 정리

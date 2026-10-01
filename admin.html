@@ -220,6 +220,30 @@ ON public.user_reading_state FOR UPDATE
 USING (user_id IS NOT NULL AND length(user_id) > 0)
 WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
 
+-- 2-2. [members 테이블 보안 RLS 정책 - 관리자 수정(셀, 이름, 비밀번호) 및 삭제 허용]
+ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "members_select_policy" ON public.members;
+DROP POLICY IF EXISTS "members_insert_policy" ON public.members;
+DROP POLICY IF EXISTS "members_update_policy" ON public.members;
+DROP POLICY IF EXISTS "members_delete_policy" ON public.members;
+
+CREATE POLICY "members_select_policy" 
+ON public.members FOR SELECT USING (true);
+
+CREATE POLICY "members_insert_policy" 
+ON public.members FOR INSERT 
+WITH CHECK (id IS NOT NULL AND length(id) > 0);
+
+CREATE POLICY "members_update_policy" 
+ON public.members FOR UPDATE 
+USING (id IS NOT NULL AND length(id) > 0)
+WITH CHECK (id IS NOT NULL AND length(id) > 0);
+
+CREATE POLICY "members_delete_policy" 
+ON public.members FOR DELETE 
+USING (id IS NOT NULL AND length(id) > 0);
+
 -- 3. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
 DROP VIEW IF EXISTS public.user_today_summary CASCADE;
 

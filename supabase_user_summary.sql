@@ -44,6 +44,35 @@ FOR UPDATE
 USING (user_id IS NOT NULL AND length(user_id) > 0)
 WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
 
+-- 2-2. [members 테이블 보안 RLS 정책 - 관리자 수정(셀, 이름, 비밀번호) 및 삭제 허용]
+ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "members_select_policy" ON public.members;
+DROP POLICY IF EXISTS "members_insert_policy" ON public.members;
+DROP POLICY IF EXISTS "members_update_policy" ON public.members;
+DROP POLICY IF EXISTS "members_delete_policy" ON public.members;
+
+-- (1) 조회 허용: 로그인 및 성도 명부 조회
+CREATE POLICY "members_select_policy" 
+ON public.members FOR SELECT 
+USING (true);
+
+-- (2) 추가 허용: 신규 회원가입
+CREATE POLICY "members_insert_policy" 
+ON public.members FOR INSERT 
+WITH CHECK (id IS NOT NULL AND length(id) > 0);
+
+-- (3) 수정 허용: 관리자 콘솔에서 성도 소속 셀, 이름, 닉네임, 비밀번호 변경 허용
+CREATE POLICY "members_update_policy" 
+ON public.members FOR UPDATE 
+USING (id IS NOT NULL AND length(id) > 0)
+WITH CHECK (id IS NOT NULL AND length(id) > 0);
+
+-- (4) 삭제 허용: 관리자 콘솔에서 성도 탈퇴/삭제 허용
+CREATE POLICY "members_delete_policy" 
+ON public.members FOR DELETE 
+USING (id IS NOT NULL AND length(id) > 0);
+
 -- 3. [오늘 활동 및 달란트 실시간 요약 뷰 생성]
 -- 한국 시간(KST) YYYY-MM-DD 포맷을 정확히 매칭하여 오늘 읽은 장수가 친구창과 100% 일치합니다.
 -- security_invoker = true 설정으로 Supabase Linter 보안 검사를 통과합니다.
