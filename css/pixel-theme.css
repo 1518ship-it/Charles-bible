@@ -146,13 +146,38 @@ body {
 
 .msg-unread-dot {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 6px;
-  height: 6px;
+  top: -3px;
+  right: -4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
   background: #E74C3C;
-  border-radius: 0;
-  border: 1px solid var(--bg-color);
+  color: #FFFFFF;
+  border-radius: 999px;
+  border: 1.5px solid var(--card-bg, #FFFFFF);
+  box-shadow: 0 2px 5px rgba(231, 76, 60, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+@keyframes envelopeWobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  15% { transform: rotate(-12deg) scale(1.18); }
+  30% { transform: rotate(10deg) scale(1.18); }
+  45% { transform: rotate(-8deg) scale(1.12); }
+  60% { transform: rotate(6deg) scale(1.06); }
+  75% { transform: rotate(0deg) scale(1); }
+}
+
+.envelope-wobble {
+  animation: envelopeWobble 1.2s ease-in-out infinite;
 }
 
 .btn-icon-ghost {
@@ -4467,5 +4492,214 @@ body {
     52px 68px 0 0 #18181b,
     56px 68px 0 0 #18181b;
 }
+
+/* ==================== 적극적 알림 활성화: 상단 인앱 실시간 푸시 배너 ==================== */
+.inapp-push-banner {
+  position: absolute;
+  top: 60px;
+  left: 12px;
+  right: 12px;
+  z-index: 9999;
+  background: var(--card-bg, #FFFFFF);
+  border: 1.5px solid #81C784;
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(46, 125, 50, 0.22), 0 3px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  gap: 10px;
+  animation: slideDownInApp 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  box-sizing: border-box;
+}
+
+@keyframes slideDownInApp {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.inapp-push-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.inapp-push-icon-box {
+  width: 36px;
+  height: 36px;
+  background: #E8F5E9;
+  border: 1px solid #A5D6A7;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.inapp-push-text-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.inapp-push-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-color, #222222);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inapp-push-desc {
+  font-size: 11.5px;
+  color: #2E7D32;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inapp-push-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-inapp-read {
+  background: linear-gradient(135deg, #43A047, #2E7D32);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.3);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.btn-inapp-read:active {
+  transform: scale(0.94);
+}
+
+.btn-inapp-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-muted, #888888);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.btn-inapp-close:hover {
+  color: #E74C3C;
+}
+
+/* ==================== 메세지 상세 창 말씀 읽으러 가기 버튼 ==================== */
+.btn-msg-read-bible {
+  background: linear-gradient(135deg, #2E7D32, #43A047);
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  flex: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.28);
+  transition: all 0.15s ease;
+}
+
+.btn-msg-read-bible:hover {
+  background: linear-gradient(135deg, #276A2A, #388E3C);
+  box-shadow: 0 6px 16px rgba(46, 125, 50, 0.36);
+}
+
+.btn-msg-read-bible:active {
+  transform: scale(0.97);
+}
+
+/* ==================== 알림 목록 카드 내 퀵 말씀 읽기 버튼 ==================== */
+.btn-notif-quick-read {
+  background: #E8F5E9;
+  border: 1px solid #C8E6C9;
+  color: #2E7D32;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.btn-notif-quick-read:hover {
+  background: #C8E6C9;
+  color: #1B5E20;
+}
+
+.btn-notif-quick-read:active {
+  transform: scale(0.95);
+}
+
+/* ==================== 친구 정보 모달 응원 및 풀 보내기 버튼 ==================== */
+.btn-friend-cheer-action {
+  width: 100%;
+  background: linear-gradient(135deg, #43A047, #2E7D32);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.28);
+  transition: all 0.15s ease;
+}
+
+.btn-friend-cheer-action:hover {
+  background: linear-gradient(135deg, #388E3C, #1B5E20);
+  box-shadow: 0 6px 18px rgba(46, 125, 50, 0.35);
+}
+
+.btn-friend-cheer-action:active {
+  transform: scale(0.97);
+}
+
+/* 응원 쪽지 강조 뱃지 */
+.notif-badge.badge-cheer {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #A5D6A7;
+  font-weight: 800;
+}
+
 
 

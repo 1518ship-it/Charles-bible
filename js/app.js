@@ -44,11 +44,18 @@ const App = {
       }
     }
 
-    // 📢 운영자 전체 공지 및 1:1 쪽지 조회 & 알림 뱃지 업데이트
+    // 📢 운영자 전체 공지 및 1:1 쪽지 조회 & 알림 뱃지 업데이트 (30초 폴링 + 리얼타임 감지)
     this.fetchCloudAdminMessages();
+    this.setupRealtimeMessages();
     setInterval(() => {
       this.fetchCloudAdminMessages();
-    }, 60000);
+    }, 30000);
+
+    // 사용자가 창에 다시 집중했을 때 즉시 최신 메시지 갱신
+    window.addEventListener('focus', () => this.fetchCloudAdminMessages());
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) this.fetchCloudAdminMessages();
+    });
   },
 
   loadSavedFontSize() {
@@ -422,6 +429,7 @@ const App = {
     const btnCloseDetail = document.getElementById('btn-close-message-detail');
     const btnConfirmDetail = document.getElementById('btn-confirm-message-detail');
     const btnDeleteCurrent = document.getElementById('btn-delete-current-message');
+    const btnGoReadBible = document.getElementById('btn-go-read-bible');
 
     if (btnBackToList) {
       btnBackToList.addEventListener('click', () => {
@@ -443,11 +451,48 @@ const App = {
         this.deleteCurrentDetailMessage();
       });
     }
+    if (btnGoReadBible) {
+      btnGoReadBible.addEventListener('click', () => {
+        this.goToReadBible();
+      });
+    }
     if (msgDetailOverlay) {
       msgDetailOverlay.addEventListener('click', (e) => {
         if (e.target === msgDetailOverlay) {
           this.closeMessageDetail(false);
         }
+      });
+    }
+
+    // 상단 인앱 실시간 푸시 배너 이벤트 바인딩
+    const inappPushClickArea = document.getElementById('inapp-push-click-area');
+    const btnInappPushRead = document.getElementById('btn-inapp-push-read');
+    const btnInappPushClose = document.getElementById('btn-inapp-push-close');
+
+    if (inappPushClickArea) {
+      inappPushClickArea.addEventListener('click', () => {
+        if (this.latestInAppMsgId) {
+          this.openMessageDetail(this.latestInAppMsgId);
+        } else {
+          const msgOverlay = document.getElementById('message-modal-overlay');
+          if (msgOverlay) {
+            msgOverlay.style.display = 'flex';
+            this.renderNotifications();
+          }
+        }
+        this.closeInAppPushBanner();
+      });
+    }
+    if (btnInappPushRead) {
+      btnInappPushRead.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.goToReadBible();
+      });
+    }
+    if (btnInappPushClose) {
+      btnInappPushClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.closeInAppPushBanner();
       });
     }
 
@@ -503,9 +548,18 @@ const App = {
     // 친구 상세 정보 모달 닫기
     const friendModal = document.getElementById('friend-detail-modal');
     const closeFriendModalBtn = document.getElementById('btn-close-friend-modal');
+    const btnFriendModalCheer = document.getElementById('btn-friend-modal-cheer');
+
     if (closeFriendModalBtn && friendModal) {
       closeFriendModalBtn.addEventListener('click', () => {
         friendModal.style.display = 'none';
+      });
+    }
+    if (btnFriendModalCheer) {
+      btnFriendModalCheer.addEventListener('click', (e) => {
+        if (this.currentFriendDetailId) {
+          this.sendCheer(this.currentFriendDetailId, this.currentFriendDetailName, e);
+        }
       });
     }
     if (friendModal) {
@@ -1544,10 +1598,10 @@ const App = {
             </div>
           `;
         } else {
-          const pillLabel = f.todayRead > 0 ? `오늘 ${f.todayRead}장 🌿` : '응원 🐑';
+          const pillLabel = f.todayRead > 0 ? `오늘 ${f.todayRead}장 · 응원🌿` : '응원 🐑';
           return `
             <div class="pasture-pill-cell">
-              <button class="pasture-pill-btn" onclick="event.stopPropagation(); App.sendCheer('${f.callName}', event)">
+              <button class="pasture-pill-btn" onclick="event.stopPropagation(); App.sendCheer('${f.id}', '${f.callName}', event)" title="${f.callName}님에게 응원과 풀 보내기">
                 ${pillLabel}
               </button>
             </div>
@@ -1657,14 +1711,93 @@ const App = {
     }
   },
 
-  // 따뜻한 응원 보내기 및 파티클 인터랙션
-  sendCheer(name, event) {
+  // 따뜻한 응원 보내기 및 클라우드 메시지 발송 & 파티클 인터랙션
+  async sendCheer(targetIdOrName, targetNameOrEvent, eventObj) {
+    let targetUserId = targetIdOrName;
+    let targetUserName = targetNameOrEvent;
+    let evt = eventObj;
+
+    // 인자 유연화: sendCheer(name, event) 형태로 넘어온 경우 처리
+    if (typeof targetNameOrEvent === 'object' && targetNameOrEvent !== null && !eventObj) {
+      evt = targetNameOrEvent;
+      targetUserName = targetIdOrName;
+      targetUserId = null;
+    }
+
+    // 만약 targetUserId가 없다면 이름으로 검색
+    if (!targetUserId && targetUserName) {
+      const users = (typeof AuthService !== 'undefined') ? AuthService.getAllUsersLocal() : [];
+      const match = users.find(u => (u.nickname === targetUserName || u.name === targetUserName));
+      if (match) targetUserId = match.id;
+    }
+
     RetroAudio.click();
-    this.showToast(`${name}님에게 양 풀과 따뜻한 응원을 보냈어요! 🌿✨`);
-    if (event && event.clientX) {
-      this.spawnCheerEffect(event.clientX, event.clientY);
+
+    const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    const senderName = (currentUser && (currentUser.nickname || currentUser.name)) || '친구';
+    const senderId = currentUser ? currentUser.id : null;
+
+    // 본인에게 보내려 할 때 센스있게 대응
+    if (targetUserId && senderId && String(targetUserId).toLowerCase() === String(senderId).toLowerCase()) {
+      this.showToast('나 자신에게도 매일 축복과 응원을 보내요! 🐑💖');
+      return;
+    }
+
+    // 연속 전송 도배 방지 (3초 쿨다운)
+    this.lastCheerTimes = this.lastCheerTimes || {};
+    const key = String(targetUserId || targetUserName || 'friend');
+    const now = Date.now();
+    if (this.lastCheerTimes[key] && now - this.lastCheerTimes[key] < 3000) {
+      this.showToast('방금 응원을 보냈어요! 잠시 후 다시 보낼 수 있어요 🌿');
+      return;
+    }
+    this.lastCheerTimes[key] = now;
+
+    // 사용자 요청 문구 완벽 적용: '띵동~(친구이름)이 응원과 함께 풀을 보냈어요~!!'
+    const cheerTitle = `띵동~${senderName}이 응원과 함께 풀을 보냈어요~!!`;
+    const cheerContent = `${senderName}님이 성도님의 찰스를 위한 싱싱한 풀 🌿과 따뜻한 사랑의 응원을 보냈어요!\n오늘도 주님의 말씀 안에서 힘을 얻고 승리하세요! 🐑✨`;
+
+    // 1) 화면 인터랙션 피드백 (파티클 & 토스트)
+    const displayName = targetUserName || '친구';
+    this.showToast(`${displayName}님에게 양 풀과 따뜻한 응원을 보냈어요! 🌿✨`);
+    if (evt && evt.clientX) {
+      this.spawnCheerEffect(evt.clientX, evt.clientY);
     } else {
       this.spawnCheerEffect();
+    }
+
+    // 2) Supabase admin_messages 테이블에 쪽지(USER 타입) 발송
+    if (typeof supabaseClient !== 'undefined' && supabaseClient && targetUserId) {
+      try {
+        const { error } = await supabaseClient
+          .from('admin_messages')
+          .insert([{
+            target_type: 'USER',
+            target_user_id: String(targetUserId),
+            title: cheerTitle,
+            content: cheerContent,
+            sender_name: senderName
+          }]);
+        if (error) {
+          console.warn('Supabase 응원 메시지 전송 실패 (DB 에러):', error);
+        } else {
+          console.log(`✉️ [응원 메시지 발송 완료] target: ${targetUserId}, sender: ${senderName}`);
+        }
+      } catch (err) {
+        console.warn('Supabase 응원 메시지 전송 예외:', err);
+      }
+    }
+
+    // 3) 동일 브라우저/로컬 테스트를 위한 폴백 알림 (로컬 스토리지)
+    if (currentUser && targetUserId && String(currentUser.id).toLowerCase() === String(targetUserId).toLowerCase()) {
+      this.addNotification({
+        id: 'cheer_' + Date.now(),
+        icon: '🌿',
+        title: cheerTitle,
+        text: cheerContent,
+        time: '방금 전',
+        read: false
+      });
     }
   },
 
@@ -1717,6 +1850,21 @@ const App = {
     const cellName = (user && user.cell) ? `${user.cell}` : '소속 셀 미지정';
     const realName = (user && user.name) ? ` · ${user.name}` : '';
     const isMe = user && String(user.id).toLowerCase() === String(StorageService.getCurrentUserId()).toLowerCase();
+
+    this.currentFriendDetailId = userId;
+    this.currentFriendDetailName = callName;
+
+    // 친구 응원 버튼 제어
+    const cheerActionBox = document.getElementById('friend-modal-action-box');
+    const cheerBtn = document.getElementById('btn-friend-modal-cheer');
+    if (cheerActionBox && cheerBtn) {
+      if (isMe) {
+        cheerActionBox.style.display = 'none';
+      } else {
+        cheerActionBox.style.display = 'block';
+        cheerBtn.textContent = `🌿 ${callName}님에게 응원과 풀 보내기`;
+      }
+    }
 
     // 기본 텍스트 주입
     const nickEl = document.getElementById('friend-modal-nickname');
@@ -2352,6 +2500,123 @@ const App = {
   // ==================== 소식 및 알림 & 운영자 메시지 관리 ====================
   cloudAdminMessages: [],
   currentDetailMessage: null,
+  latestInAppMsgId: null,
+  hasInitializedMsgFetch: false,
+  _realtimeSubscribed: false,
+
+  // Supabase Realtime 구독: 상대방이 응원을 보내거나 새 공지가 등록되면 실시간 수신!
+  setupRealtimeMessages() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    if (this._realtimeSubscribed) return;
+    try {
+      this._realtimeSubscribed = true;
+      supabaseClient
+        .channel('public:admin_messages_realtime')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_messages' }, (payload) => {
+          const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+          const newRow = payload.new;
+          if (!newRow) return;
+
+          const isForMe = newRow.target_type === 'ALL' || (currentUser && String(newRow.target_user_id).toLowerCase() === String(currentUser.id).toLowerCase());
+          if (isForMe) {
+            console.log('⚡ [Realtime] 내게 온 새 메세지 수신:', newRow.title);
+            this.fetchCloudAdminMessages();
+          }
+        })
+        .subscribe((status) => {
+          console.log('⚡ [Realtime] admin_messages 채널 상태:', status);
+        });
+    } catch (e) {
+      console.warn('Realtime 채널 구독 건너뜀:', e);
+    }
+  },
+
+  // 상단 적극적 인앱 알림 배너 팝업 & 효과
+  triggerInAppNotification(msg) {
+    if (!msg) return;
+    const banner = document.getElementById('inapp-push-banner');
+    if (!banner) return;
+
+    this.latestInAppMsgId = msg.id;
+
+    const titleEl = document.getElementById('inapp-push-title');
+    const descEl = document.getElementById('inapp-push-desc');
+    const iconEl = banner.querySelector('.inapp-push-icon-box');
+
+    const isCheer = (msg.title && (msg.title.includes('응원') || msg.title.includes('띵동~') || msg.title.includes('풀')));
+    if (iconEl) iconEl.textContent = isCheer ? '🌿' : (msg.target_type === 'USER' ? '💌' : '📢');
+    if (titleEl) titleEl.textContent = msg.title || '새 알림이 도착했어요!';
+    if (descEl) {
+      const summary = (msg.content || '').split('\n')[0].slice(0, 38);
+      descEl.textContent = summary || '터치하여 메세지를 확인해보세요.';
+    }
+
+    // 배너 렌더링 & 슬라이드 다운
+    banner.style.display = 'flex';
+    RetroAudio.click();
+
+    // 헤더 편지 봉투 흔들림 효과
+    const msgBtn = document.getElementById('btn-open-messages');
+    if (msgBtn) {
+      msgBtn.classList.add('envelope-wobble');
+    }
+
+    // 브라우저 Web Notification 푸시 알림 (사용자 허용 시)
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('찰스 바이블 🌿', {
+          body: msg.title || '새 응원 메세지가 도착했습니다!',
+          icon: 'favicon.png'
+        });
+      }
+    } catch (e) {}
+
+    // 7초 후 자동 닫기
+    if (this.inAppBannerTimer) clearTimeout(this.inAppBannerTimer);
+    this.inAppBannerTimer = setTimeout(() => {
+      this.closeInAppPushBanner();
+    }, 7000);
+  },
+
+  closeInAppPushBanner() {
+    const banner = document.getElementById('inapp-push-banner');
+    if (banner) banner.style.display = 'none';
+    if (this.inAppBannerTimer) clearTimeout(this.inAppBannerTimer);
+  },
+
+  // 말씀 읽으러 가기 (성경 뷰어로 직행하거나 성경 탭 전환)
+  goToReadBible() {
+    RetroAudio.click();
+    this.closeInAppPushBanner();
+    this.closeMessageDetail(false);
+    const msgOverlay = document.getElementById('message-modal-overlay');
+    if (msgOverlay) msgOverlay.style.display = 'none';
+
+    // 1순위: 이어 읽을 신약 다음 장 탐색
+    let nextBook = null;
+    let nextChapter = 1;
+    if (typeof BIBLE_BOOKS !== 'undefined' && Array.isArray(BIBLE_BOOKS)) {
+      const ntBooks = BIBLE_BOOKS.filter(b => b.testament === 'NT');
+      for (const book of ntBooks) {
+        for (let c = 1; c <= book.chapters; c++) {
+          if (!StorageService.isChapterRead(book.id, c)) {
+            nextBook = book;
+            nextChapter = c;
+            break;
+          }
+        }
+        if (nextBook) break;
+      }
+    }
+
+    if (nextBook) {
+      this.openReader(nextBook.id, nextChapter);
+      this.showToast(`📖 ${nextBook.name} ${nextChapter}장으로 이동했어요!`);
+    } else {
+      this.switchTab('bible');
+      this.showToast('📖 성경 목록으로 이동했어요!');
+    }
+  },
 
   // Supabase admin_messages 테이블에서 공지사항 및 1:1 쪽지 가져오기
   async fetchCloudAdminMessages() {
@@ -2375,6 +2640,30 @@ const App = {
         .limit(30);
 
       if (!error && Array.isArray(data)) {
+        const prevMsgs = this.cloudAdminMessages || [];
+        const prevIds = new Set(prevMsgs.map(m => String(m.id)));
+        const readIds = this.getReadAdminMsgIds();
+        const deletedIds = this.getDeletedAdminMsgIds();
+
+        // 새로 도착한 미열람 쪽지/공지 감지 시 적극적으로 인앱 알림 배너 팝업!
+        if (this.hasInitializedMsgFetch) {
+          const newUnread = data.filter(m => !prevIds.has(String(m.id)) && !readIds.includes(String(m.id)) && !deletedIds.includes(String(m.id)));
+          if (newUnread.length > 0) {
+            this.triggerInAppNotification(newUnread[0]);
+          }
+        } else {
+          this.hasInitializedMsgFetch = true;
+          // 최초 로드 시에도 15분 이내에 온 미열람 응원 쪽지가 있다면 배너 팝업
+          const recentUnreadCheer = data.find(m => {
+            if (readIds.includes(String(m.id)) || deletedIds.includes(String(m.id))) return false;
+            const diffMs = Date.now() - new Date(m.created_at).getTime();
+            return diffMs < 15 * 60 * 1000;
+          });
+          if (recentUnreadCheer) {
+            setTimeout(() => this.triggerInAppNotification(recentUnreadCheer), 800);
+          }
+        }
+
         this.cloudAdminMessages = data;
         this.updateUnreadNotificationDot();
         // 모달이 열려있는 상태라면 바로 렌더링 갱신
@@ -2510,6 +2799,15 @@ const App = {
       if (!item) return;
       this.markAdminMsgRead(id);
       const isUserMsg = item.target_type === 'USER';
+      const isCheer = (item.title && (item.title.includes('응원') || item.title.includes('띵동~') || item.title.includes('풀')));
+
+      let badge = isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지';
+      let badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
+      if (isCheer) {
+        badge = '🌿 사랑의 응원과 양 풀 도착!';
+        badgeClass = 'badge-cheer';
+      }
+
       const dateStr = item.created_at ? new Date(item.created_at).toLocaleString('ko-KR', {
         year: 'numeric',
         month: 'numeric',
@@ -2522,8 +2820,8 @@ const App = {
         id: item.id,
         isSystem: false,
         title: item.title || '(제목 없음)',
-        badge: isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지',
-        badgeClass: isUserMsg ? 'badge-user' : 'badge-all',
+        badge: badge,
+        badgeClass: badgeClass,
         time: dateStr,
         sender: item.sender_name || '양떼목장 운영자',
         content: item.content || ''
@@ -2629,20 +2927,38 @@ const App = {
   },
 
   updateUnreadNotificationDot() {
-    const dot = document.querySelector('.msg-unread-dot');
-    if (!dot) return;
+    const dot = document.getElementById('msg-unread-dot') || document.querySelector('.msg-unread-dot');
+    const msgBtn = document.getElementById('btn-open-messages');
 
     // 1) 기본 시스템 알림 중 안 읽은 것
     const notifs = this.getNotifications();
-    const hasUnreadSys = notifs.some(n => !n.read);
+    const unreadSysCount = notifs.filter(n => !n.read).length;
 
     // 2) 클라우드 운영자 공지 및 어린양의 메세지 중 안 읽은 것 (삭제된 것 제외)
     const readIds = this.getReadAdminMsgIds();
     const deletedIds = this.getDeletedAdminMsgIds();
     const activeAdminMsgs = (this.cloudAdminMessages || []).filter(m => !deletedIds.includes(String(m.id)));
-    const hasUnreadAdmin = activeAdminMsgs.some(m => !readIds.includes(String(m.id)));
+    const unreadAdminCount = activeAdminMsgs.filter(m => !readIds.includes(String(m.id))).length;
 
-    dot.style.display = (hasUnreadSys || hasUnreadAdmin) ? 'block' : 'none';
+    const totalUnread = unreadSysCount + unreadAdminCount;
+
+    if (dot) {
+      if (totalUnread > 0) {
+        dot.textContent = totalUnread > 9 ? '9+' : String(totalUnread);
+        dot.style.display = 'flex';
+      } else {
+        dot.textContent = '';
+        dot.style.display = 'none';
+      }
+    }
+
+    if (msgBtn) {
+      if (totalUnread > 0) {
+        msgBtn.classList.add('envelope-wobble');
+      } else {
+        msgBtn.classList.remove('envelope-wobble');
+      }
+    }
   },
 
   renderNotifications() {
@@ -2668,8 +2984,15 @@ const App = {
       adminMsgs.forEach(m => {
         const isRead = readIds.includes(String(m.id));
         const isUserMsg = m.target_type === 'USER';
-        const badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
-        const badgeText = isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지';
+        const isCheer = (m.title && (m.title.includes('응원') || m.title.includes('띵동~') || m.title.includes('풀')));
+
+        let badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
+        let badgeText = isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지';
+        if (isCheer) {
+          badgeClass = 'badge-cheer';
+          badgeText = '🌿 사랑의 응원';
+        }
+
         const cardClass = isUserMsg ? 'notif-type-user' : '';
 
         const dateStr = m.created_at ? new Date(m.created_at).toLocaleString('ko-KR', {
@@ -2681,7 +3004,7 @@ const App = {
 
         html += `
           <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" data-msg-id="${m.id}" onclick="App.openMessageDetail('${m.id}')">
-            <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${isUserMsg ? '💌' : '📢'}</div>
+            <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${isCheer ? '🌿' : (isUserMsg ? '💌' : '📢')}</div>
             <div class="notif-content" style="width: 100%;">
               <div class="notif-admin-header-row">
                 <span class="notif-badge ${badgeClass}">${badgeText}</span>
@@ -2690,8 +3013,11 @@ const App = {
               <div class="notif-admin-title-row">
                 <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
                 <div class="notif-card-actions">
+                  <button type="button" class="btn-notif-quick-read" title="말씀 읽으러 가기" onclick="event.stopPropagation(); App.goToReadBible();">
+                    <span>📖 말씀 읽기</span>
+                  </button>
                   <button type="button" class="btn-notif-view" onclick="event.stopPropagation(); App.openMessageDetail('${m.id}');">
-                    <span>내용 보기</span> <span>➔</span>
+                    <span>보기</span> <span>➔</span>
                   </button>
                   <button type="button" class="btn-notif-delete-card" title="메세지 삭제" onclick="event.stopPropagation(); App.deleteAdminMessage('${m.id}');">
                     🗑️
@@ -2699,7 +3025,7 @@ const App = {
                 </div>
               </div>
               <div class="notif-admin-footer-row">
-                <span>보낸이: ${m.sender_name || '양떼목장'}</span>
+                <span>보낸이: <strong>${m.sender_name || '양떼목장'}</strong></span>
                 <span class="msg-unread-status" style="font-size: 11px; ${!isRead ? 'font-weight: 700; color: #E74C3C;' : 'color: #AAA;'}">
                   ${!isRead ? '● 읽지 않음' : '읽음 ✓'}
                 </span>
@@ -2725,7 +3051,10 @@ const App = {
             <div class="notif-text" style="font-size: 12px; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${n.text}</div>
             <div class="notif-time" style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
               <span>${n.time}</span>
-              <span style="font-size: 11px; color: #2E7D32; font-weight: 600;">상세보기 ➔</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" class="btn-notif-quick-read" onclick="event.stopPropagation(); App.goToReadBible();">📖 말씀 읽기</button>
+                <span style="font-size: 11px; color: #2E7D32; font-weight: 600;">상세보기 ➔</span>
+              </div>
             </div>
           </div>
         </div>

@@ -18,7 +18,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=5.1">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=5.2">
 </head>
 <body>
 
@@ -71,10 +71,25 @@
             <rect x="8" y="6" width="1" height="1" fill="#FFC000" />
             <rect x="9" y="6" width="1" height="1" fill="#FFC000" />
           </svg>
-          <span class="msg-unread-dot"></span>
+          <span class="msg-unread-dot" id="msg-unread-dot"></span>
         </button>
       </div>
     </header>
+
+    <!-- 상단 적극적 인앱 알림 배너 (응원/메시지 도착 시 슬라이드 다운) -->
+    <div id="inapp-push-banner" class="inapp-push-banner" style="display: none;">
+      <div class="inapp-push-left" id="inapp-push-click-area">
+        <div class="inapp-push-icon-box">💌</div>
+        <div class="inapp-push-text-wrap">
+          <div class="inapp-push-title" id="inapp-push-title">새 알림이 도착했어요!</div>
+          <div class="inapp-push-desc" id="inapp-push-desc">띵동~친구가 응원과 함께 풀을 보냈어요!</div>
+        </div>
+      </div>
+      <div class="inapp-push-actions">
+        <button type="button" class="btn-inapp-read" id="btn-inapp-push-read" title="말씀 읽으러 가기">📖 말씀 읽기</button>
+        <button type="button" class="btn-inapp-close" id="btn-inapp-push-close" title="닫기">&times;</button>
+      </div>
+    </div>
 
     <!-- 메인 스크롤 뷰포트 -->
     <main class="app-main">
@@ -1197,10 +1212,13 @@
           <!-- 상세 내용 동적 주입 -->
         </div>
         <div class="modal-footer message-detail-footer">
-          <button type="button" id="btn-delete-current-message" class="btn-msg-delete">
-            🗑️ 메세지 삭제
+          <button type="button" id="btn-delete-current-message" class="btn-msg-delete" title="메세지 삭제">
+            🗑️ 삭제
           </button>
-          <button type="button" id="btn-confirm-message-detail" class="btn-modal-confirm" style="margin: 0; flex: 1;">
+          <button type="button" id="btn-go-read-bible" class="btn-msg-read-bible" title="말씀 읽으러 가기">
+            📖 말씀 읽으러 가기
+          </button>
+          <button type="button" id="btn-confirm-message-detail" class="btn-modal-confirm" style="margin: 0; min-width: 64px;">
             확인
           </button>
         </div>
@@ -1501,6 +1519,13 @@
               <span id="friend-modal-stat-today" class="friend-modal-stat-val">0장</span>
             </div>
           </div>
+
+          <!-- 친구 응원 & 풀 보내기 액션 버튼 -->
+          <div id="friend-modal-action-box" style="margin-top: 14px;">
+            <button type="button" id="btn-friend-modal-cheer" class="btn-friend-cheer-action">
+              🌿 응원과 풀 보내기
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1604,13 +1629,13 @@
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
-  <script src="data/bible-nt-bundle.js?v=5.1"></script>
-  <script src="js/bible-data.js?v=5.1"></script>
-  <script src="js/charles-pixel.js?v=5.1"></script>
-  <script src="js/auth.js?v=5.1"></script>
-  <script src="js/storage.js?v=5.1"></script>
-  <script src="js/talent.js?v=5.1"></script>
-  <script src="js/app.js?v=5.1"></script>
+  <script src="data/bible-nt-bundle.js?v=5.2"></script>
+  <script src="js/bible-data.js?v=5.2"></script>
+  <script src="js/charles-pixel.js?v=5.2"></script>
+  <script src="js/auth.js?v=5.2"></script>
+  <script src="js/storage.js?v=5.2"></script>
+  <script src="js/talent.js?v=5.2"></script>
+  <script src="js/app.js?v=5.2"></script>
 
 </body>
 </html>
