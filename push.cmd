@@ -1,10 +1,6 @@
 @echo off
-set PATH=C:\Users\1518i\AppData\Local\Programs\Git\cmd;C:\Users\1518i\AppData\Local\Programs\Git\ucrt64\bin;%PATH%
-if exist "C:\Users\1518i\OneDrive\Desktop\Charles bible\.git" (
-    cd /d "C:\Users\1518i\OneDrive\Desktop\Charles bible"
-) else (
-    cd /d "c:\Users\1518i\Desktop\Charles bible"
-)
+set PATH=C:\Program Files\Git\cmd;C:\Program Files\Git\bin;%LOCALAPPDATA%\Programs\Git\cmd;%PATH%
+cd /d "%~dp0"
 echo ==================================================
 echo   Charles' Bible - GitHub Push Uploader
 echo ==================================================
