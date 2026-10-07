@@ -441,11 +441,6 @@ const App = {
         this.closeMessageDetail(false);
       });
     }
-    if (btnConfirmDetail) {
-      btnConfirmDetail.addEventListener('click', () => {
-        this.closeMessageDetail(false);
-      });
-    }
     if (btnDeleteCurrent) {
       btnDeleteCurrent.addEventListener('click', () => {
         this.deleteCurrentDetailMessage();
@@ -2584,9 +2579,19 @@ const App = {
     if (this.inAppBannerTimer) clearTimeout(this.inAppBannerTimer);
   },
 
-  // 말씀 읽으러 가기 (성경 뷰어로 직행하거나 성경 탭 전환)
-  goToReadBible() {
+  // 말씀 읽으러 가기 (성경 뷰어로 직행하거나 성경 탭 전환, 대상 메시지 자동 읽음 처리)
+  goToReadBible(msgId = null, isSystem = false) {
     RetroAudio.click();
+
+    // 열려있는 메시지 또는 클릭된 메시지 즉시 자동 읽음 처리
+    if (msgId) {
+      if (isSystem) this.markNotifRead(msgId);
+      else this.markAdminMsgRead(msgId);
+    } else if (this.currentDetailMessage) {
+      if (this.currentDetailMessage.isSystem) this.markNotifRead(this.currentDetailMessage.id);
+      else this.markAdminMsgRead(this.currentDetailMessage.id);
+    }
+
     this.closeInAppPushBanner();
     this.closeMessageDetail(false);
     const msgOverlay = document.getElementById('message-modal-overlay');
@@ -2697,6 +2702,7 @@ const App = {
       readIds.push(String(id));
       localStorage.setItem('charles_read_admin_msg_ids', JSON.stringify(readIds));
     }
+    this.renderNotifications();
     this.updateUnreadNotificationDot();
   },
 
@@ -3013,7 +3019,7 @@ const App = {
               <div class="notif-admin-title-row">
                 <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
                 <div class="notif-card-actions">
-                  <button type="button" class="btn-notif-quick-read" title="말씀 읽으러 가기" onclick="event.stopPropagation(); App.goToReadBible();">
+                  <button type="button" class="btn-notif-quick-read" title="말씀 읽으러 가기" onclick="event.stopPropagation(); App.goToReadBible('${m.id}', false);">
                     <span>📖 말씀 읽기</span>
                   </button>
                   <button type="button" class="btn-notif-view" onclick="event.stopPropagation(); App.openMessageDetail('${m.id}');">
@@ -3052,7 +3058,7 @@ const App = {
             <div class="notif-time" style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
               <span>${n.time}</span>
               <div style="display: flex; gap: 6px; align-items: center;">
-                <button type="button" class="btn-notif-quick-read" onclick="event.stopPropagation(); App.goToReadBible();">📖 말씀 읽기</button>
+                <button type="button" class="btn-notif-quick-read" onclick="event.stopPropagation(); App.goToReadBible('${n.id}', true);">📖 말씀 읽기</button>
                 <span style="font-size: 11px; color: #2E7D32; font-weight: 600;">상세보기 ➔</span>
               </div>
             </div>
