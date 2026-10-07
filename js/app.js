@@ -3086,3 +3086,9 @@ const App = {
     }, 1500);
   }
 };
+
+// 전역 window 객체 바인딩 (인라인 이벤트 및 DevTools 디버깅 무결성 보장)
+if (typeof window !== 'undefined') {
+  window.App = App;
+}
+
