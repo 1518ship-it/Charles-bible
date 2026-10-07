@@ -38,6 +38,10 @@ const StorageService = {
     return `${year}-${month}-${day}`;
   },
 
+  getTodayString() {
+    return this.getTodayDateStr();
+  },
+
   // 날짜 연산 헬퍼: baseDateStr (YYYY-MM-DD) + days
   addDays(dateStr, days) {
     const [y, m, d] = dateStr.split('-').map(Number);

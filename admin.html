@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/admin.css?v=5.9">
+  <link rel="stylesheet" href="css/admin.css?v=6.0">
 </head>
 <body>
 
@@ -101,14 +101,17 @@
         </button>
       </div>
 
-      <!-- 📊 사용자 주간 현황 (월~금 매일 3장 이상 통독 & 띠부띠부!) -->
+      <!-- 📊 사용자 주간 현황 (주일~토요일 통독 & 띠부띠부!) -->
       <div class="admin-card" id="admin-weekly-card">
         <div class="admin-card-title">
           <span>📊 사용자 주간 현황</span>
-          <span id="badge-weekly-ttibu-count" class="badge-ttibu-pill">🎁 띠부띠부 대상: 0명</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span id="badge-weekly-total-users" style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총 0명</span>
+            <span id="badge-weekly-ttibu-count" class="badge-ttibu-pill">🎁 띠부띠부 대상: 0명</span>
+          </div>
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
-          선택한 주의 <strong>월~금요일 동안 매일 3장 이상</strong> 성경을 통독한 성도에게 <strong>[ 🎁 띠부띠부! ]</strong> 칭호가 수여됩니다. 주차별 요일 통독 기록과 달성자를 확인하세요.
+          선택한 주의 <strong>일~토요일 동안 매일 3장 이상</strong> 성경을 통독한 성도에게 <strong>[ 🎁 띠부띠부! ]</strong> 칭호가 수여됩니다. 주차별 요일 통독 기록과 달성자를 확인하세요.
         </p>
 
         <!-- 주간 툴바: 주차 선택, 이전/다음 주 이동, 셀 필터, 띠부띠부 필터, 명단 복사 -->
@@ -116,7 +119,7 @@
           <div style="display: flex; gap: 4px; align-items: center;">
             <button type="button" id="btn-week-prev" class="admin-btn admin-btn-sm" title="이전 주차">◀ 이전 주</button>
             <select id="weekly-select-week" class="admin-select" style="font-weight: 700; min-width: 220px;">
-              <!-- 동적 생성 (예: 2026년 10월 2주차 (10.05 ~ 10.11)) -->
+              <!-- 동적 생성 (예: 2026년 10월 2주차 (10.04 ~ 10.10)) -->
             </select>
             <button type="button" id="btn-week-next" class="admin-btn admin-btn-sm" title="다음 주차">다음 주 ▶</button>
           </div>
@@ -145,7 +148,7 @@
           <div class="weekly-kpi-card">
             <div class="weekly-kpi-label">🎁 띠부띠부 달성/유력</div>
             <div class="weekly-kpi-val" id="weekly-kpi-ttibu-count" style="color: #D68910;">0명</div>
-            <div class="weekly-kpi-sub" id="weekly-kpi-ttibu-sub">월~금 매일 3장+ 완주</div>
+            <div class="weekly-kpi-sub" id="weekly-kpi-ttibu-sub">일~토 매일 3장+ 완주</div>
           </div>
           <div class="weekly-kpi-card">
             <div class="weekly-kpi-label">📖 주간 총 통독 장수</div>
@@ -172,13 +175,14 @@
                 <th style="width: 44px; text-align: center;">순위</th>
                 <th>성도 이름</th>
                 <th>소속 셀</th>
-                <th style="min-width: 140px;">주간 통독량</th>
-                <th id="th-day-mon" style="text-align: center; min-width: 50px;">월</th>
-                <th id="th-day-tue" style="text-align: center; min-width: 50px;">화</th>
-                <th id="th-day-wed" style="text-align: center; min-width: 50px;">수</th>
-                <th id="th-day-thu" style="text-align: center; min-width: 50px;">목</th>
-                <th id="th-day-fri" style="text-align: center; min-width: 50px;">금</th>
-                <th id="th-day-sat-sun" style="text-align: center; min-width: 60px;">토/일</th>
+                <th style="min-width: 130px;">주간 통독량</th>
+                <th id="th-day-sun" style="text-align: center; min-width: 46px; color: #C0392B;">일</th>
+                <th id="th-day-mon" style="text-align: center; min-width: 46px;">월</th>
+                <th id="th-day-tue" style="text-align: center; min-width: 46px;">화</th>
+                <th id="th-day-wed" style="text-align: center; min-width: 46px;">수</th>
+                <th id="th-day-thu" style="text-align: center; min-width: 46px;">목</th>
+                <th id="th-day-fri" style="text-align: center; min-width: 46px;">금</th>
+                <th id="th-day-sat" style="text-align: center; min-width: 46px; color: #2980B9;">토</th>
                 <th style="text-align: center; min-width: 120px;">띠부 판정</th>
               </tr>
             </thead>
@@ -669,12 +673,12 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=5.9"></script>
-  <script src="js/charles-pixel.js?v=5.9"></script>
-  <script src="js/auth.js?v=5.9"></script>
-  <script src="js/storage.js?v=5.9"></script>
-  <script src="js/talent.js?v=5.9"></script>
-  <script src="js/admin.js?v=5.9"></script>
+  <script src="js/bible-data.js?v=6.0"></script>
+  <script src="js/charles-pixel.js?v=6.0"></script>
+  <script src="js/auth.js?v=6.0"></script>
+  <script src="js/storage.js?v=6.0"></script>
+  <script src="js/talent.js?v=6.0"></script>
+  <script src="js/admin.js?v=6.0"></script>
 
 </body>
 </html>
