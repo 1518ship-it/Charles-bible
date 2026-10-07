@@ -2116,6 +2116,8 @@ const App = {
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book || book.testament === 'OT') return;
 
+    const wasNTCompleteBefore = StorageService.isNTComplete();
+
     // 현재 장 완독 처리
     const alreadyRead = StorageService.isChapterRead(bookId, chapter);
     if (!alreadyRead) {
@@ -2123,7 +2125,7 @@ const App = {
       const beforeStage = StorageService.getCharlesStage();
       StorageService.setChapterRead(bookId, chapter, true);
 
-      this.showToast(`✓ ${book.name} ${chapter}장 완독! 찰스가 기뻐합니다 🐑🌿`);
+      // 효과음 재생
       RetroAudio.success();
 
       const afterStage = StorageService.getCharlesStage();
@@ -2138,9 +2140,27 @@ const App = {
       this.renderStats();
     }
 
+    // 데이터 상에서 신약 27권 260장 전체가 방금 완독되었는지 정밀 확인
+    const isNowNTComplete = StorageService.isNTComplete();
+    if (!wasNTCompleteBefore && isNowNTComplete) {
+      this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 👑✨');
+      const ntModal = document.getElementById('nt-grand-celebration-modal');
+      if (ntModal) {
+        ntModal.style.display = 'flex';
+      }
+      this.updateReaderCompleteBtn();
+      return;
+    }
+
     // 신약의 마지막 장(요한계시록 22장)인지 확인
     if (bookId === 'REV' && chapter === 22) {
-      this.showToast('🎉 축하합니다! 신약 27권 전체를 완독하셨습니다! 👑✨');
+      if (isNowNTComplete) {
+        this.showToast('🎉 축하합니다! 신약 27권 전체를 완독하셨습니다! 👑✨');
+      } else {
+        const stats = StorageService.getStats();
+        const remaining = stats.ntTotal - stats.ntRead;
+        this.showToast(`요한계시록의 마지막 장입니다! 📖 (아직 안 읽은 신약 말씀: ${remaining}장)`);
+      }
       this.updateReaderCompleteBtn();
       return;
     }
@@ -2155,13 +2175,14 @@ const App = {
       const chapter = this.currentReadingChapter;
       const book = BIBLE_BOOKS.find(b => b.id === bookId);
       if (book && book.testament !== 'OT') {
+        const wasNTCompleteBefore = StorageService.isNTComplete();
         const alreadyRead = StorageService.isChapterRead(bookId, chapter);
         if (!alreadyRead) {
           this.hasAutoMarkedThisSession = true;
           const beforeStage = StorageService.getCharlesStage();
           StorageService.setChapterRead(bookId, chapter, true);
 
-          this.showToast(`✓ ${book.name} ${chapter}장 완독! 찰스가 기뻐합니다 🐑🌿`);
+          // 효과음 재생
           RetroAudio.success();
 
           const afterStage = StorageService.getCharlesStage();
@@ -2174,6 +2195,16 @@ const App = {
           this.updateBookCardProgress(bookId);
           this.renderHome();
           this.renderStats();
+
+          // 데이터 상 신약 260장 전체 완독 달성 확인
+          const isNowNTComplete = StorageService.isNTComplete();
+          if (!wasNTCompleteBefore && isNowNTComplete) {
+            this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 👑✨');
+            const ntModal = document.getElementById('nt-grand-celebration-modal');
+            if (ntModal) {
+              ntModal.style.display = 'flex';
+            }
+          }
         }
       }
     }
@@ -2243,13 +2274,14 @@ const App = {
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book || book.testament === 'OT') return;
 
+    const wasNTCompleteBefore = StorageService.isNTComplete();
     const alreadyRead = StorageService.isChapterRead(bookId, chapter);
     if (!alreadyRead) {
       this.hasAutoMarkedThisSession = true;
       const beforeStage = StorageService.getCharlesStage();
       StorageService.setChapterRead(bookId, chapter, true);
 
-      this.showToast(`✓ ${book.name} ${chapter}장 완독! 찰스가 기뻐합니다 🐑🌿`);
+      // 효과음 재생
       RetroAudio.success();
 
       const afterStage = StorageService.getCharlesStage();
@@ -2263,6 +2295,16 @@ const App = {
       this.updateBookCardProgress(bookId);
       this.renderHome();
       this.renderStats();
+
+      // 데이터 상 신약 260장 전체 완독 달성 확인
+      const isNowNTComplete = StorageService.isNTComplete();
+      if (!wasNTCompleteBefore && isNowNTComplete) {
+        this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 👑✨');
+        const ntModal = document.getElementById('nt-grand-celebration-modal');
+        if (ntModal) {
+          ntModal.style.display = 'flex';
+        }
+      }
     }
   },
 
@@ -2272,9 +2314,14 @@ const App = {
 
     const isLast = this.currentReadingBookId === 'REV' && this.currentReadingChapter === 22;
     const isRead = StorageService.isChapterRead(this.currentReadingBookId, this.currentReadingChapter);
+    const isNTComplete = StorageService.isNTComplete();
 
     if (isLast) {
-      completeBtn.textContent = isRead ? '✓ 신약 전체 완독 완료 👑' : '✓ 다 읽고 신약 완독하기 👑';
+      if (isNTComplete) {
+        completeBtn.textContent = '✓ 신약 전체 완독 완료 👑';
+      } else {
+        completeBtn.textContent = isRead ? '✓ 요한계시록 22장 완독됨' : '✓ 다 읽음 (마지막 장)';
+      }
     } else {
       completeBtn.textContent = isRead ? '다음 장으로 ➔' : '✓ 다 읽고 다음 장으로 ➔';
     }

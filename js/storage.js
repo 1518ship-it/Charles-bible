@@ -465,6 +465,12 @@ const StorageService = {
     };
   },
 
+  // 신약 27권 전체(260장) 완독 여부 확인 (데이터 상 100% 무결점 판정)
+  isNTComplete() {
+    const stats = this.getStats();
+    return stats.ntRead >= stats.ntTotal && stats.ntTotal > 0;
+  },
+
   getAchievements() {
     const stats = this.getStats();
     const streak = this.getStreakInfo();
@@ -477,7 +483,7 @@ const StorageService = {
     const isGospelsComplete = ['MAT', 'MRK', 'LUK', 'JHN'].every(
       id => stats.bookProgress[id] === BIBLE_BOOKS.find(b => b.id === id).chapters
     );
-    const isNTComplete = stats.ntRead === stats.ntTotal;
+    const isNTComplete = this.isNTComplete();
     const isAllComplete = stats.totalRead === stats.totalChapters;
 
     return [
