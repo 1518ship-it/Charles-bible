@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/admin.css?v=5.1">
+  <link rel="stylesheet" href="css/admin.css?v=5.9">
 </head>
 <body>
 
@@ -99,6 +99,94 @@
         <button type="button" id="btn-reset-admin-key-default" class="admin-btn" style="font-size: 11px;">
           기본 관리자 코드(654321)로 재설정
         </button>
+      </div>
+
+      <!-- 📊 사용자 주간 현황 (월~금 매일 3장 이상 통독 & 띠부띠부!) -->
+      <div class="admin-card" id="admin-weekly-card">
+        <div class="admin-card-title">
+          <span>📊 사용자 주간 현황</span>
+          <span id="badge-weekly-ttibu-count" class="badge-ttibu-pill">🎁 띠부띠부 대상: 0명</span>
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
+          선택한 주의 <strong>월~금요일 동안 매일 3장 이상</strong> 성경을 통독한 성도에게 <strong>[ 🎁 띠부띠부! ]</strong> 칭호가 수여됩니다. 주차별 요일 통독 기록과 달성자를 확인하세요.
+        </p>
+
+        <!-- 주간 툴바: 주차 선택, 이전/다음 주 이동, 셀 필터, 띠부띠부 필터, 명단 복사 -->
+        <div class="admin-toolbar" style="flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button type="button" id="btn-week-prev" class="admin-btn admin-btn-sm" title="이전 주차">◀ 이전 주</button>
+            <select id="weekly-select-week" class="admin-select" style="font-weight: 700; min-width: 220px;">
+              <!-- 동적 생성 (예: 2026년 10월 2주차 (10.05 ~ 10.11)) -->
+            </select>
+            <button type="button" id="btn-week-next" class="admin-btn admin-btn-sm" title="다음 주차">다음 주 ▶</button>
+          </div>
+
+          <div class="admin-toolbar-item">
+            <span style="font-size: 12px; font-weight: 700;">소속 셀:</span>
+            <select id="weekly-filter-cell" class="admin-select" style="min-width: 100px;">
+              <option value="ALL">전체 셀</option>
+            </select>
+          </div>
+
+          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; cursor: pointer; user-select: none; background: #FFF9E6; border: 1.5px solid #111; padding: 4px 10px; border-radius: 4px;">
+            <input type="checkbox" id="weekly-only-ttibu" style="accent-color: #D4AC0D; cursor: pointer;">
+            <span>🎁 띠부띠부 대상자만 보기</span>
+          </label>
+
+          <div style="margin-left: auto; display: flex; gap: 6px;">
+            <button type="button" id="btn-copy-ttibu-list" class="admin-btn admin-btn-sm" style="background: #FFF9C4; border-color: #F1C40F; color: #7D6608; font-weight: 800;" title="카카오톡 공지용 띠부띠부 명단 클립보드 복사">
+              📋 띠부띠부 명단 복사
+            </button>
+          </div>
+        </div>
+
+        <!-- 주간 KPI 요약 카드 그리드 -->
+        <div class="weekly-kpi-grid">
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">🎁 띠부띠부 달성/유력</div>
+            <div class="weekly-kpi-val" id="weekly-kpi-ttibu-count" style="color: #D68910;">0명</div>
+            <div class="weekly-kpi-sub" id="weekly-kpi-ttibu-sub">월~금 매일 3장+ 완주</div>
+          </div>
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">📖 주간 총 통독 장수</div>
+            <div class="weekly-kpi-val" id="weekly-kpi-total-chapters" style="color: #2E7D32;">0장</div>
+            <div class="weekly-kpi-sub" id="weekly-kpi-total-sub">선택 주차 합산</div>
+          </div>
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">👥 주간 참여 성도</div>
+            <div class="weekly-kpi-val" id="weekly-kpi-active-users">0명</div>
+            <div class="weekly-kpi-sub" id="weekly-kpi-active-sub">1장 이상 통독</div>
+          </div>
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">⚡ 1인당 평균 통독</div>
+            <div class="weekly-kpi-val" id="weekly-kpi-avg-chapters">0.0장</div>
+            <div class="weekly-kpi-sub" id="weekly-kpi-avg-sub">참여 성도 기준</div>
+          </div>
+        </div>
+
+        <!-- 주간 현황 테이블 & 시각화 차트 -->
+        <div style="overflow-x: auto; margin-top: 10px;">
+          <table class="admin-table weekly-table">
+            <thead>
+              <tr>
+                <th style="width: 44px; text-align: center;">순위</th>
+                <th>성도 이름</th>
+                <th>소속 셀</th>
+                <th style="min-width: 140px;">주간 통독량</th>
+                <th id="th-day-mon" style="text-align: center; min-width: 50px;">월</th>
+                <th id="th-day-tue" style="text-align: center; min-width: 50px;">화</th>
+                <th id="th-day-wed" style="text-align: center; min-width: 50px;">수</th>
+                <th id="th-day-thu" style="text-align: center; min-width: 50px;">목</th>
+                <th id="th-day-fri" style="text-align: center; min-width: 50px;">금</th>
+                <th id="th-day-sat-sun" style="text-align: center; min-width: 60px;">토/일</th>
+                <th style="text-align: center; min-width: 120px;">띠부 판정</th>
+              </tr>
+            </thead>
+            <tbody id="weekly-user-tbody">
+              <!-- 주간 사용자 통독 통계 목록 동적 주입 -->
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 2. 가입 사용자 관리 & 오늘 통독 및 달란트 현황 -->
@@ -581,12 +669,12 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=5.1"></script>
-  <script src="js/charles-pixel.js?v=5.1"></script>
-  <script src="js/auth.js?v=5.1"></script>
-  <script src="js/storage.js?v=5.1"></script>
-  <script src="js/talent.js?v=5.1"></script>
-  <script src="js/admin.js?v=5.1"></script>
+  <script src="js/bible-data.js?v=5.9"></script>
+  <script src="js/charles-pixel.js?v=5.9"></script>
+  <script src="js/auth.js?v=5.9"></script>
+  <script src="js/storage.js?v=5.9"></script>
+  <script src="js/talent.js?v=5.9"></script>
+  <script src="js/admin.js?v=5.9"></script>
 
 </body>
 </html>

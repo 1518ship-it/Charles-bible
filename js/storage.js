@@ -819,7 +819,8 @@ const StorageService = {
         streakCount: this.getStreakInfo().count || 0,
         todayRead: this.getTodayReadCount(),
         talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : (parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10)),
-        equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}
+        equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
+        dailyCounts: this.getDailyCounts()
       };
     }
 
@@ -829,6 +830,7 @@ const StorageService = {
     let todayRead = 0;
     let talents = 0;
     let equipped = {};
+    let dailyCounts = {};
 
     try {
       const s = localStorage.getItem(`charles_user_${uid}_stage`);
@@ -843,7 +845,10 @@ const StorageService = {
       const dc = localStorage.getItem(`charles_user_${uid}_daily_counts`);
       if (dc) {
         const parsed = JSON.parse(dc);
-        if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
+        if (parsed && typeof parsed === 'object') {
+          dailyCounts = parsed;
+          if (parsed[todayStr]) todayRead = parsed[todayStr] || 0;
+        }
       }
 
       const tal = localStorage.getItem(`charles_user_${uid}_talents`);
@@ -880,6 +885,7 @@ const StorageService = {
           if (data.charles_stage) stage = data.charles_stage;
           if (data.streak_count !== undefined && data.streak_count !== null) streakCount = data.streak_count;
           if (data.daily_counts && typeof data.daily_counts === 'object') {
+            dailyCounts = data.daily_counts;
             todayRead = data.daily_counts[todayStr] || 0;
             // 캘린더 기반 무결점 보정
             const derivedStreak = this.calculateStreakFromDaily(data.daily_counts, todayStr);
@@ -919,7 +925,8 @@ const StorageService = {
       streakCount,
       todayRead,
       talents,
-      equipped
+      equipped,
+      dailyCounts
     };
   },
 
@@ -942,7 +949,8 @@ const StorageService = {
           streakCount: this.getStreakInfo().count || 0,
           todayRead: this.getTodayReadCount(),
           talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : (parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10)),
-          equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {}
+          equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
+          dailyCounts: this.getDailyCounts()
         };
         return;
       }
@@ -952,6 +960,7 @@ const StorageService = {
       let todayRead = 0;
       let talents = 0;
       let equipped = {};
+      let dailyCounts = {};
 
       try {
         const s = localStorage.getItem(`charles_user_${uid}_stage`);
@@ -966,7 +975,10 @@ const StorageService = {
         const dc = localStorage.getItem(`charles_user_${uid}_daily_counts`);
         if (dc) {
           const parsed = JSON.parse(dc);
-          if (parsed && parsed[todayStr]) todayRead = parsed[todayStr] || 0;
+          if (parsed && typeof parsed === 'object') {
+            dailyCounts = parsed;
+            if (parsed[todayStr]) todayRead = parsed[todayStr] || 0;
+          }
         }
 
         const tal = localStorage.getItem(`charles_user_${uid}_talents`);
@@ -979,7 +991,7 @@ const StorageService = {
         }
       } catch (e) {}
 
-      stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped };
+      stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped, dailyCounts };
     });
 
     // 2) Supabase에서 1회의 단일 쿼리로 전체 친구 상태 일괄(Batch) 조회!
@@ -1024,6 +1036,7 @@ const StorageService = {
             let todayRead = 0;
             let talents = 0;
             let equipped = (row.equipped && typeof row.equipped === 'object') ? row.equipped : {};
+            let dailyCounts = (row.daily_counts && typeof row.daily_counts === 'object') ? { ...row.daily_counts } : {};
 
             if (row.daily_counts && typeof row.daily_counts === 'object') {
               todayRead = row.daily_counts[todayStr] || 0;
@@ -1059,7 +1072,7 @@ const StorageService = {
               localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
             } catch (e) {}
 
-            stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped };
+            stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped, dailyCounts };
           });
         }
       } catch (err) {

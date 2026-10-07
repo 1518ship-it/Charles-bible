@@ -547,3 +547,185 @@ body {
     max-width: 100%;
   }
 }
+
+/* ==================== 📊 사용자 주간 현황 & 띠부띠부 전용 스타일 ==================== */
+.weekly-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .weekly-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.weekly-kpi-card {
+  background: #FAFAFA;
+  border: 1.5px solid #111111;
+  padding: 12px 14px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weekly-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #666666;
+}
+
+.weekly-kpi-val {
+  font-size: 20px;
+  font-weight: 900;
+  color: #111111;
+  letter-spacing: -0.5px;
+}
+
+.weekly-kpi-sub {
+  font-size: 11px;
+  color: #888888;
+}
+
+/* 띠부띠부 배지 & 태그 */
+.badge-ttibu {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #FFF176 0%, #FFD54F 50%, #FFCA28 100%);
+  color: #5D4037;
+  border: 1.5px solid #E65100;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(230, 81, 0, 0.25);
+  animation: ttibu-glow 2s infinite ease-in-out;
+  white-space: nowrap;
+}
+
+@keyframes ttibu-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 1px 3px rgba(230, 81, 0, 0.25);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 2px 8px rgba(255, 179, 0, 0.55);
+  }
+}
+
+.badge-ttibu-pill {
+  font-size: 11px;
+  font-weight: 800;
+  background: #FFF9C4;
+  color: #B7950B;
+  border: 1px solid #F1C40F;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.badge-ttibu-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #81C784;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.badge-ttibu-missed {
+  display: inline-flex;
+  align-items: center;
+  background: #F5F5F5;
+  color: #9E9E9E;
+  border: 1px solid #E0E0E0;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* 요일별 미니 칩 */
+.day-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.day-chip-success {
+  background: #E8F8F5;
+  color: #117864;
+  border: 1px solid #A3E4D7;
+}
+
+.day-chip-partial {
+  background: #FEF9E7;
+  color: #B7950B;
+  border: 1px solid #F9E79F;
+}
+
+.day-chip-empty {
+  color: #CCCCCC;
+  font-weight: 500;
+}
+
+.day-chip-future {
+  color: #BBBBBB;
+  border: 1px dashed #E0E0E0;
+  font-weight: 500;
+  font-size: 10px;
+}
+
+/* 주간 통독 게이지 바 */
+.weekly-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weekly-bar-track {
+  flex: 1;
+  height: 8px;
+  background: #EEEEEE;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.weekly-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #48C774 0%, #2E7D32 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.weekly-bar-fill-gold {
+  background: linear-gradient(90deg, #F9E79F 0%, #F1C40F 60%, #E67E22 100%);
+}
+
+/* 띠부띠부 달성자 행 강조 */
+tr.row-ttibu-winner {
+  background-color: #FFFDE7 !important;
+}
+
+tr.row-ttibu-winner:hover {
+  background-color: #FFF9C4 !important;
+}
+

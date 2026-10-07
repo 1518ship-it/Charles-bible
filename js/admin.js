@@ -19,6 +19,12 @@ const AdminApp = {
   selectedCell: 'ALL',
   sortBy: 'todayRead',
 
+  // 📊 사용자 주간 현황 상태
+  weeksList: [],
+  selectedWeekIndex: -1,
+  weeklySelectedCell: 'ALL',
+  weeklyOnlyTtibu: false,
+
   init() {
     this.checkAdminAuth();
     this.bindEvents();
@@ -182,6 +188,67 @@ const AdminApp = {
             alert('복사에 실패했습니다. 텍스트를 직접 드래그하여 복사해 주세요.');
           });
         }
+      });
+    }
+
+    // 5) 📊 사용자 주간 현황 이벤트
+    const weekSelect = document.getElementById('weekly-select-week');
+    if (weekSelect) {
+      weekSelect.addEventListener('change', (e) => {
+        this.selectedWeekIndex = parseInt(e.target.value, 10) || 0;
+        this.renderWeeklyDashboard();
+      });
+    }
+
+    const prevWeekBtn = document.getElementById('btn-week-prev');
+    if (prevWeekBtn) {
+      prevWeekBtn.addEventListener('click', () => {
+        if (this.selectedWeekIndex < this.weeksList.length - 1) {
+          this.selectedWeekIndex++;
+          if (weekSelect) weekSelect.value = String(this.selectedWeekIndex);
+          RetroAudio.click();
+          this.renderWeeklyDashboard();
+        } else {
+          this.showToast('더 이전 주차가 없습니다.', 'info');
+        }
+      });
+    }
+
+    const nextWeekBtn = document.getElementById('btn-week-next');
+    if (nextWeekBtn) {
+      nextWeekBtn.addEventListener('click', () => {
+        if (this.selectedWeekIndex > 0) {
+          this.selectedWeekIndex--;
+          if (weekSelect) weekSelect.value = String(this.selectedWeekIndex);
+          RetroAudio.click();
+          this.renderWeeklyDashboard();
+        } else {
+          this.showToast('더 미래 주차가 없습니다.', 'info');
+        }
+      });
+    }
+
+    const weeklyCellFilter = document.getElementById('weekly-filter-cell');
+    if (weeklyCellFilter) {
+      weeklyCellFilter.addEventListener('change', (e) => {
+        this.weeklySelectedCell = e.target.value;
+        this.renderWeeklyDashboard();
+      });
+    }
+
+    const onlyTtibuCheckbox = document.getElementById('weekly-only-ttibu');
+    if (onlyTtibuCheckbox) {
+      onlyTtibuCheckbox.addEventListener('change', (e) => {
+        this.weeklyOnlyTtibu = e.target.checked;
+        RetroAudio.click();
+        this.renderWeeklyDashboard();
+      });
+    }
+
+    const copyTtibuBtn = document.getElementById('btn-copy-ttibu-list');
+    if (copyTtibuBtn) {
+      copyTtibuBtn.addEventListener('click', () => {
+        this.copyTtibuWinnersList();
       });
     }
   },
@@ -356,6 +423,10 @@ const AdminApp = {
 
     // 성도 목록 테이블 렌더링
     this.renderFilteredTable();
+
+    // 📊 사용자 주간 현황 초기화 및 렌더링
+    this.initWeeklyDashboard();
+    this.renderWeeklyDashboard();
 
     // 최근 발송 메시지 내역 불러오기
     this.loadSentMessages();
@@ -1205,5 +1276,465 @@ const AdminApp = {
       RetroAudio.error();
       alert('메시지 삭제 중 오류가 발생했습니다: ' + (err.message || err));
     }
+  },
+
+  // ==================== 10. 사용자 주간 현황 & 띠부띠부 관리 ====================
+
+  /**
+   * 주차 목록 생성 및 주간 대시보드 컨트롤 초기화
+   */
+  initWeeklyDashboard() {
+    this.buildWeeksList();
+    this.populateWeeklySelect();
+    this.populateWeeklyCellFilter();
+  },
+
+  /**
+   * 오늘 날짜 기준으로 과거 6주 ~ 미래 2주의 주차 목록 생성 (월요일 ~ 일요일 기준)
+   */
+  buildWeeksList() {
+    const weeks = [];
+    const todayStr = typeof StorageService !== 'undefined' ? StorageService.getTodayString() : new Date().toISOString().slice(0, 10);
+    const today = new Date(todayStr + 'T00:00:00');
+
+    // 오늘이 속한 주의 월요일 구하기 (0: 일, 1: 월, ..., 6: 토)
+    const dayOfWeek = today.getDay();
+    const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+    const currentMon = new Date(today);
+    currentMon.setDate(today.getDate() + diffToMon);
+
+    // 미래 2주부터 과거 6주까지 (최신/미래 주차부터 역순으로 정렬하여 드롭다운에 배치)
+    for (let w = 2; w >= -6; w--) {
+      const mon = new Date(currentMon);
+      mon.setDate(currentMon.getDate() + (w * 7));
+
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+
+      // 목요일(월+3일)의 년월을 기준으로 주차 번호 결정 (ISO 8601 표준)
+      const thu = new Date(mon);
+      thu.setDate(mon.getDate() + 3);
+      const thuYear = thu.getFullYear();
+      const thuMonth = thu.getMonth() + 1;
+      const thuDate = thu.getDate();
+      const weekNum = Math.ceil(thuDate / 7);
+
+      const monStr = mon.toISOString().slice(0, 10);
+      const sunStr = sun.toISOString().slice(0, 10);
+
+      const monShort = `${String(mon.getMonth() + 1).padStart(2, '0')}.${String(mon.getDate()).padStart(2, '0')}`;
+      const sunShort = `${String(sun.getMonth() + 1).padStart(2, '0')}.${String(sun.getDate()).padStart(2, '0')}`;
+
+      // 요일별 일자 배열 생성 (월~일)
+      const days = [];
+      const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+      for (let d = 0; d < 7; d++) {
+        const dObj = new Date(mon);
+        dObj.setDate(mon.getDate() + d);
+        const dStr = dObj.toISOString().slice(0, 10);
+        days.push({
+          dayName: dayNames[d],
+          dateStr: dStr,
+          monthDay: `${dObj.getMonth() + 1}/${dObj.getDate()}`,
+          isWeekday: d < 5
+        });
+      }
+
+      const isCurrentWeek = (todayStr >= monStr && todayStr <= sunStr);
+      const label = `${thuMonth}월 ${weekNum}주차 (${monShort} ~ ${sunShort})${isCurrentWeek ? ' 🌟[현재 주]' : ''}`;
+      const shortLabel = `${thuMonth}월 ${weekNum}주차`;
+
+      weeks.push({
+        label,
+        shortLabel,
+        year: thuYear,
+        month: thuMonth,
+        weekNum,
+        monStr,
+        sunStr,
+        days,
+        isCurrentWeek
+      });
+    }
+
+    this.weeksList = weeks;
+
+    // 초기 선택: 현재 주차를 우선 선택
+    if (this.selectedWeekIndex === -1 || this.selectedWeekIndex >= weeks.length) {
+      const curIdx = weeks.findIndex(w => w.isCurrentWeek);
+      this.selectedWeekIndex = curIdx !== -1 ? curIdx : 0;
+    }
+  },
+
+  /**
+   * 주차 선택 드롭다운 채우기
+   */
+  populateWeeklySelect() {
+    const select = document.getElementById('weekly-select-week');
+    if (!select || !this.weeksList || this.weeksList.length === 0) return;
+
+    select.innerHTML = this.weeksList.map((w, idx) => `
+      <option value="${idx}" ${idx === this.selectedWeekIndex ? 'selected' : ''}>
+        ${w.label}
+      </option>
+    `).join('');
+
+    select.value = String(this.selectedWeekIndex);
+  },
+
+  /**
+   * 주간 현황용 셀 필터 드롭다운 채우기
+   */
+  populateWeeklyCellFilter() {
+    const cellFilter = document.getElementById('weekly-filter-cell');
+    if (!cellFilter) return;
+
+    const currentVal = this.weeklySelectedCell;
+    const cells = new Set();
+    this.allUsers.forEach(u => {
+      if (u.cell && u.cell !== '미지정') cells.add(u.cell);
+    });
+
+    const sortedCells = Array.from(cells).sort();
+    let optionsHtml = `<option value="ALL">전체 셀 (${this.allUsers.length}명)</option>`;
+    sortedCells.forEach(cell => {
+      const count = this.allUsers.filter(u => u.cell === cell).length;
+      optionsHtml += `<option value="${cell}">${cell} (${count}명)</option>`;
+    });
+
+    cellFilter.innerHTML = optionsHtml;
+    cellFilter.value = cells.has(currentVal) ? currentVal : 'ALL';
+    this.weeklySelectedCell = cellFilter.value;
+  },
+
+  /**
+   * 사용자 주간 현황 테이블 및 띠부띠부 판정 렌더링
+   */
+  renderWeeklyDashboard() {
+    if (!this.weeksList || this.weeksList.length === 0) {
+      this.buildWeeksList();
+    }
+
+    const curWeek = this.weeksList[this.selectedWeekIndex];
+    if (!curWeek) return;
+
+    const todayStr = typeof StorageService !== 'undefined' ? StorageService.getTodayString() : new Date().toISOString().slice(0, 10);
+
+    // 테이블 헤더 요일별 날짜 표기 최신화
+    const dayIds = ['th-day-mon', 'th-day-tue', 'th-day-wed', 'th-day-thu', 'th-day-fri'];
+    dayIds.forEach((id, idx) => {
+      const th = document.getElementById(id);
+      if (th && curWeek.days[idx]) {
+        th.innerHTML = `${curWeek.days[idx].dayName}<br><span style="font-size: 10px; font-weight: 500; color: #666;">${curWeek.days[idx].monthDay}</span>`;
+      }
+    });
+
+    const thWeekend = document.getElementById('th-day-sat-sun');
+    if (thWeekend && curWeek.days[5] && curWeek.days[6]) {
+      thWeekend.innerHTML = `토/일<br><span style="font-size: 10px; font-weight: 500; color: #666;">${curWeek.days[5].monthDay}~${curWeek.days[6].monthDay.split('/')[1]}</span>`;
+    }
+
+    // 각 성도별 주간 통독 데이터 분석 및 띠부띠부 판정
+    const userStats = this.allUsers.map(u => {
+      const st = this.stateMap[u.id] || {};
+      const dc = st.dailyCounts || {};
+
+      // 월~금 요일별 통독 장수
+      const weekdayCounts = curWeek.days.slice(0, 5).map(d => {
+        const count = dc[d.dateStr] || 0;
+        const isPastOrToday = d.dateStr <= todayStr;
+        const isToday = d.dateStr === todayStr;
+        return {
+          dayName: d.dayName,
+          dateStr: d.dateStr,
+          count,
+          isPastOrToday,
+          isToday
+        };
+      });
+
+      // 주말(토/일) 통독 장수
+      const satCount = dc[curWeek.days[5].dateStr] || 0;
+      const sunCount = dc[curWeek.days[6].dateStr] || 0;
+      const weekendCount = satCount + sunCount;
+
+      const weekdayTotal = weekdayCounts.reduce((acc, cur) => acc + cur.count, 0);
+      const weekTotal = weekdayTotal + weekendCount;
+
+      // 월~금 중 3장 이상 달성한 일수
+      const qualifyingDays = weekdayCounts.filter(w => w.count >= 3).length;
+
+      // 🎁 띠부띠부 핵심 판정: 월~금 5일 모두 매일 3장 이상 읽었는가?
+      const isTtibu = weekdayCounts.every(w => w.count >= 3);
+
+      // 현재 진행 중인 주차의 경우, 오늘까지 지난 평일 모두 3장 이상 읽으며 도전 순항 중인가?
+      let isTtibuInProgress = false;
+      let isTtibuFailed = false;
+
+      if (curWeek.isCurrentWeek) {
+        const elapsedWeekdays = weekdayCounts.filter(w => w.isPastOrToday);
+        const allElapsedAchieved = elapsedWeekdays.length > 0 && elapsedWeekdays.every(w => w.count >= 3);
+
+        if (isTtibu) {
+          isTtibuInProgress = false;
+        } else if (allElapsedAchieved) {
+          isTtibuInProgress = true;
+        } else {
+          isTtibuFailed = true;
+        }
+      } else {
+        if (!isTtibu) isTtibuFailed = true;
+      }
+
+      // 정렬 스코어: "띠부띠부를 받을 수 있는 사람을 차트 상위로 올려줘"
+      // 1순위: 띠부띠부 완전 달성자 (1,000,000점 + 총장수)
+      // 2순위: 현재 주차 띠부 순항 진행자 (500,000점 + 달성일수*1000 + 총장수)
+      // 3순위: 일반 성도 (달성일수*1000 + 총장수)
+      let sortScore = 0;
+      if (isTtibu) {
+        sortScore = 1000000 + weekTotal;
+      } else if (isTtibuInProgress) {
+        sortScore = 500000 + (qualifyingDays * 1000) + weekTotal;
+      } else {
+        sortScore = (qualifyingDays * 1000) + weekTotal;
+      }
+
+      return {
+        user: u,
+        weekdayCounts,
+        weekendCount,
+        weekTotal,
+        qualifyingDays,
+        isTtibu,
+        isTtibuInProgress,
+        isTtibuFailed,
+        sortScore
+      };
+    });
+
+    // 1) 필터링
+    let filtered = userStats;
+
+    if (this.weeklySelectedCell && this.weeklySelectedCell !== 'ALL') {
+      filtered = filtered.filter(item => item.user.cell === this.weeklySelectedCell);
+    }
+
+    if (this.weeklyOnlyTtibu) {
+      filtered = filtered.filter(item => item.isTtibu || item.isTtibuInProgress);
+    }
+
+    // 2) 정렬: 띠부띠부 대상자 최상위 우선 정렬
+    filtered.sort((a, b) => {
+      if (b.sortScore !== a.sortScore) {
+        return b.sortScore - a.sortScore;
+      }
+      if (b.weekTotal !== a.weekTotal) {
+        return b.weekTotal - a.weekTotal;
+      }
+      return (a.user.name || '').localeCompare(b.user.name || '', 'ko');
+    });
+
+    // 3) KPI 통계 카드 계산 및 반영
+    const eligibleCount = userStats.filter(s => s.isTtibu || (curWeek.isCurrentWeek && s.isTtibuInProgress)).length;
+    const confirmedCount = userStats.filter(s => s.isTtibu).length;
+    const totalChapters = userStats.reduce((acc, cur) => acc + cur.weekTotal, 0);
+    const activeUsers = userStats.filter(s => s.weekTotal > 0).length;
+    const avgChapters = activeUsers > 0 ? (totalChapters / activeUsers).toFixed(1) : '0.0';
+
+    const kpiTtibuCount = document.getElementById('weekly-kpi-ttibu-count');
+    const kpiTtibuSub = document.getElementById('weekly-kpi-ttibu-sub');
+    const badgeTtibuHeader = document.getElementById('badge-weekly-ttibu-count');
+    const kpiTotalChapters = document.getElementById('weekly-kpi-total-chapters');
+    const kpiActiveUsers = document.getElementById('weekly-kpi-active-users');
+    const kpiAvgChapters = document.getElementById('weekly-kpi-avg-chapters');
+
+    if (kpiTtibuCount) {
+      if (curWeek.isCurrentWeek) {
+        kpiTtibuCount.textContent = `${eligibleCount}명`;
+        if (kpiTtibuSub) kpiTtibuSub.textContent = `확정 ${confirmedCount}명 / 순항 ${eligibleCount - confirmedCount}명`;
+      } else {
+        kpiTtibuCount.textContent = `${confirmedCount}명`;
+        if (kpiTtibuSub) kpiTtibuSub.textContent = `월~금 매일 3장+ 완주`;
+      }
+    }
+
+    if (badgeTtibuHeader) {
+      badgeTtibuHeader.textContent = curWeek.isCurrentWeek
+        ? `🎁 띠부띠부 대상/후보: ${eligibleCount}명`
+        : `🎁 띠부띠부 확정: ${confirmedCount}명`;
+    }
+
+    if (kpiTotalChapters) kpiTotalChapters.textContent = `${totalChapters.toLocaleString()}장`;
+    if (kpiActiveUsers) kpiActiveUsers.textContent = `${activeUsers}명 / ${this.allUsers.length}명`;
+    if (kpiAvgChapters) kpiAvgChapters.textContent = `${avgChapters}장`;
+
+    // 4) 테이블 렌더링
+    const tbody = document.getElementById('weekly-user-tbody');
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="11" style="text-align: center; color: #888; padding: 30px;">
+            ${this.weeklyOnlyTtibu ? '🎁 선택한 주차에 띠부띠부 대상자가 없습니다.' : '표시할 주간 데이터가 없습니다.'}
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // 주간 차트 게이지용 최대 통독 장수
+    const maxChapters = Math.max(1, ...userStats.map(s => s.weekTotal));
+
+    tbody.innerHTML = filtered.map((item, idx) => {
+      const u = item.user;
+      const isWinner = item.isTtibu;
+      const isProgress = item.isTtibuInProgress;
+
+      // 주간 통독 게이지 바 너비 (%)
+      const barPercent = Math.min(100, Math.round((item.weekTotal / maxChapters) * 100));
+
+      // 요일별 칩 HTML
+      const daysHtml = item.weekdayCounts.map(day => {
+        if (day.count >= 3) {
+          return `<td><span class="day-chip day-chip-success" title="${day.dateStr} (${day.count}장 통독)">${day.count}장</span></td>`;
+        } else if (day.count > 0) {
+          return `<td><span class="day-chip day-chip-partial" title="${day.dateStr} (${day.count}장 통독)">${day.count}장</span></td>`;
+        } else if (!day.isPastOrToday) {
+          return `<td><span class="day-chip day-chip-future" title="${day.dateStr} (예정)">-</span></td>`;
+        } else {
+          return `<td><span class="day-chip day-chip-empty" title="${day.dateStr} (0장)">-</span></td>`;
+        }
+      }).join('');
+
+      // 주말(토/일) 칩 HTML
+      const weekendHtml = item.weekendCount > 0
+        ? `<td><span class="day-chip day-chip-partial" style="font-weight: 800;">${item.weekendCount}장</span></td>`
+        : `<td><span class="day-chip day-chip-empty">-</span></td>`;
+
+      // 띠부 판정 배지
+      let verdictBadge = '';
+      if (isWinner) {
+        verdictBadge = `<span class="badge-ttibu">🎁 띠부 달성!</span>`;
+      } else if (isProgress) {
+        verdictBadge = `<span class="badge-ttibu-progress">🔥 순항 (${item.qualifyingDays}/5일)</span>`;
+      } else {
+        verdictBadge = `<span class="badge-ttibu-missed">${item.qualifyingDays}/5일 달성</span>`;
+      }
+
+      // 성도 이름 옆 띠부띠부 태그
+      let nameTtibuTag = '';
+      if (isWinner) {
+        nameTtibuTag = `<span class="badge-ttibu" style="margin-left: 6px; font-size: 10px; padding: 2px 6px;">🎁 띠부띠부!</span>`;
+      } else if (isProgress) {
+        nameTtibuTag = `<span class="badge-ttibu-progress" style="margin-left: 6px; font-size: 10px;">🔥 순항중</span>`;
+      }
+
+      return `
+        <tr class="${isWinner ? 'row-ttibu-winner' : ''}">
+          <td style="text-align: center; font-weight: 700; color: ${idx < 3 ? '#E65100' : '#888'};">
+            ${idx + 1}
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 2px;">
+              <strong>${u.name}</strong>
+              ${nameTtibuTag}
+              <span style="font-size: 11px; color: #888; margin-left: 2px;">(${u.nickname || u.name})</span>
+            </div>
+          </td>
+          <td><span class="cell-badge">${u.cell || '미지정'}</span></td>
+          <td>
+            <div class="weekly-bar-container">
+              <span style="font-weight: 800; font-size: 13px; color: ${item.weekTotal > 0 ? '#111' : '#999'}; min-width: 32px;">
+                ${item.weekTotal}장
+              </span>
+              <div class="weekly-bar-track">
+                <div class="weekly-bar-fill ${isWinner ? 'weekly-bar-fill-gold' : ''}" style="width: ${barPercent}%;"></div>
+              </div>
+            </div>
+          </td>
+          ${daysHtml}
+          ${weekendHtml}
+          <td style="text-align: center;">${verdictBadge}</td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  /**
+   * 띠부띠부 달성자 명단 카카오톡 공지용 클립보드 복사
+   */
+  copyTtibuWinnersList() {
+    if (!this.weeksList || this.weeksList.length === 0) return;
+    const curWeek = this.weeksList[this.selectedWeekIndex];
+    if (!curWeek) return;
+
+    const todayStr = typeof StorageService !== 'undefined' ? StorageService.getTodayString() : new Date().toISOString().slice(0, 10);
+
+    const winners = [];
+    const inProgress = [];
+
+    this.allUsers.forEach(u => {
+      const st = this.stateMap[u.id] || {};
+      const dc = st.dailyCounts || {};
+
+      const weekdayCounts = curWeek.days.slice(0, 5).map(d => ({
+        dayName: d.dayName,
+        dateStr: d.dateStr,
+        count: dc[d.dateStr] || 0,
+        isPastOrToday: d.dateStr <= todayStr
+      }));
+
+      const satCount = dc[curWeek.days[5].dateStr] || 0;
+      const sunCount = dc[curWeek.days[6].dateStr] || 0;
+      const weekTotal = weekdayCounts.reduce((acc, c) => acc + c.count, 0) + satCount + sunCount;
+      const qualifyingDays = weekdayCounts.filter(w => w.count >= 3).length;
+
+      const isTtibu = weekdayCounts.every(w => w.count >= 3);
+
+      if (isTtibu) {
+        winners.push({ user: u, weekTotal, qualifyingDays });
+      } else if (curWeek.isCurrentWeek) {
+        const elapsed = weekdayCounts.filter(w => w.isPastOrToday);
+        if (elapsed.length > 0 && elapsed.every(w => w.count >= 3)) {
+          inProgress.push({ user: u, weekTotal, qualifyingDays });
+        }
+      }
+    });
+
+    // 정렬 (총 통독 장수 많은 순)
+    winners.sort((a, b) => b.weekTotal - a.weekTotal);
+    inProgress.sort((a, b) => b.weekTotal - a.weekTotal);
+
+    let text = `[🎁 서원경 청년부 주간 말씀통독 - ${curWeek.shortLabel} 띠부띠부 명단]\n`;
+    text += `📅 기간: ${curWeek.days[0].monthDay}(월) ~ ${curWeek.days[4].monthDay}(금) (매일 3장 이상)\n\n`;
+
+    if (winners.length > 0) {
+      text += `✨ [ 🎁 띠부띠부 달성자 (${winners.length}명) ] ✨\n`;
+      winners.forEach((w, i) => {
+        text += `${i + 1}. ${w.user.name} 성도 (${w.user.cell || '청년부'}) - 주간 ${w.weekTotal}장 완주\n`;
+      });
+      text += '\n축하드립니다! 담당 임원에게 띠부띠부 스티커를 수령하세요! 🐑🎉\n';
+    } else {
+      text += `아직 띠부띠부 완주자가 집계되지 않았습니다.\n`;
+    }
+
+    if (curWeek.isCurrentWeek && inProgress.length > 0) {
+      text += `\n🔥 [ 띠부띠부 도전 순항중 (${inProgress.length}명) ]\n`;
+      inProgress.forEach((p, i) => {
+        text += `- ${p.user.name} (${p.qualifyingDays}/5일 연속 3장 달성 중, 주간 ${p.weekTotal}장)\n`;
+      });
+      text += '끝까지 완주하여 띠부띠부의 주인공이 되어보세요! 🌿\n';
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+      RetroAudio.success();
+      this.showToast(`📋 ${curWeek.shortLabel} 띠부띠부 명단이 클립보드에 복사되었습니다!`, 'success');
+    }).catch(err => {
+      console.error('클립보드 복사 오류:', err);
+      RetroAudio.error();
+      alert('복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+    });
   }
 };
+
