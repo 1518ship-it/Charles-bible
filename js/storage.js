@@ -49,8 +49,11 @@ const StorageService = {
     return `${ry}-${rm}-${rd}`;
   },
 
-  // 어제 날짜 문자열 YYYY-MM-DD
-  getYesterdayDateStr() {
+  // 어제 날짜 문자열 YYYY-MM-DD (refDateStr 지정 시 해당 날짜의 전날 반환)
+  getYesterdayDateStr(refDateStr = null) {
+    if (refDateStr) {
+      return this.addDays(refDateStr, -1);
+    }
     return this.addDays(this.getTodayDateStr(), -1);
   },
 
@@ -160,44 +163,41 @@ const StorageService = {
    * 2. 최고단계(5단계)를 유지하려면 하루에 5장 이상 읽어야 함
    *    (5단계에서 1~4장 통독 시 4단계로 하락, 5장 이상 통독 시 5단계 유지)
    */
-  evaluateCharlesMidnight() {
-    const uid = this.getCurrentUserId();
-    const stageKey = this.getUserKey('stage');
-    const lastEvalKey = this.getUserKey('last_evaluated_date');
 
-    let currentStage = parseInt(localStorage.getItem(stageKey), 10);
-    if (isNaN(currentStage) || currentStage < 1 || currentStage > 5) {
-      currentStage = 1; // 기본 1단계
+  /**
+   * 캘린더 데이터(daily_counts)를 기준으로 어제 자정까지의 찰스 성장 단계를 결정론적(Deterministic)으로 산출
+   * @param {Object} [dailyCounts] - 날짜별 통독 장수 딕셔너리 {"YYYY-MM-DD": count, ...}
+   * @param {string} [todayStr] - 기준 오늘 날짜 (기본: getTodayDateStr())
+   * @returns {number} 찰스 공식 성장 단계 (1~5)
+   */
+  calculateStageFromDaily(dailyCounts = null, todayStr = null) {
+    const counts = dailyCounts || this.getDailyCounts();
+    const today = todayStr || this.getTodayDateStr();
+    const yesterday = this.getYesterdayDateStr(today);
+
+    // 실제 1장 이상 읽은 날짜 목록
+    const validDates = Object.keys(counts)
+      .filter(d => d !== '__talent_data__' && /^\d{4}-\d{2}-\d{2}$/.test(d) && (counts[d] || 0) > 0)
+      .sort();
+
+    // 통독 기록이 전혀 없으면 기본 1단계
+    if (validDates.length === 0) {
+      return 1;
     }
 
-    let lastEvaluated = localStorage.getItem(lastEvalKey);
-    const today = this.getTodayDateStr();
-    const yesterday = this.getYesterdayDateStr();
+    const firstDate = validDates[0];
+    let currentStage = 1;
 
-    // 최초 실행 시: 어제 날짜를 마지막 평가일로 설정 (오늘은 아직 평가 전)
-    if (!lastEvaluated) {
-      localStorage.setItem(lastEvalKey, yesterday);
-      localStorage.setItem(stageKey, String(currentStage));
-      return currentStage;
-    }
-
-    // 이미 어제까지 평가가 완료된 경우
-    if (lastEvaluated >= yesterday) {
-      return currentStage;
-    }
-
-    // 지나간 날짜들(lastEvaluated + 1일 ~ yesterday)을 순서대로 일일 평가
-    let cursorDate = this.addDays(lastEvaluated, 1);
-    const dailyCounts = this.getDailyCounts();
-
+    // 첫 통독 시작일부터 어제까지 매일의 성경 통독 장수로 순차적 성장/하락 평가
+    let cursorDate = firstDate;
     while (cursorDate <= yesterday) {
-      const readCount = dailyCounts[cursorDate] || 0;
+      const readCount = counts[cursorDate] || 0;
 
       if (readCount === 0) {
         // 0장 읽음: 단계 하락
         currentStage = Math.max(1, currentStage - 1);
       } else if (readCount >= 1 && readCount <= 2) {
-        // 1~2장 읽음: 유지 (단, 5단계는 5장 필요하므로 4단계로 하락)
+        // 1~2장 읽음: 유지 (단, 5단계는 5장 미만이므로 4단계로 하락)
         if (currentStage === 5) {
           currentStage = 4;
         }
@@ -216,14 +216,24 @@ const StorageService = {
       cursorDate = this.addDays(cursorDate, 1);
     }
 
+    return currentStage;
+  },
+
+  evaluateCharlesMidnight() {
+    const stageKey = this.getUserKey('stage');
+    const lastEvalKey = this.getUserKey('last_evaluated_date');
+    const yesterday = this.getYesterdayDateStr();
+
+    // 캘린더 데이터를 기반으로 100% 무결점 결정론적 단계 계산
+    const currentStage = this.calculateStageFromDaily();
+
     localStorage.setItem(lastEvalKey, yesterday);
     localStorage.setItem(stageKey, String(currentStage));
-    this.scheduleCloudSync();
 
     return currentStage;
   },
 
-  // 찰스 현재 단계 조회
+  // 찰스 현재 단계 조회 (캘린더 기반 항상 최신 정밀 평가)
   getCharlesStage() {
     return this.evaluateCharlesMidnight();
   },
@@ -308,48 +318,102 @@ const StorageService = {
     }
   },
 
+  // ==================== 4. 연속 통독 일수 (Streak) - 캘린더(daily_counts) 기반 실시간 순수 계산 ====================
+  /**
+   * 캘린더 데이터(daily_counts)를 기준으로 연속 통독 일수(streak)를 순수 함수로 정밀 계산
+   * @param {Object} [dailyCounts] - 날짜별 통독 장수 딕셔너리 {"YYYY-MM-DD": count, ...}
+   * @param {string} [todayStr] - 기준 오늘 날짜 (기본: getTodayDateStr())
+   * @returns {{ count: number, maxStreak: number, lastDate: string|null }}
+   */
+  calculateStreakFromDaily(dailyCounts = null, todayStr = null) {
+    const counts = dailyCounts || this.getDailyCounts();
+    const today = todayStr || this.getTodayDateStr();
+    const yesterday = this.getYesterdayDateStr(today);
+
+    // 실제 1장 이상 읽은 날짜 목록 (메타데이터 __talent_data__ 제외)
+    const validDates = Object.keys(counts)
+      .filter(d => d !== '__talent_data__' && /^\d{4}-\d{2}-\d{2}$/.test(d) && (counts[d] || 0) > 0)
+      .sort();
+
+    if (validDates.length === 0) {
+      return { count: 0, maxStreak: 0, lastDate: null };
+    }
+
+    const lastDate = validDates[validDates.length - 1];
+
+    // 1) 현재 연속 통독 일수 (currentStreak) 계산
+    let currentStreak = 0;
+    const todayRead = counts[today] || 0;
+    const yesterdayRead = counts[yesterday] || 0;
+
+    let checkDate = null;
+    if (todayRead > 0) {
+      // 오늘 읽었음 -> 오늘부터 역순으로 연속 일수 카운트
+      checkDate = today;
+    } else if (yesterdayRead > 0) {
+      // 오늘 아직 안 읽었으나 어제 읽었음 -> 어제까지의 연속 기록 유지
+      checkDate = yesterday;
+    } else {
+      // 오늘과 어제 모두 통독 기록 없음 -> 연속 통독 끊김 (0일)
+      checkDate = null;
+    }
+
+    if (checkDate) {
+      let cur = checkDate;
+      while ((counts[cur] || 0) > 0) {
+        currentStreak++;
+        cur = this.addDays(cur, -1);
+      }
+    }
+
+    // 2) 전체 기간 중 최대 연속 통독 일수 (maxStreak) 계산
+    let maxStreak = 0;
+    let tempStreak = 0;
+    let prevDate = null;
+
+    for (const d of validDates) {
+      if (!prevDate) {
+        tempStreak = 1;
+      } else {
+        const expectedNext = this.addDays(prevDate, 1);
+        if (d === expectedNext) {
+          tempStreak++;
+        } else {
+          tempStreak = 1;
+        }
+      }
+      if (tempStreak > maxStreak) {
+        maxStreak = tempStreak;
+      }
+      prevDate = d;
+    }
+
+    return {
+      count: currentStreak,
+      maxStreak: Math.max(maxStreak, currentStreak),
+      lastDate: lastDate
+    };
+  },
+
   updateStreak() {
+    // 캘린더 데이터를 바탕으로 최신 스트릭 정보 산출 및 로컬 스토리지 동기화
+    const streak = this.getStreakInfo();
     const key = this.getUserKey('streak');
     try {
-      const streakStr = localStorage.getItem(key);
-      const streak = streakStr ? JSON.parse(streakStr) : { count: 0, lastDate: null, maxStreak: 0 };
-      const todayStr = this.getTodayDateStr();
-
-      if (!streak.lastDate) {
-        streak.count = 1;
-        streak.maxStreak = 1;
-        streak.lastDate = todayStr;
-      } else if (streak.lastDate === todayStr) {
-        // 오늘 이미 통독 기록 있음
-      } else {
-        const last = new Date(streak.lastDate);
-        const today = new Date(todayStr);
-        const diffDays = Math.floor((today - last) / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 1) {
-          streak.count += 1;
-          if (streak.count > streak.maxStreak) streak.maxStreak = streak.count;
-        } else if (diffDays > 1) {
-          streak.count = 1; // 연속 중단 후 재시작
-        }
-        streak.lastDate = todayStr;
-      }
-
       localStorage.setItem(key, JSON.stringify(streak));
-      return streak;
-    } catch (e) {
-      return { count: 1, maxStreak: 1 };
-    }
+    } catch (e) {}
+    return streak;
   },
 
   getStreakInfo() {
+    // 로컬 스토리지에 캐시된 캘린더(daily_counts)로부터 항상 100% 실시간 무결점 계산
+    const counts = this.getDailyCounts();
+    const streak = this.calculateStreakFromDaily(counts);
     const key = this.getUserKey('streak');
     try {
-      const streakStr = localStorage.getItem(key);
-      return streakStr ? JSON.parse(streakStr) : { count: 0, lastDate: null, maxStreak: 0 };
-    } catch (e) {
-      return { count: 0, lastDate: null, maxStreak: 0 };
-    }
+      localStorage.setItem(key, JSON.stringify(streak));
+    } catch (e) {}
+    return streak;
   },
 
   // ==================== 5. 전체 통계 ====================
@@ -459,16 +523,20 @@ const StorageService = {
       const dailyCounts = { ...this.getDailyCounts() };
       dailyCounts.__talent_data__ = talentPayload;
 
+      const streakInfo = this.getStreakInfo();
+      const stage = this.getCharlesStage();
+      const todayRead = this.getTodayReadCount();
+
       const payload = {
         user_id: uid,
-        charles_stage: this.getCharlesStage(),
+        charles_stage: stage,
         read_progress: this.getProgress(),
         daily_counts: dailyCounts,
         read_history: this.getHistory(),
-        streak_count: this.getStreakInfo().count || 0,
-        max_streak: this.getStreakInfo().maxStreak || 0,
+        streak_count: streakInfo.count || 0,
+        max_streak: streakInfo.maxStreak || 0,
         last_evaluated_date: localStorage.getItem(this.getUserKey('last_evaluated_date')) || this.getYesterdayDateStr(),
-        last_read_date: this.getTodayDateStr(),
+        last_read_date: streakInfo.lastDate || this.getTodayDateStr(),
         updated_at: new Date().toISOString()
       };
 
@@ -592,26 +660,19 @@ const StorageService = {
         mergedHistory.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
         localStorage.setItem(`charles_user_${uid}_history`, JSON.stringify(mergedHistory));
 
-        // 4) 찰스 단계 (charles_stage)
-        const localStage = parseInt(localStorage.getItem(`charles_user_${uid}_stage`) || '1', 10);
-        const remoteStage = data.charles_stage || 1;
-        const finalStage = Math.max(localStage, remoteStage);
+        // 4) 찰스 성장 단계: 병합된 최신 캘린더(daily_counts)로부터 100% 결정론적 정밀 산출!
+        const finalStage = this.calculateStageFromDaily(mergedDaily);
         localStorage.setItem(`charles_user_${uid}_stage`, String(finalStage));
+        localStorage.setItem(`charles_user_${uid}_last_evaluated_date`, this.getYesterdayDateStr());
 
-        // 5) 마지막 평가일
-        if (data.last_evaluated_date) {
-          localStorage.setItem(`charles_user_${uid}_last_evaluated_date`, String(data.last_evaluated_date));
+        // 5) 스트릭 정보: 병합된 최신 캘린더(daily_counts)로부터 100% 정밀 재계산!
+        const recalculatedStreak = this.calculateStreakFromDaily(mergedDaily);
+        localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify(recalculatedStreak));
+
+        // DB에 저장된 스트릭/단계가 캘린더 정밀 계산 값과 다르면 클라우드 자가 치유(Self-Healing) 트리거
+        if (data.charles_stage !== finalStage || data.streak_count !== recalculatedStreak.count) {
+          hasNewerLocalData = true;
         }
-
-        // 6) 스트릭 정보 (streak_count, max_streak)
-        const localStreakInfo = this.getStreakInfo();
-        const remoteStreak = data.streak_count || 0;
-        const remoteMaxStreak = data.max_streak || 0;
-        localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify({
-          count: Math.max(localStreakInfo.count || 0, remoteStreak),
-          maxStreak: Math.max(localStreakInfo.maxStreak || 0, remoteMaxStreak),
-          lastDate: data.last_read_date || localStreakInfo.lastDate || null
-        }));
 
         // 7) 기기 간 퀘스트 수령 내역 완전 통합 (중복 수령 원천 방지)
         const todayStr = this.getTodayDateStr();
@@ -814,6 +875,11 @@ const StorageService = {
           if (data.streak_count !== undefined && data.streak_count !== null) streakCount = data.streak_count;
           if (data.daily_counts && typeof data.daily_counts === 'object') {
             todayRead = data.daily_counts[todayStr] || 0;
+            // 캘린더 기반 무결점 보정
+            const derivedStreak = this.calculateStreakFromDaily(data.daily_counts, todayStr);
+            streakCount = derivedStreak.count;
+            stage = this.calculateStageFromDaily(data.daily_counts, todayStr);
+
             if (data.daily_counts.__talent_data__ && data.daily_counts.__talent_data__.equipped) {
               equipped = data.daily_counts.__talent_data__.equipped;
             }
@@ -955,6 +1021,11 @@ const StorageService = {
 
             if (row.daily_counts && typeof row.daily_counts === 'object') {
               todayRead = row.daily_counts[todayStr] || 0;
+              // 친구 찰스 상태 및 스트릭도 캘린더 데이터를 기준으로 무결점 보정
+              const derivedStreak = this.calculateStreakFromDaily(row.daily_counts, todayStr);
+              streakCount = derivedStreak.count;
+              stage = this.calculateStageFromDaily(row.daily_counts, todayStr);
+
               if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.equipped) {
                 if (!row.equipped || Object.keys(equipped).length === 0) {
                   equipped = row.daily_counts.__talent_data__.equipped;

@@ -34,11 +34,9 @@ const App = {
     // ☁️ 이미 로그인된 사용자의 경우 Supabase에서 최신 통독 진행도 및 오늘 읽은 장수 실시간 동기화
     if (AuthService.isAuthenticated()) {
       try {
-        const synced = await StorageService.syncFromCloud();
-        if (synced) {
-          this.renderAll();
-          console.log('☁️ [초기화] Supabase로부터 최신 통독 진행도 및 오늘 읽은 장수가 동기화되었습니다.');
-        }
+        await StorageService.syncFromCloud();
+        this.renderAll();
+        console.log('☁️ [초기화] Supabase로부터 최신 통독 진행도 및 오늘 읽은 장수가 동기화되었습니다.');
       } catch (err) {
         console.warn('초기 클라우드 동기화 건너뜀 (로컬 스토리지 사용):', err);
       }
@@ -51,10 +49,14 @@ const App = {
       this.fetchCloudAdminMessages();
     }, 30000);
 
-    // 사용자가 창에 다시 집중했을 때 즉시 최신 메시지 갱신
-    window.addEventListener('focus', () => this.fetchCloudAdminMessages());
+    // 사용자가 창에 다시 집중했을 때 즉시 최신 메시지 갱신 및 자정 경과 상태(스트릭, 게이지, 찰스) 리렌더링
+    const handleReactivation = () => {
+      this.fetchCloudAdminMessages();
+      this.renderAll();
+    };
+    window.addEventListener('focus', handleReactivation);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) this.fetchCloudAdminMessages();
+      if (!document.hidden) handleReactivation();
     });
   },
 
