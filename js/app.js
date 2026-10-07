@@ -1748,8 +1748,8 @@ const App = {
     }
     this.lastCheerTimes[key] = now;
 
-    // 사용자 요청 문구 완벽 적용: '띵동~(친구이름)이 응원과 함께 풀을 보냈어요~!!'
-    const cheerTitle = `띵동~${senderName}이 응원과 함께 풀을 보냈어요~!!`;
+    // 사용자 요청 문구 완벽 적용: '띵동~(친구이름)님이 응원과 함께 풀을 보냈어요~!!'
+    const cheerTitle = `띵동~${senderName}님이 응원과 함께 풀을 보냈어요~!!`;
     const cheerContent = `${senderName}님이 성도님의 찰스를 위한 싱싱한 풀 🌿과 따뜻한 사랑의 응원을 보냈어요!\n오늘도 주님의 말씀 안에서 힘을 얻고 승리하세요! 🐑✨`;
 
     // 1) 화면 인터랙션 피드백 (파티클 & 토스트)
