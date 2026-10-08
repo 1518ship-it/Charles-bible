@@ -319,8 +319,8 @@ const TalentService = {
   DEFAULT_EVENT_MISSIONS: [
     {
       id: 'event_autumn_15',
-      category: '가을은 독서의 계절이 아니라 통독의 계절~',
-      subtitle: '[가을, 단풍, 그리고 성경통독...]',
+      category: '[가을,,,단풍,,,그리고 성경통독,,,]',
+      subtitle: '가을은 독서의 계절이 아니라 성경통독의 계절~',
       title: '도전! 성경읽기!!',
       desc: '하루에 15장 이상 읽으면 달란트 3개 (계정당 한번)',
       icon: '🍁',
@@ -336,8 +336,8 @@ const TalentService = {
     },
     {
       id: 'event_autumn_morning',
-      category: '가을은 독서의 계절이 아니라 통독의 계절~',
-      subtitle: '[가을, 단풍, 그리고 성경통독...]',
+      category: '[가을,,,단풍,,,그리고 성경통독,,,]',
+      subtitle: '가을은 독서의 계절이 아니라 성경통독의 계절~',
       title: '하루의 시작을 말씀과 함께!',
       desc: '오전시간 (오전5시~오전11시)에 1장이상 읽으면 달란트 1개 (매일 반복)',
       icon: '🌅',
@@ -353,8 +353,8 @@ const TalentService = {
     },
     {
       id: 'event_autumn_night',
-      category: '가을은 독서의 계절이 아니라 통독의 계절~',
-      subtitle: '[가을, 단풍, 그리고 성경통독...]',
+      category: '[가을,,,단풍,,,그리고 성경통독,,,]',
+      subtitle: '가을은 독서의 계절이 아니라 성경통독의 계절~',
       title: '고된 하루를 보내고~',
       desc: '저녁시간 (오후9시~밤12시)에 1장이상 읽으면 달란트 1개 (매일 반복)',
       icon: '🌙',
@@ -388,8 +388,8 @@ const TalentService = {
         if (!error && Array.isArray(data) && data.length > 0) {
           this._cachedEventMissions = data.map(item => ({
             id: item.id,
-            category: item.category || '가을은 독서의 계절이 아니라 통독의 계절~',
-            subtitle: item.subtitle || '[가을, 단풍, 그리고 성경통독...]',
+            category: item.category || '[가을,,,단풍,,,그리고 성경통독,,,]',
+            subtitle: item.subtitle || '가을은 독서의 계절이 아니라 성경통독의 계절~',
             title: item.title,
             desc: item.description,
             icon: item.icon || '🍁',
@@ -565,8 +565,17 @@ const TalentService = {
       });
     }
 
-    return [
-      ...eventQuests,
+    // 정렬 우선순위: ready (수령 대기 1순위) -> progress (진행 중 2순위) -> claimed (수령 완료 맨 하단 3순위)
+    const statusPriority = { ready: 1, progress: 2, claimed: 3 };
+    const sortQuests = (list) => {
+      return [...list].sort((a, b) => {
+        const pA = statusPriority[a.status] || 2;
+        const pB = statusPriority[b.status] || 2;
+        return pA - pB;
+      });
+    };
+
+    const regularQuests = [
       {
         id: 'daily_login',
         type: 'daily',
@@ -619,6 +628,11 @@ const TalentService = {
         unit: '장',
         status: ntStatus
       }
+    ];
+
+    return [
+      ...sortQuests(eventQuests),
+      ...sortQuests(regularQuests)
     ];
   },
 

@@ -6,8 +6,8 @@
 -- 1. 가을 특별 이벤트 미션 테이블 생성
 CREATE TABLE IF NOT EXISTS event_missions (
   id VARCHAR(64) PRIMARY KEY,
-  category VARCHAR(128) NOT NULL DEFAULT '가을은 독서의 계절이 아니라 통독의 계절~',
-  subtitle VARCHAR(128) DEFAULT '[가을, 단풍, 그리고 성경통독...]',
+  category VARCHAR(128) NOT NULL DEFAULT '[가을,,,단풍,,,그리고 성경통독,,,]',
+  subtitle VARCHAR(128) DEFAULT '가을은 독서의 계절이 아니라 성경통독의 계절~',
   title VARCHAR(128) NOT NULL,
   description TEXT NOT NULL,
   icon VARCHAR(16) DEFAULT '🍁',
@@ -51,8 +51,8 @@ INSERT INTO event_missions (
 VALUES
 (
   'event_autumn_15',
-  '가을은 독서의 계절이 아니라 통독의 계절~',
-  '[가을, 단풍, 그리고 성경통독...]',
+  '[가을,,,단풍,,,그리고 성경통독,,,]',
+  '가을은 독서의 계절이 아니라 성경통독의 계절~',
   '도전! 성경읽기!!',
   '하루에 15장 이상 읽으면 달란트 3개 (계정당 한번)',
   '🍁',
@@ -68,8 +68,8 @@ VALUES
 ),
 (
   'event_autumn_morning',
-  '가을은 독서의 계절이 아니라 통독의 계절~',
-  '[가을, 단풍, 그리고 성경통독...]',
+  '[가을,,,단풍,,,그리고 성경통독,,,]',
+  '가을은 독서의 계절이 아니라 성경통독의 계절~',
   '하루의 시작을 말씀과 함께!',
   '오전시간 (오전5시~오전11시)에 1장이상 읽으면 달란트 1개 (매일 반복)',
   '🌅',
@@ -85,8 +85,8 @@ VALUES
 ),
 (
   'event_autumn_night',
-  '가을은 독서의 계절이 아니라 통독의 계절~',
-  '[가을, 단풍, 그리고 성경통독...]',
+  '[가을,,,단풍,,,그리고 성경통독,,,]',
+  '가을은 독서의 계절이 아니라 성경통독의 계절~',
   '고된 하루를 보내고~',
   '저녁시간 (오후9시~밤12시)에 1장이상 읽으면 달란트 1개 (매일 반복)',
   '🌙',

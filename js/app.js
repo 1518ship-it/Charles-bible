@@ -1021,11 +1021,15 @@ const App = {
 
     const quests = TalentService.getQuestsList();
 
-    // 그룹화: event, daily, weekly, achievement
-    const eventQuests = quests.filter(q => q.type === 'event');
-    const dailyQuests = quests.filter(q => q.type === 'daily');
-    const weeklyQuests = quests.filter(q => q.type === 'weekly');
-    const achieveQuests = quests.filter(q => q.type === 'achievement');
+    // 정렬 우선순위: 달성 완료(ready 1위) -> 진행 중(progress 2위) -> 수령 완료(claimed 맨 하단 3위)
+    const statusPriority = { ready: 1, progress: 2, claimed: 3 };
+    const sortList = (arr) => [...arr].sort((a, b) => (statusPriority[a.status] || 2) - (statusPriority[b.status] || 2));
+
+    // 그룹화 및 완료 우선 정렬
+    const eventQuests = sortList(quests.filter(q => q.type === 'event'));
+    const dailyQuests = sortList(quests.filter(q => q.type === 'daily'));
+    const weeklyQuests = sortList(quests.filter(q => q.type === 'weekly'));
+    const achieveQuests = sortList(quests.filter(q => q.type === 'achievement'));
 
     const renderQuestCard = (q) => {
       const percent = Math.min(100, Math.max(0, Math.round((q.current / q.target) * 100)));
@@ -1068,14 +1072,21 @@ const App = {
 
     let html = '';
 
-    // 1. 가을 특별 이벤트 미션 섹션 (최상단 화려한 가을 배너)
+    // 1. 가을 특별 이벤트 미션 섹션 (최상단 화려한 가을 배너 & 살랑살랑 날아다니는 단풍잎)
     if (eventQuests.length > 0) {
       const firstEvent = eventQuests[0];
-      const categoryTitle = firstEvent.category || '가을은 독서의 계절이 아니라 통독의 계절~';
-      const subtitle = firstEvent.subtitle || '[가을, 단풍, 그리고 성경통독...]';
+      const categoryTitle = firstEvent.category || '[가을,,,단풍,,,그리고 성경통독,,,]';
+      const subtitle = firstEvent.subtitle || '가을은 독서의 계절이 아니라 성경통독의 계절~';
 
       html += `
         <div class="quest-event-banner">
+          <div class="maple-leaves-floating-wrap" aria-hidden="true">
+            <span class="floating-maple-leaf leaf-1">🍁</span>
+            <span class="floating-maple-leaf leaf-2">🍂</span>
+            <span class="floating-maple-leaf leaf-3">🍁</span>
+            <span class="floating-maple-leaf leaf-4">🍂</span>
+            <span class="floating-maple-leaf leaf-5">🍁</span>
+          </div>
           <div class="quest-event-badge">🍁 특별 이벤트 미션 (10.08 ~ 11.15)</div>
           <div class="quest-event-title">${categoryTitle}</div>
           <div class="quest-event-subtitle">${subtitle}</div>
