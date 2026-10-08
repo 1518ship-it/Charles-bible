@@ -1806,6 +1806,7 @@ body {
 
 /* ==================== 공지사항 및 어린양의 메세지 알림 카드 ==================== */
 .notif-item.notif-admin-item {
+  display: block;
   background: #FFFDF9;
   border: 1.5px solid #FFE0B2;
   border-radius: 12px;

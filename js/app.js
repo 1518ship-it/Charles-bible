@@ -3106,7 +3106,6 @@ const App = {
 
         html += `
           <div class="notif-item notif-admin-item ${cardClass} ${isRead ? 'read' : 'unread'}" data-msg-id="${m.id}" onclick="App.openMessageDetail('${m.id}')">
-            <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${isCheer ? '🌿' : (isUserMsg ? '💌' : '📢')}</div>
             <div class="notif-content" style="width: 100%;">
               <div class="notif-admin-header-row">
                 <span class="notif-badge ${badgeClass}">${badgeText}</span>
@@ -3146,7 +3145,6 @@ const App = {
     if (notifs.length > 0) {
       html += notifs.map(n => `
         <div class="notif-item notif-admin-item ${n.read ? 'read' : 'unread'}" onclick="App.openMessageDetail('${n.id}', true)">
-          <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${n.icon}</div>
           <div class="notif-content" style="width: 100%;">
             <div class="notif-admin-header-row">
               <span class="notif-badge badge-all">🔔 시스템 알림</span>
