@@ -161,11 +161,14 @@ const StorageService = {
   /**
    * 찰스의 단계 변화 규칙:
    * 1. 매일 밤 12시(자정) 기준 하루 동안 읽은 성경 장 수로 평가
-   *    - 0장 읽음: 이전 단계로 하락 (최하 1단계)
-   *    - 1~2장 읽음: 현재 단계 유지 (단, 5단계는 제외)
-   *    - 3장 이상 읽음: 다음 단계로 성장 (최대 5단계)
-   * 2. 최고단계(5단계)를 유지하려면 하루에 5장 이상 읽어야 함
-   *    (5단계에서 1~4장 통독 시 4단계로 하락, 5장 이상 통독 시 5단계 유지)
+   *    - 0장 읽음: 이전 단계로 1단계 하락 (최하 1단계)
+   *    - 1~2장 읽음: 현재 단계 유지 (단, 5단계는 4단계로 하락)
+   *    - 3~4장 읽음: 1~3단계는 다음 1단계 성장 (1->2, 2->3, 3->4)
+   *                  4단계는 5단계 승급 조건(5장 이상) 미달이므로 4단계 유지!
+   *                  5단계는 5장 미만이므로 4단계로 하락!
+   *    - 5장 이상 읽음: 1~3단계는 다음 1단계씩 성장 (절대 5단계로 바로 점프하지 않음!)
+   *                     4단계일 때 비로소 최고 5단계(성령충만 찰스)로 승급!
+   *                     5단계일 때 최고 5단계 유지!
    */
 
   /**
@@ -198,23 +201,37 @@ const StorageService = {
       const readCount = counts[cursorDate] || 0;
 
       if (readCount === 0) {
-        // 0장 읽음: 단계 하락
+        // 0장 읽음: 1단계 하락 (최하 1단계)
         currentStage = Math.max(1, currentStage - 1);
       } else if (readCount >= 1 && readCount <= 2) {
-        // 1~2장 읽음: 유지 (단, 5단계는 5장 미만이므로 4단계로 하락)
+        // 1~2장 읽음:
+        // - 1~4단계: 현재 단계 유지
+        // - 5단계: 5장 미만이므로 4단계로 하락
         if (currentStage === 5) {
           currentStage = 4;
         }
       } else if (readCount >= 3 && readCount <= 4) {
-        // 3~4장 읽음: 성장 (단, 5단계는 5장 미만이므로 4단계로 하락)
+        // 3~4장 읽음:
+        // - 1~3단계: 다음 1단계 성장 (1->2, 2->3, 3->4)
+        // - 4단계: 5단계 승급에는 5장 이상이 필요하므로 4단계 유지! (5단계로 올라가지 않음)
+        // - 5단계: 5장 미만이므로 4단계로 하락
         if (currentStage === 5) {
           currentStage = 4;
+        } else if (currentStage === 4) {
+          currentStage = 4; // 4단계 유지!
         } else {
-          currentStage = Math.min(5, currentStage + 1);
+          currentStage = currentStage + 1; // 1->2, 2->3, 3->4
         }
       } else if (readCount >= 5) {
-        // 5장 이상 읽음: 5단계 유지 또는 다음 단계 성장
-        currentStage = Math.min(5, currentStage + 1);
+        // 5장 이상 읽음:
+        // - 1~3단계: 다음 1단계만 성장 (1->2, 2->3, 3->4) - 어느 단계에서든지 5장 읽는다고 5단계 점프 불가!
+        // - 4단계: 비로소 최고 5단계로 승급! (4->5)
+        // - 5단계: 최고 5단계 유지! (5->5)
+        if (currentStage < 4) {
+          currentStage = currentStage + 1; // 1->2, 2->3, 3->4
+        } else {
+          currentStage = 5; // 4단계 승급 or 5단계 유지
+        }
       }
 
       cursorDate = this.addDays(cursorDate, 1);
@@ -259,29 +276,43 @@ const StorageService = {
       if (currentStage === 5) {
         targetStage = 4;
         statusClass = 'down';
-        message = `5단계 유지를 위해 오늘 ${5 - todayRead}장 더 읽어야 해요! 🌿`;
+        message = `5단계 유지를 위해 오늘 ${5 - todayRead}장 더 읽어야 해요! (부족 시 4단계 하락) 🌿`;
+      } else if (currentStage === 4) {
+        targetStage = 4;
+        statusClass = 'maintain';
+        message = `4단계가 유지됩니다. 5단계 승급을 위해 오늘 ${5 - todayRead}장 더 읽어야 해요! 👑`;
       } else {
         targetStage = currentStage;
         statusClass = 'maintain';
-        message = `찰스 상태가 유지됩니다. ${3 - todayRead}장 더 읽으면 내일 승급해요! 🌱`;
+        message = `찰스 상태가 유지됩니다. ${3 - todayRead}장 더 읽으면 내일 ${currentStage + 1}단계로 성장해요! 🌱`;
       }
     } else if (todayRead >= 3 && todayRead <= 4) {
       if (currentStage === 5) {
         targetStage = 4;
         statusClass = 'down';
-        message = `5단계 유지를 위해 오늘 ${5 - todayRead}장 더 읽어야 해요! 🌿`;
+        message = `5단계 유지를 위해 오늘 ${5 - todayRead}장 더 읽어야 해요! (부족 시 4단계 하락) 🌿`;
+      } else if (currentStage === 4) {
+        targetStage = 4;
+        statusClass = 'maintain';
+        message = `4단계가 유지됩니다. 5단계 승급을 위해 오늘 ${5 - todayRead}장 더 읽어야 해요! 👑`;
       } else {
-        targetStage = Math.min(5, currentStage + 1);
+        targetStage = currentStage + 1;
         statusClass = 'up';
         message = `오늘 밤 다음 단계(${targetStage}단계)로 성장해요! 🎉`;
       }
     } else {
       // 5장 이상
-      targetStage = Math.min(5, currentStage + 1);
-      statusClass = 'up';
       if (currentStage === 5) {
+        targetStage = 5;
+        statusClass = 'maintain';
         message = `완벽해요! 오늘 밤에도 최고 5단계가 유지됩니다 👑✨`;
+      } else if (currentStage === 4) {
+        targetStage = 5;
+        statusClass = 'up';
+        message = `대단해요! 오늘 밤 영광의 최고 5단계(성령충만 찰스)로 승급해요! 👑✨`;
       } else {
+        targetStage = currentStage + 1;
+        statusClass = 'up';
         message = `오늘 밤 다음 단계(${targetStage}단계)로 멋지게 성장해요! 🌿✨`;
       }
     }
