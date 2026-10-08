@@ -55,7 +55,7 @@ while ($listener.IsListening) {
       $ext = [System.IO.Path]::GetExtension($filePath).ToLower()
       $contentType = $mimeMap[$ext]
       if (-not $contentType) { $contentType = "application/octet-stream" }
-      
+
       $bytes = [System.IO.File]::ReadAllBytes($filePath)
       $response.ContentType = $contentType
       $response.ContentLength64 = $bytes.Length
@@ -74,9 +74,10 @@ while ($listener.IsListening) {
     }
   } catch {
     # Ignore broken pipes or client disconnects
+    $null = $_
   } finally {
     if ($response) {
-      try { $response.Close() } catch {}
+      try { $response.Close() } catch { $null = $_ }
     }
   }
 }
