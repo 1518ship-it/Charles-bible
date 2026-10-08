@@ -1032,6 +1032,11 @@ const App = {
     const achieveQuests = sortList(quests.filter(q => q.type === 'achievement'));
 
     const renderQuestCard = (q) => {
+      let cardTitle = q.title;
+      if (q.id === 'event_autumn_night' || (cardTitle && (cardTitle.includes('고된') || cardTitle.includes('하룰')))) {
+        cardTitle = '고된 하루를 보내고~';
+      }
+
       const percent = Math.min(100, Math.max(0, Math.round((q.current / q.target) * 100)));
       const isGold = q.type === 'achievement';
       const isEvent = q.type === 'event';
@@ -1055,7 +1060,7 @@ const App = {
         <div class="quest-card ${cardExtraClass} ${q.status}">
           <div class="quest-card-icon">${q.icon}</div>
           <div class="quest-card-content">
-            <div class="quest-card-title">${q.title}</div>
+            <div class="quest-card-title">${cardTitle}</div>
             <div class="quest-card-desc">${q.desc}</div>
             <div class="quest-progress-bar-wrap">
               <div class="quest-progress-bar-fill ${fillClass}" style="width: ${percent}%;"></div>

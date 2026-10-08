@@ -386,23 +386,38 @@ const TalentService = {
           .order('display_order', { ascending: true });
 
         if (!error && Array.isArray(data) && data.length > 0) {
-          this._cachedEventMissions = data.map(item => ({
-            id: item.id,
-            category: item.category || '[가을,,,단풍,,,그리고 성경통독,,,]',
-            subtitle: item.subtitle || '가을은 독서의 계절이 아니라 성경통독의 계절~',
-            title: item.title,
-            desc: item.description,
-            icon: item.icon || '🍁',
-            reward: Number(item.reward) || 1,
-            mission_type: item.mission_type || 'daily',
-            rule_type: item.rule_type,
-            target_count: Number(item.target_count) || 1,
-            unit: item.unit || '장',
-            start_date: item.start_date || '2026-10-08',
-            end_date: item.end_date || '2026-11-15',
-            is_active: item.is_active !== false,
-            display_order: Number(item.display_order) || 1
-          }));
+          this._cachedEventMissions = data.map(item => {
+            let title = item.title;
+            if (item.id === 'event_autumn_night' || (title && (title.includes('고된') || title.includes('하룰')))) {
+              title = '고된 하루를 보내고~';
+            }
+            let category = item.category;
+            let subtitle = item.subtitle;
+            if (!category || category.includes('독서의 계절')) {
+              category = '[가을,,,단풍,,,그리고 성경통독,,,]';
+            }
+            if (!subtitle || subtitle.includes('가을,')) {
+              subtitle = '가을은 독서의 계절이 아니라 성경통독의 계절~';
+            }
+
+            return {
+              id: item.id,
+              category: category,
+              subtitle: subtitle,
+              title: title,
+              desc: item.description,
+              icon: item.icon || '🍁',
+              reward: Number(item.reward) || 1,
+              mission_type: item.mission_type || 'daily',
+              rule_type: item.rule_type,
+              target_count: Number(item.target_count) || 1,
+              unit: item.unit || '장',
+              start_date: item.start_date || '2026-10-08',
+              end_date: item.end_date || '2026-11-15',
+              is_active: item.is_active !== false,
+              display_order: Number(item.display_order) || 1
+            };
+          });
           return this._cachedEventMissions;
         }
       } catch (e) {
@@ -547,12 +562,25 @@ const TalentService = {
         }
       }
 
+      let emTitle = em.title;
+      if (em.id === 'event_autumn_night' || (emTitle && (emTitle.includes('고된') || emTitle.includes('하룰')))) {
+        emTitle = '고된 하루를 보내고~';
+      }
+      let emCategory = em.category;
+      if (!emCategory || emCategory.includes('독서의 계절')) {
+        emCategory = '[가을,,,단풍,,,그리고 성경통독,,,]';
+      }
+      let emSubtitle = em.subtitle;
+      if (!emSubtitle || emSubtitle.includes('가을,')) {
+        emSubtitle = '가을은 독서의 계절이 아니라 성경통독의 계절~';
+      }
+
       eventQuests.push({
         id: em.id,
         type: 'event',
-        category: em.category,
-        subtitle: em.subtitle,
-        title: em.title,
+        category: emCategory,
+        subtitle: emSubtitle,
+        title: emTitle,
         desc: em.desc,
         icon: em.icon,
         reward: em.reward,
