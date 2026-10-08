@@ -1539,7 +1539,7 @@ const App = {
           `;
         }
 
-        const visual = getCharlesVisual(f.stage || 1, 4, f.equipped || {});
+        const visual = getCharlesVisual(f.stage || 1, 5, f.equipped || {});
         const isMe = f.isMe;
 
         return `

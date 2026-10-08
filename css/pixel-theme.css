@@ -575,7 +575,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: flex-end;
-  min-height: 82px;
+  min-height: 94px;
   position: relative;
   margin-bottom: -2px;
   z-index: 4;
@@ -610,7 +610,7 @@ body {
 /* 내 캐릭터 머리 위 'me' 이름표 (검은색 바탕, 흰색 글씨) */
 .pasture-me-tag-wrap {
   position: absolute;
-  top: -12px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -649,16 +649,16 @@ body {
 }
 
 .pasture-sheep-svg-wrap {
-  width: 60px;
-  height: 54px;
+  width: 72px;
+  height: 66px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 
 .pasture-sheep-svg-wrap svg {
-  width: 56px !important;
-  max-width: 56px !important;
+  width: 68px !important;
+  max-width: 68px !important;
   height: auto !important;
   filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.22));
 }
