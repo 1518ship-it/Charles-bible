@@ -4214,6 +4214,12 @@ body {
   border: 1px solid rgba(39, 174, 96, 0.3);
 }
 
+.shop-item-category-tag[data-cat="소품"] {
+  color: #D35400;
+  background: rgba(230, 126, 34, 0.12);
+  border: 1px solid rgba(230, 126, 34, 0.3);
+}
+
 [data-theme="dark"] .shop-item-category-tag[data-cat="머리"] {
   color: #F9E79F;
   background: rgba(241, 196, 15, 0.2);
@@ -4227,6 +4233,11 @@ body {
 [data-theme="dark"] .shop-item-category-tag[data-cat="잔디"] {
   color: #A9DFBF;
   background: rgba(39, 174, 96, 0.2);
+}
+
+[data-theme="dark"] .shop-item-category-tag[data-cat="소품"] {
+  color: #F5B041;
+  background: rgba(230, 126, 34, 0.2);
 }
 
 .shop-item-name {

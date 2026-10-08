@@ -39,6 +39,62 @@ const TALENT_ITEMS = {
     price: 7,
     icon: '🌼',
     desc: '찰스 발밑에 화사하게 피어난 꽃 잔디'
+  },
+
+  // 🍂 가을 한정 컬렉션 6종 아이템
+  'head_maple_beret': {
+    id: 'head_maple_beret',
+    slot: 'head',
+    category: '머리',
+    name: '단풍잎 베레모',
+    price: 6,
+    icon: '🍁',
+    desc: '붉게 물든 단풍잎 포인트가 달린 가을 베레모'
+  },
+  'neck_acorn_scarf': {
+    id: 'neck_acorn_scarf',
+    slot: 'neck',
+    category: '몸통',
+    name: '도토리 니트 목도리',
+    price: 8,
+    icon: '🧣',
+    desc: '포근하고 따뜻한 도토리 패턴 핸드메이드 니트 목도리'
+  },
+  'hold_autumn_lantern': {
+    id: 'hold_autumn_lantern',
+    slot: 'hold',
+    category: '소품',
+    name: '가을밤 랜턴',
+    price: 7,
+    icon: '🏮',
+    desc: '어두운 가을밤을 은은하게 비추는 따뜻한 랜턴'
+  },
+  'hold_apple_basket': {
+    id: 'hold_apple_basket',
+    slot: 'hold',
+    category: '소품',
+    name: '꿀사과 바구니',
+    price: 8,
+    icon: '🍎',
+    desc: '가을 수확의 기쁨을 담은 달콤한 꿀사과 바구니'
+  },
+  'side_autumn_pumpkin': {
+    id: 'side_autumn_pumpkin',
+    slot: 'side',
+    category: '소품',
+    name: '탐스러운 가을 단호박',
+    price: 6,
+    icon: '🎃',
+    desc: '찰스 곁에 놓인 탐스럽고 둥글둥글한 가을 단호박'
+  },
+  'back_maple_carpet': {
+    id: 'back_maple_carpet',
+    slot: 'grass',
+    category: '잔디',
+    name: '황금빛 낙엽 카펫',
+    price: 9,
+    icon: '🍂',
+    desc: '찰스 발밑에 곱게 깔린 황금빛 가을 낙엽 카펫'
   }
 };
 
@@ -192,12 +248,14 @@ const TalentService = {
       return {
         head: equipped.head || null,
         glasses: equipped.glasses || null,
+        neck: equipped.neck || null,
         hold: equipped.hold || null,
+        side: equipped.side || null,
         grass: equipped.grass || equipped.back || null,
         back: equipped.back || equipped.grass || null
       };
     } catch (e) {
-      return { head: null, glasses: null, hold: null, grass: null, back: null };
+      return { head: null, glasses: null, neck: null, hold: null, side: null, grass: null, back: null };
     }
   },
 
