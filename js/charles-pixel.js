@@ -1278,7 +1278,7 @@ function renderAccessoryBible(scale) {
   // 보라색 성경책 표지 (x:15~18, y:11~15)
   for (let y = 11; y <= 15; y++) {
     for (let x = 15; x <= 18; x++) {
-      r += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="#6C3483" />';
+      r += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="#6C3483" />`;
     }
   }
   // 책등 그림자 (#4A235A)
