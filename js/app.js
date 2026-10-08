@@ -3110,10 +3110,20 @@ const App = {
             <div class="notif-content" style="width: 100%;">
               <div class="notif-admin-header-row">
                 <span class="notif-badge ${badgeClass}">${badgeText}</span>
-                <span class="notif-time">${dateStr}</span>
+                <div class="notif-header-meta">
+                  <span class="notif-time">${dateStr}</span>
+                  <span class="msg-unread-status" style="font-size: 11px; ${!isRead ? 'font-weight: 700; color: #E74C3C;' : 'color: #888;'}">
+                    ${!isRead ? '● 읽지 않음' : '읽음 ✓'}
+                  </span>
+                </div>
               </div>
               <div class="notif-admin-title-row">
                 <div class="notif-admin-title">${m.title || '(제목 없음)'}</div>
+              </div>
+              <div class="notif-admin-footer-row">
+                <div class="notif-sender-info">
+                  보낸이: <strong>${m.sender_name || '양떼목장'}</strong>
+                </div>
                 <div class="notif-card-actions">
                   <button type="button" class="btn-notif-quick-read" title="말씀 읽으러 가기" onclick="event.stopPropagation(); App.goToReadBible('${m.id}', false);">
                     <span>📖 말씀 읽기</span>
@@ -3126,12 +3136,6 @@ const App = {
                   </button>
                 </div>
               </div>
-              <div class="notif-admin-footer-row">
-                <span>보낸이: <strong>${m.sender_name || '양떼목장'}</strong></span>
-                <span class="msg-unread-status" style="font-size: 11px; ${!isRead ? 'font-weight: 700; color: #E74C3C;' : 'color: #AAA;'}">
-                  ${!isRead ? '● 읽지 않음' : '읽음 ✓'}
-                </span>
-              </div>
             </div>
           </div>
         `;
@@ -3141,21 +3145,35 @@ const App = {
     // 2. 기본 시스템 알림
     if (notifs.length > 0) {
       html += notifs.map(n => `
-        <div class="notif-item ${n.read ? 'read' : 'unread'}" onclick="App.openMessageDetail('${n.id}', true)" style="cursor: pointer; padding: 10px 10px; border-radius: 10px; margin-bottom: 6px; ${n.read ? 'background: #FAF8F5;' : 'background: #FFF9E6; border: 1px solid #FFE0B2;'}">
-          <div class="notif-icon">${n.icon}</div>
+        <div class="notif-item notif-admin-item ${n.read ? 'read' : 'unread'}" onclick="App.openMessageDetail('${n.id}', true)">
+          <div class="notif-icon" style="font-size: 18px; margin-top: 1px;">${n.icon}</div>
           <div class="notif-content" style="width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
-              <span style="font-size: 13px; ${n.read ? 'color: var(--text-color);' : 'font-weight: 700; color: #222;'}">${n.title || n.text.slice(0, 18)}</span>
-              <button type="button" class="btn-notif-delete-card" title="알림 삭제" onclick="event.stopPropagation(); App.deleteNotification('${n.id}');" style="padding: 2px 5px; font-size: 10px;">
-                🗑️
-              </button>
+            <div class="notif-admin-header-row">
+              <span class="notif-badge badge-all">🔔 시스템 알림</span>
+              <div class="notif-header-meta">
+                <span class="notif-time">${n.time}</span>
+                <span class="msg-unread-status" style="font-size: 11px; ${!n.read ? 'font-weight: 700; color: #E74C3C;' : 'color: #888;'}">
+                  ${!n.read ? '● 읽지 않음' : '읽음 ✓'}
+                </span>
+              </div>
             </div>
-            <div class="notif-text" style="font-size: 12px; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${n.text}</div>
-            <div class="notif-time" style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
-              <span>${n.time}</span>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <button type="button" class="btn-notif-quick-read" onclick="event.stopPropagation(); App.goToReadBible('${n.id}', true);">📖 말씀 읽기</button>
-                <span style="font-size: 11px; color: #2E7D32; font-weight: 600;">상세보기 ➔</span>
+            <div class="notif-admin-title-row">
+              <div class="notif-admin-title">${n.title || n.text.slice(0, 24)}</div>
+            </div>
+            <div class="notif-admin-footer-row">
+              <div class="notif-sender-info">
+                보낸이: <strong>양떼목장 찰스</strong>
+              </div>
+              <div class="notif-card-actions">
+                <button type="button" class="btn-notif-quick-read" title="말씀 읽으러 가기" onclick="event.stopPropagation(); App.goToReadBible('${n.id}', true);">
+                  <span>📖 말씀 읽기</span>
+                </button>
+                <button type="button" class="btn-notif-view" onclick="event.stopPropagation(); App.openMessageDetail('${n.id}', true);">
+                  <span>보기</span> <span>➔</span>
+                </button>
+                <button type="button" class="btn-notif-delete-card" title="알림 삭제" onclick="event.stopPropagation(); App.deleteNotification('${n.id}');">
+                  🗑️
+                </button>
               </div>
             </div>
           </div>
