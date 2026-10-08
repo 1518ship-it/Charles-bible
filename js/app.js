@@ -993,7 +993,13 @@ const App = {
     modal.style.display = 'flex';
     RetroAudio.click();
 
-    // 기기 간 퀘스트 수령 및 달란트 동기화를 위해 백그라운드 클라우드 갱신
+    // 원격 Supabase event_missions 및 클라우드 동기화 비동기 백그라운드 갱신
+    if (typeof TalentService !== 'undefined' && TalentService.fetchEventMissions) {
+      TalentService.fetchEventMissions().then(() => {
+        this.renderQuestsModal();
+      }).catch(() => {});
+    }
+
     if (typeof StorageService !== 'undefined' && StorageService.syncFromCloud) {
       StorageService.syncFromCloud().then(() => {
         this.renderQuestsModal();
@@ -1015,7 +1021,8 @@ const App = {
 
     const quests = TalentService.getQuestsList();
 
-    // 그룹화: daily, weekly, achievement
+    // 그룹화: event, daily, weekly, achievement
+    const eventQuests = quests.filter(q => q.type === 'event');
     const dailyQuests = quests.filter(q => q.type === 'daily');
     const weeklyQuests = quests.filter(q => q.type === 'weekly');
     const achieveQuests = quests.filter(q => q.type === 'achievement');
@@ -1023,19 +1030,25 @@ const App = {
     const renderQuestCard = (q) => {
       const percent = Math.min(100, Math.max(0, Math.round((q.current / q.target) * 100)));
       const isGold = q.type === 'achievement';
-      const fillClass = q.status === 'ready' ? (isGold ? 'gold' : 'ready') : '';
+      const isEvent = q.type === 'event';
+      const fillClass = q.status === 'ready' 
+        ? (isEvent ? 'event-fill' : (isGold ? 'gold' : 'ready')) 
+        : (isEvent ? 'event-bar' : '');
 
       let btnHtml = '';
       if (q.status === 'claimed') {
         btnHtml = `<button class="btn-quest-action claimed" disabled type="button">수령 완료 ✓</button>`;
       } else if (q.status === 'ready') {
-        btnHtml = `<button class="btn-quest-action ready" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 ${this.getTalentCoinIcon('sm')}</button>`;
+        const readyClass = isEvent ? 'ready event-ready' : 'ready';
+        btnHtml = `<button class="btn-quest-action ${readyClass}" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 ${this.getTalentCoinIcon('sm')}</button>`;
       } else {
         btnHtml = `<button class="btn-quest-action progress" disabled type="button">${q.current}/${q.target} ${q.unit}</button>`;
       }
 
+      const cardExtraClass = isEvent ? 'event-card' : '';
+
       return `
-        <div class="quest-card ${q.status}">
+        <div class="quest-card ${cardExtraClass} ${q.status}">
           <div class="quest-card-icon">${q.icon}</div>
           <div class="quest-card-content">
             <div class="quest-card-title">${q.title}</div>
@@ -1054,6 +1067,24 @@ const App = {
     };
 
     let html = '';
+
+    // 1. 가을 특별 이벤트 미션 섹션 (최상단 화려한 가을 배너)
+    if (eventQuests.length > 0) {
+      const firstEvent = eventQuests[0];
+      const categoryTitle = firstEvent.category || '가을은 독서의 계절이 아니라 통독의 계절~';
+      const subtitle = firstEvent.subtitle || '[가을, 단풍, 그리고 성경통독...]';
+
+      html += `
+        <div class="quest-event-banner">
+          <div class="quest-event-badge">🍁 특별 이벤트 미션 (10.08 ~ 11.15)</div>
+          <div class="quest-event-title">${categoryTitle}</div>
+          <div class="quest-event-subtitle">${subtitle}</div>
+        </div>
+        <div class="quest-list event-quest-list" style="margin-bottom: 14px;">
+          ${eventQuests.map(renderQuestCard).join('')}
+        </div>
+      `;
+    }
 
     if (dailyQuests.length > 0) {
       html += `

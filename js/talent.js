@@ -315,6 +315,122 @@ const TalentService = {
     }
   },
 
+  // ==================== [가을 특별 이벤트 미션 기본 정의 & 원격 동기화] ====================
+  DEFAULT_EVENT_MISSIONS: [
+    {
+      id: 'event_autumn_15',
+      category: '가을은 독서의 계절이 아니라 통독의 계절~',
+      subtitle: '[가을, 단풍, 그리고 성경통독...]',
+      title: '도전! 성경읽기!!',
+      desc: '하루에 15장 이상 읽으면 달란트 3개 (계정당 한번)',
+      icon: '🍁',
+      reward: 3,
+      mission_type: 'once',
+      rule_type: 'daily_count_15',
+      target_count: 15,
+      unit: '장',
+      start_date: '2026-10-08',
+      end_date: '2026-11-15',
+      is_active: true,
+      display_order: 1
+    },
+    {
+      id: 'event_autumn_morning',
+      category: '가을은 독서의 계절이 아니라 통독의 계절~',
+      subtitle: '[가을, 단풍, 그리고 성경통독...]',
+      title: '하루의 시작을 말씀과 함께!',
+      desc: '오전시간 (오전5시~오전11시)에 1장이상 읽으면 달란트 1개 (매일 반복)',
+      icon: '🌅',
+      reward: 1,
+      mission_type: 'daily',
+      rule_type: 'time_morning',
+      target_count: 1,
+      unit: '장',
+      start_date: '2026-10-08',
+      end_date: '2026-11-15',
+      is_active: true,
+      display_order: 2
+    },
+    {
+      id: 'event_autumn_night',
+      category: '가을은 독서의 계절이 아니라 통독의 계절~',
+      subtitle: '[가을, 단풍, 그리고 성경통독...]',
+      title: '고된 하루를 보내고~',
+      desc: '저녁시간 (오후9시~밤12시)에 1장이상 읽으면 달란트 1개 (매일 반복)',
+      icon: '🌙',
+      reward: 1,
+      mission_type: 'daily',
+      rule_type: 'time_night',
+      target_count: 1,
+      unit: '장',
+      start_date: '2026-10-08',
+      end_date: '2026-11-15',
+      is_active: true,
+      display_order: 3
+    }
+  ],
+
+  _cachedEventMissions: null,
+
+  // Supabase 원격 테이블에서 이벤트 미션 동적 로드 (미존재 시 자동 Fallback)
+  async fetchEventMissions() {
+    if (this._cachedEventMissions && this._cachedEventMissions.length > 0) {
+      return this._cachedEventMissions;
+    }
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('event_missions')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          this._cachedEventMissions = data.map(item => ({
+            id: item.id,
+            category: item.category || '가을은 독서의 계절이 아니라 통독의 계절~',
+            subtitle: item.subtitle || '[가을, 단풍, 그리고 성경통독...]',
+            title: item.title,
+            desc: item.description,
+            icon: item.icon || '🍁',
+            reward: Number(item.reward) || 1,
+            mission_type: item.mission_type || 'daily',
+            rule_type: item.rule_type,
+            target_count: Number(item.target_count) || 1,
+            unit: item.unit || '장',
+            start_date: item.start_date || '2026-10-08',
+            end_date: item.end_date || '2026-11-15',
+            is_active: item.is_active !== false,
+            display_order: Number(item.display_order) || 1
+          }));
+          return this._cachedEventMissions;
+        }
+      } catch (e) {
+        // 조용히 fallback
+      }
+    }
+    this._cachedEventMissions = [...this.DEFAULT_EVENT_MISSIONS];
+    return this._cachedEventMissions;
+  },
+
+  getEventMissions() {
+    return this._cachedEventMissions || this.DEFAULT_EVENT_MISSIONS;
+  },
+
+  // 타임스탬프가 한국 표준시(KST) 기준 startHour <= hour < endHour 범위인지 판정
+  isKstHourInRange(isoTimestamp, startHour, endHour) {
+    if (!isoTimestamp) return false;
+    try {
+      const d = new Date(isoTimestamp);
+      if (isNaN(d.getTime())) return false;
+      // UTC + 9 시간 계산
+      const kstHour = (d.getUTCHours() + 9) % 24;
+      return kstHour >= startHour && kstHour < endHour;
+    } catch (e) {
+      return false;
+    }
+  },
+
   // ==================== 4. 퀘스트 목록 및 달성도 계산 ====================
   getQuestsList() {
     const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr) 
@@ -364,7 +480,93 @@ const TalentService = {
       ? 'claimed' 
       : (ntRead >= 260 ? 'ready' : 'progress');
 
+    // ==================== 5) 가을 특별 이벤트 미션 3종 ====================
+    const eventMissions = this.getEventMissions();
+    const eventQuests = [];
+
+    const fullHistory = (typeof StorageService !== 'undefined' && StorageService.getHistory)
+      ? StorageService.getHistory()
+      : [];
+    const todayHistory = fullHistory.filter(h => h && h.date === todayStr);
+
+    const dailyCounts = (typeof StorageService !== 'undefined' && StorageService.getDailyCounts)
+      ? StorageService.getDailyCounts()
+      : {};
+
+    for (const em of eventMissions) {
+      if (em.start_date && todayStr < em.start_date) continue;
+      if (em.end_date && todayStr > em.end_date) continue;
+      if (!em.is_active) continue;
+
+      let current = 0;
+      const target = em.target_count || 1;
+      let status = 'progress';
+
+      if (em.rule_type === 'daily_count_15') {
+        // [미션 1] 이벤트 시작일(em.start_date) 이후 하루 15장 이상 완독 (계정당 1회)
+        const claimed = !!claims[em.id] || !!claims.event_autumn_read_15;
+        if (claimed) {
+          status = 'claimed';
+          current = target;
+        } else {
+          const minDate = em.start_date || '2026-10-08';
+          let maxRead = 0;
+          for (const d of Object.keys(dailyCounts)) {
+            if (d >= minDate && d !== '__talent_data__') {
+              const cnt = dailyCounts[d] || 0;
+              if (cnt > maxRead) maxRead = cnt;
+            }
+          }
+          if (todayRead > maxRead) maxRead = todayRead;
+          current = Math.min(target, maxRead);
+          status = maxRead >= target ? 'ready' : 'progress';
+        }
+      } else if (em.rule_type === 'time_morning') {
+        // [미션 2] 오전 05:00 ~ 11:00 사이 통독 (매일 반복)
+        const claimKey = `${em.id}_${todayStr}`;
+        const claimed = !!claims[claimKey] || claims[em.id] === todayStr;
+        if (claimed) {
+          status = 'claimed';
+          current = target;
+        } else {
+          const morningCount = todayHistory.filter(h => this.isKstHourInRange(h.timestamp, 5, 11)).length;
+          current = Math.min(target, morningCount);
+          status = morningCount >= target ? 'ready' : 'progress';
+        }
+      } else if (em.rule_type === 'time_night') {
+        // [미션 3] 저녁 21:00 ~ 24:00 사이 통독 (매일 반복)
+        const claimKey = `${em.id}_${todayStr}`;
+        const claimed = !!claims[claimKey] || claims[em.id] === todayStr;
+        if (claimed) {
+          status = 'claimed';
+          current = target;
+        } else {
+          const nightCount = todayHistory.filter(h => this.isKstHourInRange(h.timestamp, 21, 24)).length;
+          current = Math.min(target, nightCount);
+          status = nightCount >= target ? 'ready' : 'progress';
+        }
+      }
+
+      eventQuests.push({
+        id: em.id,
+        type: 'event',
+        category: em.category,
+        subtitle: em.subtitle,
+        title: em.title,
+        desc: em.desc,
+        icon: em.icon,
+        reward: em.reward,
+        current: current,
+        target: target,
+        unit: em.unit || '장',
+        status: status,
+        rule_type: em.rule_type,
+        mission_type: em.mission_type
+      });
+    }
+
     return [
+      ...eventQuests,
       {
         id: 'daily_login',
         type: 'daily',
@@ -454,6 +656,23 @@ const TalentService = {
     } else if (questId === 'achieve_nt_complete') {
       claims.achieve_nt_complete = true;
       claims.achieve_nt_claimed_at = todayStr;
+    } else if (questId === 'event_autumn_15' || (quest && quest.rule_type === 'daily_count_15')) {
+      claims.event_autumn_15 = todayStr;
+      claims.event_autumn_read_15 = todayStr;
+      claims[questId] = todayStr;
+    } else if (questId === 'event_autumn_morning' || (quest && quest.rule_type === 'time_morning')) {
+      claims[`${questId}_${todayStr}`] = true;
+      claims[questId] = todayStr;
+    } else if (questId === 'event_autumn_night' || (quest && quest.rule_type === 'time_night')) {
+      claims[`${questId}_${todayStr}`] = true;
+      claims[questId] = todayStr;
+    } else if (quest && quest.type === 'event') {
+      if (quest.mission_type === 'once') {
+        claims[questId] = todayStr;
+      } else {
+        claims[`${questId}_${todayStr}`] = true;
+        claims[questId] = todayStr;
+      }
     }
 
     this.saveClaimedRecord(claims);

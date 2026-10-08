@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/admin.css?v=6.7">
+  <link rel="stylesheet" href="css/admin.css?v=6.8">
 </head>
 <body>
 
@@ -99,6 +99,44 @@
         <button type="button" id="btn-reset-admin-key-default" class="admin-btn" style="font-size: 11px;">
           기본 관리자 코드(654321)로 재설정
         </button>
+      </div>
+
+      <!-- 🍁 가을 특별 이벤트 미션 현황 (10.08 ~ 11.15) -->
+      <div class="admin-card" id="admin-autumn-event-card" style="border: 1.5px solid #E67E22; background: linear-gradient(135deg, rgba(230, 126, 34, 0.05), rgba(192, 57, 43, 0.02));">
+        <div class="admin-card-title" style="color: #D35400; display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span>🍁</span> 가을 특별 이벤트 미션 현황
+          </div>
+          <span style="font-size: 11px; font-weight: 700; background: rgba(230, 126, 34, 0.15); color: #D35400; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(230, 126, 34, 0.3);">
+            10.08 ~ 11.15 진행중
+          </span>
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
+          <strong>'가을은 독서의 계절이 아니라 통독의 계절~'</strong> 특별 미션 3종의 성도별 달성 현황입니다.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 6px;">
+          <!-- 1. 15장 돌파 달성자 -->
+          <div style="background: #FFF; border: 1.5px solid #E67E22; border-radius: 8px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #D35400; margin-bottom: 4px;">🍁 도전! 15장 완독</div>
+            <div style="font-size: 20px; font-weight: 800; color: #111;" id="stat-autumn-15-count">0명</div>
+            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;" id="stat-autumn-15-names">달성자 없음</div>
+          </div>
+
+          <!-- 2. 오늘 아침 05~11시 통독자 -->
+          <div style="background: #FFF; border: 1.5px solid #F39C12; border-radius: 8px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #D35400; margin-bottom: 4px;">🌅 오늘 아침 (05~11시) 통독</div>
+            <div style="font-size: 20px; font-weight: 800; color: #111;" id="stat-autumn-morning-count">0명</div>
+            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;" id="stat-autumn-morning-names">달성자 없음</div>
+          </div>
+
+          <!-- 3. 오늘 저녁 21~24시 통독자 -->
+          <div style="background: #FFF; border: 1.5px solid #8E44AD; border-radius: 8px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #8E44AD; margin-bottom: 4px;">🌙 오늘 저녁 (21~24시) 통독</div>
+            <div style="font-size: 20px; font-weight: 800; color: #111;" id="stat-autumn-night-count">0명</div>
+            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;" id="stat-autumn-night-names">달성자 없음</div>
+          </div>
+        </div>
       </div>
 
       <!-- 📊 사용자 주간 현황 (주일~토요일 통독 & 띠부띠부!) -->
@@ -673,12 +711,12 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=6.7"></script>
-  <script src="js/charles-pixel.js?v=6.7"></script>
-  <script src="js/auth.js?v=6.7"></script>
-  <script src="js/storage.js?v=6.7"></script>
-  <script src="js/talent.js?v=6.7"></script>
-  <script src="js/admin.js?v=6.7"></script>
+  <script src="js/bible-data.js?v=6.8"></script>
+  <script src="js/charles-pixel.js?v=6.8"></script>
+  <script src="js/auth.js?v=6.8"></script>
+  <script src="js/storage.js?v=6.8"></script>
+  <script src="js/talent.js?v=6.8"></script>
+  <script src="js/admin.js?v=6.8"></script>
 
 </body>
 </html>

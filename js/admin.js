@@ -428,8 +428,71 @@ const AdminApp = {
     this.initWeeklyDashboard();
     this.renderWeeklyDashboard();
 
+    // 🍁 가을 특별 이벤트 미션 현황 통계 렌더링
+    this.renderAutumnEventStats();
+
     // 최근 발송 메시지 내역 불러오기
     this.loadSentMessages();
+  },
+
+  // ==================== 🍁 가을 특별 이벤트 미션 현황 통계 ====================
+  renderAutumnEventStats() {
+    const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr) 
+      ? StorageService.getTodayDateStr() 
+      : new Date().toISOString().slice(0, 10);
+    const eventMinDate = '2026-10-08';
+
+    const users15 = [];
+    const usersMorning = [];
+    const usersNight = [];
+
+    this.allUsers.forEach(u => {
+      const st = this.stateMap[u.id] || {};
+      const dc = st.dailyCounts || {};
+      const talentMeta = (dc.__talent_data__ && typeof dc.__talent_data__ === 'object') ? dc.__talent_data__ : {};
+      const claims = (talentMeta.quest_claims && typeof talentMeta.quest_claims === 'object') ? talentMeta.quest_claims : {};
+
+      // 1) 15장 완독: 이벤트 시작일(2026-10-08) 이후 15장 이상 읽었거나 이미 수령한 성도
+      let hasRead15 = !!claims.event_autumn_15 || !!claims.event_autumn_read_15;
+      if (!hasRead15) {
+        for (const [date, cnt] of Object.entries(dc)) {
+          if (date >= eventMinDate && date !== '__talent_data__' && (Number(cnt) || 0) >= 15) {
+            hasRead15 = true;
+            break;
+          }
+        }
+      }
+      if (hasRead15) {
+        users15.push(u.name);
+      }
+
+      // 2) 오늘 아침 통독: 오늘 수령했거나 아침 미션 완료 성도
+      const morningKey = `event_autumn_morning_${todayStr}`;
+      if (claims[morningKey] || claims.event_autumn_morning === todayStr) {
+        usersMorning.push(u.name);
+      }
+
+      // 3) 오늘 저녁 통독: 오늘 수령했거나 저녁 미션 완료 성도
+      const nightKey = `event_autumn_night_${todayStr}`;
+      if (claims[nightKey] || claims.event_autumn_night === todayStr) {
+        usersNight.push(u.name);
+      }
+    });
+
+    const el15Count = document.getElementById('stat-autumn-15-count');
+    const el15Names = document.getElementById('stat-autumn-15-names');
+    if (el15Count) el15Count.textContent = `${users15.length}명`;
+    if (el15Names) el15Names.textContent = users15.length > 0 ? users15.join(', ') : '아직 달성자 없음';
+
+    const elMornCount = document.getElementById('stat-autumn-morning-count');
+    const elMornNames = document.getElementById('stat-autumn-morning-names');
+    if (elMornCount) elMornCount.textContent = `${usersMorning.length}명`;
+    if (elMornNames) elMornNames.textContent = usersMorning.length > 0 ? usersMorning.join(', ') : '오늘 수령자 없음';
+
+    const elNightCount = document.getElementById('stat-autumn-night-count');
+    const elNightNames = document.getElementById('stat-autumn-night-names');
+    if (elNightCount) elNightCount.textContent = `${usersNight.length}명`;
+    if (elNightNames) elNightNames.textContent = usersNight.length > 0 ? usersNight.join(', ') : '오늘 수령자 없음';
   },
 
   // 셀 목록 드롭다운 채우기

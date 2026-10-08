@@ -3961,6 +3961,95 @@ body {
   font-weight: 600;
 }
 
+/* ==================== 가을 특별 이벤트 미션 전용 스타일 (AUTUMN EVENT) ==================== */
+.quest-event-banner {
+  background: linear-gradient(135deg, rgba(230, 126, 34, 0.14), rgba(192, 57, 43, 0.08));
+  border: 1.5px solid rgba(230, 126, 34, 0.45);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 4px 0 10px;
+  box-shadow: 0 3px 12px rgba(211, 84, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-event-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #D35400;
+  background: rgba(230, 126, 34, 0.18);
+  border: 1px solid rgba(230, 126, 34, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  letter-spacing: -0.2px;
+}
+
+.quest-event-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-color);
+  margin-bottom: 2px;
+  letter-spacing: -0.3px;
+}
+
+.quest-event-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #E67E22;
+  letter-spacing: -0.2px;
+}
+
+.quest-card.event-card {
+  border-color: rgba(230, 126, 34, 0.3);
+  background: rgba(230, 126, 34, 0.02);
+}
+
+.quest-card.event-card.ready {
+  border-color: #E67E22;
+  background: rgba(230, 126, 34, 0.08);
+  box-shadow: 0 2px 10px rgba(230, 126, 34, 0.18);
+}
+
+.quest-progress-bar-fill.event-fill {
+  background: linear-gradient(90deg, #E67E22, #F39C12);
+}
+
+.quest-progress-bar-fill.event-bar {
+  background: #E67E22;
+}
+
+.btn-quest-action.event-ready {
+  background: linear-gradient(135deg, #E67E22, #D35400);
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(211, 84, 0, 0.4);
+  animation: mapleBtnPulse 1.4s infinite;
+}
+
+@keyframes mapleBtnPulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.04); filter: brightness(1.12); }
+}
+
+.quest-event-maple-badge {
+  position: absolute;
+  top: -6px;
+  right: -5px;
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+  animation: mapleFloat 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(211, 84, 0, 0.35));
+}
+
+@keyframes mapleFloat {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-3px) rotate(8deg); }
+}
+
 /* ==================== 달란트 상점 & 옷장 독립 화면 (TALENT SHOP VIEW) ==================== */
 .talent-shop-view {
   display: none;
