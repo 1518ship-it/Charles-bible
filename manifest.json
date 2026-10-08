@@ -1,8 +1,9 @@
 {
   "name": "Charles",
   "short_name": "Charles",
+  "id": "charles-bible-v3.5",
   "description": "Charles - 말씀양 찰스와 함께하는 성경 읽기",
-  "start_url": "./index.html",
+  "start_url": "./index.html?v=3.5",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -10,23 +11,23 @@
   "theme_color": "#FAFAFA",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "favicon.svg?v=3.5",
       "sizes": "any",
       "type": "image/svg+xml"
     },
     {
-      "src": "apple-touch-icon.png",
+      "src": "apple-touch-icon.png?v=3.5",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "icon-192.png",
+      "src": "icon-192.png?v=3.5",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "icon-512.png?v=3.5",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
