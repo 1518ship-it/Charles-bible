@@ -147,22 +147,304 @@ function renderAccessoryBible(scale) {
   return r;
 }
 
-function renderAutumnAccessory(itemId, scale, offsetX = 0, offsetY = 0) {
-  const itemData = (typeof AUTUMN_ITEM_PIXELS !== 'undefined') ? AUTUMN_ITEM_PIXELS[itemId] : null;
-  if (!itemData || !itemData.pixels) return '';
+// ==========================================
+// 🍂 가을 컬렉션 6종 최적화 픽셀 아트 렌더러
+// (찰스 18x16 표준 규격 및 인체 비율 100% 최적화)
+// ==========================================
+
+// 1. 단풍잎 베레모 (Head - 찰스 머리통 x:6~11, y:1~3 위에 살포시 비스듬히 얹힌 프렌치 베레모)
+function renderAccessoryMapleBeret(scale) {
   let r = '';
-  const pixels = itemData.pixels;
-  for (let i = 0; i < pixels.length; i++) {
-    const px = pixels[i];
-    const x = (px[0] + offsetX) * scale;
-    const y = (px[1] + offsetY) * scale;
-    r += `<rect x="${x}" y="${y}" width="${scale}" height="${scale}" fill="${px[2]}" />`;
-  }
+  const dark = '#18181B';
+  const stem = '#78350F';
+  const redLight = '#EF4444';
+  const redMain = '#C0392B';
+  const redDeep = '#922B21';
+  const gold = '#F59E0B';
+  const bright = '#FEF08A';
+
+  // 베레모 꼭지 (x:8, y:0)
+  r += `<rect x="${8 * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="${stem}" />`;
+
+  // y=1: 베레모 윗면 둥근 라인 (x:7~11)
+  r += `<rect x="${7 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${redDeep}" />`;
+  r += `<rect x="${8 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${stem}" />`;
+  r += `<rect x="${9 * scale}" y="${1 * scale}" width="${2 * scale}" height="${scale}" fill="${redMain}" />`;
+  r += `<rect x="${11 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${redLight}" />`;
+
+  // y=2: 베레모 메인 볼륨 (x:5~13 풍성한 입체감)
+  r += `<rect x="${5 * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${6 * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${redDeep}" />`;
+  r += `<rect x="${7 * scale}" y="${2 * scale}" width="${2 * scale}" height="${scale}" fill="${redMain}" />`;
+  r += `<rect x="${9 * scale}" y="${2 * scale}" width="${2 * scale}" height="${scale}" fill="${redLight}" />`;
+  // 우측 단풍잎 브로치
+  r += `<rect x="${11 * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${gold}" />`;
+  r += `<rect x="${12 * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${bright}" />`;
+  r += `<rect x="${13 * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=3: 이마 위 밴드 라인 (x:5~12)
+  r += `<rect x="${5 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${6 * scale}" y="${3 * scale}" width="${5 * scale}" height="${scale}" fill="${redDeep}" />`;
+  r += `<rect x="${11 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${gold}" />`;
+  r += `<rect x="${12 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  return r;
+}
+
+// 2. 도토리 니트 목도리 (Neck - 찰스 턱 y:10 아래 목 y:10~12에 포근히 둘러지고 도토리 방울이 가슴 아래로 늘어짐)
+function renderAccessoryAcornScarf(scale) {
+  let r = '';
+  const dark = '#18181B';
+  const yellow = '#FDE047';
+  const orange = '#D97706';
+  const brown = '#B45309';
+  const acornCap = '#78350F';
+
+  // y=10: 턱 바로 아래 니트 윗단 (x:6~11)
+  r += `<rect x="${6 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${7 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${8 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${9 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${10 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${11 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=11: 목 둘레 풍성한 체크 밴드 (x:5~12)
+  r += `<rect x="${5 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${6 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${7 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${8 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${9 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${10 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${11 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${brown}" />`;
+  r += `<rect x="${12 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=12: 목도리 아랫단 및 매듭 시작 (x:6~11)
+  r += `<rect x="${6 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${7 * scale}" y="${12 * scale}" width="${2 * scale}" height="${scale}" fill="${brown}" />`;
+  // 매듭 & 술 늘어뜨림 (x:9~10)
+  r += `<rect x="${9 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${10 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${11 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=13: 가슴 아래로 늘어진 꼬리 매듭
+  r += `<rect x="${9 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+  r += `<rect x="${10 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${brown}" />`;
+
+  // y=14: 도토리 모자 (갓)
+  r += `<rect x="${8 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${9 * scale}" y="${14 * scale}" width="${2 * scale}" height="${scale}" fill="${acornCap}" />`;
+  r += `<rect x="${11 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=15: 도토리 몸통 알맹이
+  r += `<rect x="${9 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${yellow}" />`;
+  r += `<rect x="${10 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${orange}" />`;
+
+  // y=16: 도토리 끝점
+  r += `<rect x="${9 * scale}" y="${16 * scale}" width="${2 * scale}" height="${scale}" fill="${dark}" />`;
+
+  return r;
+}
+
+// 3. 가을밤 랜턴 (Hold - 성경책처럼 찰스 오른쪽 품 x:13~16, y:7~13에 자연스럽게 들린 호박빛 등불)
+function renderAccessoryAutumnLantern(scale) {
+  let r = '';
+  const dark = '#18181B';
+  const wood = '#78350F';
+  const glowCenter = '#FFFFFF';
+  const glowBright = '#FEF08A';
+  const glowWarm = '#FDE047';
+  const glowDeep = '#F59E0B';
+
+  // 손잡이 고리 (찰스 손 높이)
+  r += `<rect x="${14 * scale}" y="${7 * scale}" width="${2 * scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${14 * scale}" y="${8 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 랜턴 지붕 (갓)
+  r += `<rect x="${13 * scale}" y="${9 * scale}" width="${4 * scale}" height="${scale}" fill="${wood}" />`;
+  r += `<rect x="${12 * scale}" y="${9 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${17 * scale}" y="${9 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 랜턴 등불 유리창
+  // y=10
+  r += `<rect x="${13 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${14 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${glowBright}" />`;
+  r += `<rect x="${15 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${glowWarm}" />`;
+  r += `<rect x="${16 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=11 (핵심 불꽃)
+  r += `<rect x="${13 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${14 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${glowCenter}" />`;
+  r += `<rect x="${15 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${glowDeep}" />`;
+  r += `<rect x="${16 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // y=12
+  r += `<rect x="${13 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${14 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${glowWarm}" />`;
+  r += `<rect x="${15 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${glowDeep}" />`;
+  r += `<rect x="${16 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 랜턴 밑받침
+  r += `<rect x="${13 * scale}" y="${13 * scale}" width="${4 * scale}" height="${scale}" fill="${wood}" />`;
+  r += `<rect x="${14 * scale}" y="${14 * scale}" width="${2 * scale}" height="${scale}" fill="${dark}" />`;
+
+  // 은은한 발광 아우라 포인트
+  r += `<rect x="${12 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="rgba(254, 240, 138, 0.45)" />`;
+  r += `<rect x="${17 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="rgba(254, 240, 138, 0.45)" />`;
+
+  return r;
+}
+
+// 4. 꿀사과 바구니 (Hold - 찰스 오른쪽 앞발/옆구리 x:13~17, y:8~14에 놓인 탐스러운 사과 바구니)
+function renderAccessoryAppleBasket(scale) {
+  let r = '';
+  const dark = '#18181B';
+  const rattanLight = '#D97706';
+  const rattanDark = '#B45309';
+  const wood = '#78350F';
+  const appleRed = '#EF4444';
+  const appleDark = '#DC2626';
+  const appleLight = '#FCA5A5';
+  const leaf = '#65A30D';
+
+  // 손잡이 아치
+  r += `<rect x="${14 * scale}" y="${8 * scale}" width="${2 * scale}" height="${scale}" fill="${wood}" />`;
+  r += `<rect x="${13 * scale}" y="${9 * scale}" width="${scale}" height="${scale}" fill="${wood}" />`;
+  r += `<rect x="${16 * scale}" y="${9 * scale}" width="${scale}" height="${scale}" fill="${wood}" />`;
+
+  // 싱그러운 사과 잎사귀 (14, 9)
+  r += `<rect x="${14 * scale}" y="${9 * scale}" width="${scale}" height="${scale}" fill="${leaf}" />`;
+
+  // 사과 윗부분 (y=10)
+  r += `<rect x="${13 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${appleDark}" />`;
+  r += `<rect x="${14 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${appleRed}" />`;
+  r += `<rect x="${15 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${appleLight}" />`;
+  r += `<rect x="${16 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${appleDark}" />`;
+
+  // 사과 본체 (y=11)
+  r += `<rect x="${12 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${13 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${appleRed}" />`;
+  r += `<rect x="${14 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${appleDark}" />`;
+  r += `<rect x="${15 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${appleRed}" />`;
+  r += `<rect x="${16 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${appleDark}" />`;
+  r += `<rect x="${17 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 라탄 바구니 몸통 (y=12)
+  r += `<rect x="${12 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${13 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${rattanLight}" />`;
+  r += `<rect x="${14 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${rattanDark}" />`;
+  r += `<rect x="${15 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${rattanLight}" />`;
+  r += `<rect x="${16 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${rattanDark}" />`;
+  r += `<rect x="${17 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 라탄 바구니 아랫단 (y=13)
+  r += `<rect x="${13 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${14 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${rattanLight}" />`;
+  r += `<rect x="${15 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${rattanDark}" />`;
+  r += `<rect x="${16 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 바구니 받침 (y=14)
+  r += `<rect x="${14 * scale}" y="${14 * scale}" width="${2 * scale}" height="${scale}" fill="${wood}" />`;
+
+  return r;
+}
+
+// 5. 탐스러운 가을 단호박 (Side - 찰스 왼쪽 앞발 옆 x:1~5, y:10~14에 통통하게 놓인 호박)
+function renderAccessoryAutumnPumpkin(scale) {
+  let r = '';
+  const dark = '#18181B';
+  const leaf = '#65A30D';
+  const orangeLight = '#FB923C';
+  const orangeMain = '#F97316';
+  const orangeShadow = '#EA580C';
+  const orangeDeep = '#C2410C';
+
+  // 꼭지 (줄기)
+  r += `<rect x="${3 * scale}" y="${10 * scale}" width="${scale}" height="${scale}" fill="${leaf}" />`;
+  r += `<rect x="${3 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${leaf}" />`;
+
+  // 호박 윗면 (y=11)
+  r += `<rect x="${2 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${4 * scale}" y="${11 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 호박 볼륨 상단 (y=12)
+  r += `<rect x="${1 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${2 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${orangeLight}" />`;
+  r += `<rect x="${3 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${orangeShadow}" />`;
+  r += `<rect x="${4 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${orangeMain}" />`;
+  r += `<rect x="${5 * scale}" y="${12 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 호박 볼륨 하단 (y=13)
+  r += `<rect x="${1 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${2 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${orangeMain}" />`;
+  r += `<rect x="${3 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${orangeDeep}" />`;
+  r += `<rect x="${4 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${orangeShadow}" />`;
+  r += `<rect x="${5 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  // 호박 받침 (y=14)
+  r += `<rect x="${2 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+  r += `<rect x="${3 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${orangeDeep}" />`;
+  r += `<rect x="${4 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${dark}" />`;
+
+  return r;
+}
+
+// 6. 황금빛 낙엽 카펫 (Grass - 찰스 발밑 y:13~15, x:0~17 전체에 고르게 깔린 은행잎과 단풍잎)
+function renderAccessoryMapleCarpet(scale) {
+  let r = '';
+  const gGold = '#FBBF24';
+  const gWarm = '#F59E0B';
+  const gBright = '#FEF08A';
+  const rRed = '#EF4444';
+  const rDark = '#DC2626';
+  const bBrown = '#D97706';
+  const bDeep = '#78350F';
+
+  // y=13 (찰스 발목 주변 흩날린 낙엽 포인트)
+  r += `<rect x="${3 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${gGold}" />`;
+  r += `<rect x="${14 * scale}" y="${13 * scale}" width="${scale}" height="${scale}" fill="${rRed}" />`;
+
+  // y=14 (발밑 메인 낙엽층)
+  // 좌측
+  r += `<rect x="${0 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${bBrown}" />`;
+  r += `<rect x="${1 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${rRed}" />`;
+  r += `<rect x="${2 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${gGold}" />`;
+  // 중앙 (찰스 발 사이)
+  r += `<rect x="${7 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${gGold}" />`;
+  r += `<rect x="${8 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${rRed}" />`;
+  r += `<rect x="${9 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${gBright}" />`;
+  r += `<rect x="${10 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${gWarm}" />`;
+  // 우측
+  r += `<rect x="${14 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${rRed}" />`;
+  r += `<rect x="${15 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${gGold}" />`;
+  r += `<rect x="${16 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${bBrown}" />`;
+  r += `<rect x="${17 * scale}" y="${14 * scale}" width="${scale}" height="${scale}" fill="${rDark}" />`;
+
+  // y=15 (바닥 카펫 풍성한 레이어)
+  // 좌측
+  r += `<rect x="${0 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${bDeep}" />`;
+  r += `<rect x="${1 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${rDark}" />`;
+  r += `<rect x="${2 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${gWarm}" />`;
+  r += `<rect x="${3 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${bBrown}" />`;
+  r += `<rect x="${4 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${gGold}" />`;
+  // 중앙
+  r += `<rect x="${6 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${bDeep}" />`;
+  r += `<rect x="${7 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${gWarm}" />`;
+  r += `<rect x="${8 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${rDark}" />`;
+  r += `<rect x="${9 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${bBrown}" />`;
+  r += `<rect x="${10 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${gGold}" />`;
+  r += `<rect x="${11 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${rRed}" />`;
+  // 우측
+  r += `<rect x="${13 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${gWarm}" />`;
+  r += `<rect x="${14 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${bDeep}" />`;
+  r += `<rect x="${15 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${rRed}" />`;
+  r += `<rect x="${16 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${gBright}" />`;
+  r += `<rect x="${17 * scale}" y="${15 * scale}" width="${scale}" height="${scale}" fill="${bDeep}" />`;
+
   return r;
 }
 
 /**
- * 4종 테스트 악세사리 및 가을 컬렉션 6종 실제 픽셀 아트 SVG 아이콘 생성
+ * 4종 기본 악세사리 및 6종 가을 컬렉션 실제 픽셀 아트 SVG 아이콘 생성
  */
 function getAccessoryIconSvg(itemId) {
   if (itemId === 'head_straw_hat') {
@@ -173,11 +455,18 @@ function getAccessoryIconSvg(itemId) {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="12.5 8.5 5 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryBible(1)}</svg>`;
   } else if (itemId === 'back_daisy_field') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 11.5 19 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryDaisyField(1)}</svg>`;
-  } else if (typeof AUTUMN_ITEM_PIXELS !== 'undefined' && AUTUMN_ITEM_PIXELS[itemId]) {
-    const b = AUTUMN_ITEM_PIXELS[itemId].bounds;
-    const pad = 1;
-    const vb = `${b.minX - pad} ${b.minY - pad} ${b.maxX - b.minX + pad * 2 + 1} ${b.maxY - b.minY + pad * 2 + 1}`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" class="pixel-item-svg" shape-rendering="crispEdges">${renderAutumnAccessory(itemId, 1)}</svg>`;
+  } else if (itemId === 'head_maple_beret') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="4.5 -0.5 10 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryMapleBeret(1)}</svg>`;
+  } else if (itemId === 'neck_acorn_scarf') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="4.5 9.5 8.5 8" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryAcornScarf(1)}</svg>`;
+  } else if (itemId === 'hold_autumn_lantern') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="11.5 6.5 6.5 9" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryAutumnLantern(1)}</svg>`;
+  } else if (itemId === 'hold_apple_basket') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="11.5 7.5 6.5 8" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryAppleBasket(1)}</svg>`;
+  } else if (itemId === 'side_autumn_pumpkin') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.5 9.5 5.5 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryAutumnPumpkin(1)}</svg>`;
+  } else if (itemId === 'back_maple_carpet') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 12.5 19 4" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryMapleCarpet(1)}</svg>`;
   }
   return '';
 }
@@ -185,35 +474,23 @@ function getAccessoryIconSvg(itemId) {
 function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', equipped = {}) {
   const width = rows[0].length;
   const height = rows.length;
-
-  // 가을 아이템 착용 여부 감지 (24x24 확장 캔버스)
-  const isAutumn = equipped && (
-    equipped.grass === 'back_maple_carpet' || equipped.back === 'back_maple_carpet' ||
-    equipped.side === 'side_autumn_pumpkin' || equipped.hold === 'side_autumn_pumpkin' ||
-    equipped.hold === 'hold_autumn_lantern' || equipped.hold === 'hold_apple_basket' ||
-    equipped.neck === 'neck_acorn_scarf' ||
-    equipped.head === 'head_maple_beret'
-  );
-
-  const finalWidth = isAutumn ? Math.max(24, width) : width;
-  const finalHeight = isAutumn ? Math.max(24, height) : height;
-  const svgWidth = finalWidth * scale;
-  const svgHeight = finalHeight * scale;
+  const svgWidth = width * scale;
+  const svgHeight = height * scale;
 
   // Layer 1: Back / Floor 악세사리 (피크닉 데이지 풀밭 또는 황금빛 낙엽 카펫)
   let backRects = '';
   if (equipped) {
     if (equipped.grass === 'back_maple_carpet' || equipped.back === 'back_maple_carpet' || equipped.back_maple_carpet) {
-      backRects += renderAutumnAccessory('back_maple_carpet', scale);
+      backRects += renderAccessoryMapleCarpet(scale);
     } else if (equipped.grass === 'back_daisy_field' || equipped.back === 'back_daisy_field' || equipped.back_daisy_field) {
       backRects += renderAccessoryDaisyField(scale);
     }
   }
 
-  // Layer 1.5: Side 소품 (탐스러운 가을 단호박 - 찰스 왼쪽 앞바닥)
+  // Layer 1.5: Side 소품 (탐스러운 가을 단호박 - 찰스 왼쪽 앞발 옆)
   let sideRects = '';
   if (equipped && (equipped.side === 'side_autumn_pumpkin' || equipped.hold === 'side_autumn_pumpkin' || equipped.side_autumn_pumpkin)) {
-    sideRects += renderAutumnAccessory('side_autumn_pumpkin', scale);
+    sideRects += renderAccessoryAutumnPumpkin(scale);
   }
 
   // Layer 2: 찰스 본체
@@ -236,24 +513,24 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', eq
     }
   }
 
-  // Layer 2.5: Neck 악세사리 (도토리 니트 목도리 - 찰스 목/가슴에 맞춤)
+  // Layer 2.5: Neck 악세사리 (도토리 니트 목도리 - 찰스 목/가슴 둘레)
   let neckRects = '';
   if (equipped && (equipped.neck === 'neck_acorn_scarf' || equipped.neck_acorn_scarf)) {
-    neckRects += renderAutumnAccessory('neck_acorn_scarf', scale, 0, -3);
+    neckRects += renderAccessoryAcornScarf(scale);
   }
 
   // Layer 3: Glasses 악세사리 (몸통 부위 - 둥근 범생이 안경)
   let glassesRects = '';
   if (equipped && (equipped.glasses === 'head_glasses' || equipped.head === 'head_glasses' || equipped.body === 'head_glasses' || equipped.head_glasses)) {
     const glassesYOffset = (typeof SIMPLE_PIXEL_STAGE_4 !== 'undefined' && rows === SIMPLE_PIXEL_STAGE_4) ? 2 : 0;
-    glassesRects = renderAccessoryGlasses(scale, glassesYOffset);
+    glassesRects += renderAccessoryGlasses(scale, glassesYOffset);
   }
 
   // Layer 4: Head 악세사리 (머리 부위 - 귀여운 밀짚모자 또는 단풍잎 베레모)
   let headRects = '';
   if (equipped) {
     if (equipped.head === 'head_maple_beret' || equipped.head_maple_beret) {
-      headRects += renderAutumnAccessory('head_maple_beret', scale);
+      headRects += renderAccessoryMapleBeret(scale);
     } else if (equipped.head === 'head_straw_hat' || equipped.head_straw_hat) {
       headRects += renderAccessoryStrawHat(scale);
     }
@@ -263,9 +540,9 @@ function renderSimplePixelGrid(rows, scale = 9, animClass = 'charles-static', eq
   let holdRects = '';
   if (equipped) {
     if (equipped.hold === 'hold_autumn_lantern' || equipped.hold_autumn_lantern) {
-      holdRects += renderAutumnAccessory('hold_autumn_lantern', scale);
+      holdRects += renderAccessoryAutumnLantern(scale);
     } else if (equipped.hold === 'hold_apple_basket' || equipped.hold_apple_basket) {
-      holdRects += renderAutumnAccessory('hold_apple_basket', scale);
+      holdRects += renderAccessoryAppleBasket(scale);
     } else if (equipped.hold === 'hold_bible' || equipped.body === 'hold_bible' || equipped.hold_bible) {
       holdRects += renderAccessoryBible(scale);
     }
