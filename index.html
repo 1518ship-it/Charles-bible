@@ -18,7 +18,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=7.2">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=7.3">
 </head>
 <body>
 
@@ -97,14 +97,18 @@
       <!-- ==================== 1. TAB: SOCIAL (서원경 청년부 양떼목장 2D 플랫폼 화면) ==================== -->
       <section id="tab-social" class="tab-content">
         <div class="pasture-container">
-          <!-- 상단 헤더: 목장 이름, 멤버 수, 폴라로이드 사진첩 & 돋보기 검색 버튼 -->
+          <!-- 상단 헤더: 목장 이름 & 서브타이틀 (점선 위) -->
           <div class="pasture-header">
             <div class="pasture-header-left">
-              <div class="pasture-title-row">
-                <span class="pasture-title">서원경 청년부 양떼목장</span>
-                <span class="pasture-member-badge" id="pasture-member-count">1마리 🌿</span>
-              </div>
+              <div class="pasture-title">서원경 청년부 양떼목장</div>
               <div class="pasture-subtitle">말씀을 먹고 자라는 찰스들의 목장</div>
+            </div>
+          </div>
+
+          <!-- 점선 아래 컨트롤 바: 양 마리수(좌측), 발자국 & 검색 버튼(우측) -->
+          <div class="pasture-controls-bar">
+            <div class="pasture-controls-left">
+              <span class="pasture-member-badge" id="pasture-member-count">1마리 🌿</span>
             </div>
             <div class="pasture-header-actions">
               <!-- 폴라로이드 사진 버튼 (말씀 발자국) -->
@@ -1626,13 +1630,13 @@
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
-  <script src="data/bible-nt-bundle.js?v=7.2"></script>
-  <script src="js/bible-data.js?v=7.2"></script>
-  <script src="js/charles-pixel.js?v=7.2"></script>
-  <script src="js/auth.js?v=7.2"></script>
-  <script src="js/storage.js?v=7.2"></script>
-  <script src="js/talent.js?v=7.2"></script>
-  <script src="js/app.js?v=7.2"></script>
+  <script src="data/bible-nt-bundle.js?v=7.3"></script>
+  <script src="js/bible-data.js?v=7.3"></script>
+  <script src="js/charles-pixel.js?v=7.3"></script>
+  <script src="js/auth.js?v=7.3"></script>
+  <script src="js/storage.js?v=7.3"></script>
+  <script src="js/talent.js?v=7.3"></script>
+  <script src="js/app.js?v=7.3"></script>
 
 </body>
 </html>
