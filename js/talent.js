@@ -119,6 +119,14 @@ const TalentService = {
       if (claims.weekly_streak_cycle) minEarned += Math.max(0, parseInt(claims.weekly_streak_cycle, 10) || 0);
       if (claims.achieve_nt_complete) minEarned += 100;
 
+      // 가을 특별 이벤트 미션 보상 반영
+      if (claims.event_autumn_15 || claims.event_autumn_read_15) minEarned += 3;
+      for (const k in claims) {
+        if (!claims[k]) continue;
+        if (k.startsWith('event_autumn_morning_')) minEarned += 1;
+        else if (k.startsWith('event_autumn_night_')) minEarned += 1;
+      }
+
       const invStr = localStorage.getItem(this.getUserKey('inventory'));
       const inv = invStr ? JSON.parse(invStr) : [];
       let spent = 0;
@@ -717,8 +725,8 @@ const TalentService = {
       }
     }
 
-    this.saveClaimedRecord(claims);
     this.addTalents(quest.reward);
+    this.saveClaimedRecord(claims);
 
     // 즉시 클라우드에 퀘스트 수령 및 달란트 잔액을 확정 전송하여 다른 기기 중복 수령 방지
     if (typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
