@@ -699,8 +699,9 @@ const App = {
     document.querySelectorAll('.testament-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const test = btn.dataset.testament;
-        if (test === 'OT') {
-          this.showToast('아직 개발중이에요! 이번 테스트 버전에서는 신약만 읽을 수 있어요 🔒🐑');
+        const isNTComplete = StorageService.isNTComplete();
+        if (test === 'OT' && !isNTComplete) {
+          this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒🐑');
         }
         document.querySelectorAll('.testament-tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -1971,7 +1972,7 @@ const App = {
     let nextBook = null;
     let nextChapter = 1;
 
-    // 테스트 버전: 신약(NT)부터 이어 읽기 탐색
+    // 1순위: 신약(NT)부터 이어 읽기 탐색
     const ntBooks = BIBLE_BOOKS.filter(b => b.testament === 'NT');
     for (const book of ntBooks) {
       for (let c = 1; c <= book.chapters; c++) {
@@ -1984,19 +1985,48 @@ const App = {
       if (nextBook) break;
     }
 
+    // 신약 완독 시: 구약(OT) 이어 읽기 탐색 (구약 잠금 해제)
+    if (!nextBook && StorageService.isNTComplete()) {
+      const otBooks = BIBLE_BOOKS.filter(b => b.testament === 'OT');
+      for (const book of otBooks) {
+        for (let c = 1; c <= book.chapters; c++) {
+          if (!StorageService.isChapterRead(book.id, c)) {
+            nextBook = book;
+            nextChapter = c;
+            break;
+          }
+        }
+        if (nextBook) break;
+      }
+    }
+
     if (nextBook) {
       continueText.textContent = `${nextBook.name} ${nextChapter}장 이어 읽기 ➔`;
       continueBtn.onclick = () => {
         this.openReader(nextBook.id, nextChapter);
       };
     } else {
-      continueText.textContent = `축하합니다! 신약 27권 전체 완독 완료 👑`;
+      const stats = StorageService.getStats();
+      if (stats.totalRead >= stats.totalChapters) {
+        continueText.textContent = `축하합니다! 성경 66권 전체 완독 완료 👑`;
+      } else {
+        continueText.textContent = `축하합니다! 신약 27권 전체 완독 완료 👑`;
+      }
       continueBtn.onclick = null;
+    }
+  },
+
+  updateTestamentTabButtons() {
+    const isNTComplete = StorageService.isNTComplete();
+    const otBtn = document.querySelector('.testament-tab-btn[data-testament="OT"]');
+    if (otBtn) {
+      otBtn.textContent = isNTComplete ? '구약 (39) 📖' : '구약 (39) 🔒';
     }
   },
 
   // ==================== 성경 목록 탭 렌더링 ====================
   renderBibleList() {
+    this.updateTestamentTabButtons();
     const container = document.getElementById('bible-books-list');
     if (!container) return;
 
@@ -2016,15 +2046,17 @@ const App = {
     }
 
     const stats = StorageService.getStats();
+    const isNTComplete = StorageService.isNTComplete();
 
     container.innerHTML = filtered.map(book => {
       const isOT = book.testament === 'OT';
+      const isLocked = isOT && !isNTComplete;
       const readInBook = stats.bookProgress[book.id] || 0;
       const isComplete = readInBook === book.chapters;
 
-      const cardClass = isOT ? 'book-card locked-book' : 'book-card';
-      const badgeContent = isOT 
-        ? '<span class="book-lock-tag">🔒 준비중</span>' 
+      const cardClass = isLocked ? 'book-card locked-book' : 'book-card';
+      const badgeContent = isLocked 
+        ? '<span class="book-lock-tag">🔒 신약 완독 필요</span>' 
         : `<span>${readInBook}/${book.chapters}</span>${isComplete ? '<span class="book-complete-stamp">★완독</span>' : ''}<span class="accordion-arrow">▼</span>`;
 
       return `
@@ -2050,8 +2082,8 @@ const App = {
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book) return;
 
-    if (book.testament === 'OT') {
-      this.showToast('아직 개발중이에요! 이번 테스트 버전에서는 신약만 읽을 수 있어요 🔒🐑');
+    if (book.testament === 'OT' && !StorageService.isNTComplete()) {
+      this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒🐑');
       RetroAudio.click();
       return;
     }
@@ -2128,9 +2160,9 @@ const App = {
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book) return;
 
-    // 구약 차단 (이번 테스트 버전은 신약만)
-    if (book.testament === 'OT') {
-      this.showToast('아직 개발중이에요! 이번 테스트 버전에서는 신약만 읽을 수 있어요 🔒🐑');
+    // 구약 차단 (신약 미완독 시)
+    if (book.testament === 'OT' && !StorageService.isNTComplete()) {
+      this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒🐑');
       return;
     }
 
@@ -2181,7 +2213,8 @@ const App = {
     const bookId = this.currentReadingBookId;
     const chapter = this.currentReadingChapter;
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
-    if (!book || book.testament === 'OT') return;
+    if (!book) return;
+    if (book.testament === 'OT' && !StorageService.isNTComplete()) return;
 
     const wasNTCompleteBefore = StorageService.isNTComplete();
 
@@ -2210,7 +2243,8 @@ const App = {
     // 데이터 상에서 신약 27권 260장 전체가 방금 완독되었는지 정밀 확인
     const isNowNTComplete = StorageService.isNTComplete();
     if (!wasNTCompleteBefore && isNowNTComplete) {
-      this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 👑✨');
+      this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 이제 구약 39권이 열렸습니다! 👑✨');
+      this.updateTestamentTabButtons();
       const ntModal = document.getElementById('nt-grand-celebration-modal');
       if (ntModal) {
         ntModal.style.display = 'flex';
@@ -2219,15 +2253,22 @@ const App = {
       return;
     }
 
-    // 신약의 마지막 장(요한계시록 22장)인지 확인
+    // 신약의 마지막 장(요한계시록 22장)인 경우
     if (bookId === 'REV' && chapter === 22) {
       if (isNowNTComplete) {
-        this.showToast('🎉 축하합니다! 신약 27권 전체를 완독하셨습니다! 👑✨');
+        this.showToast('축하합니다! 신약 27권 전체를 완독하셨습니다! 이제 구약 말씀을 읽을 수 있어요 📖👑');
       } else {
         const stats = StorageService.getStats();
         const remaining = stats.ntTotal - stats.ntRead;
         this.showToast(`요한계시록의 마지막 장입니다! 📖 (아직 안 읽은 신약 말씀: ${remaining}장)`);
       }
+      this.updateReaderCompleteBtn();
+      return;
+    }
+
+    // 구약의 마지막 장(말라기 4장)인 경우
+    if (bookId === 'MAL' && chapter === 4) {
+      this.showToast('구약의 마지막 장(말라기 4장) 완독! 📖');
       this.updateReaderCompleteBtn();
       return;
     }
@@ -2241,7 +2282,7 @@ const App = {
       const bookId = this.currentReadingBookId;
       const chapter = this.currentReadingChapter;
       const book = BIBLE_BOOKS.find(b => b.id === bookId);
-      if (book && book.testament !== 'OT') {
+      if (book && (book.testament !== 'OT' || StorageService.isNTComplete())) {
         const wasNTCompleteBefore = StorageService.isNTComplete();
         const alreadyRead = StorageService.isChapterRead(bookId, chapter);
         if (!alreadyRead) {
@@ -2266,7 +2307,8 @@ const App = {
           // 데이터 상 신약 260장 전체 완독 달성 확인
           const isNowNTComplete = StorageService.isNTComplete();
           if (!wasNTCompleteBefore && isNowNTComplete) {
-            this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 👑✨');
+            this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 이제 구약 39권이 열렸습니다! 👑✨');
+            this.updateTestamentTabButtons();
             const ntModal = document.getElementById('nt-grand-celebration-modal');
             if (ntModal) {
               ntModal.style.display = 'flex';
@@ -2286,13 +2328,13 @@ const App = {
       const currentIdx = BIBLE_BOOKS.findIndex(b => b.id === this.currentReadingBookId);
       if (currentIdx < BIBLE_BOOKS.length - 1) {
         const nextBook = BIBLE_BOOKS[currentIdx + 1];
-        if (nextBook.testament === 'OT') {
-          this.showToast('신약의 마지막 장(요한계시록 22장)입니다! 👑');
+        if (nextBook.testament === 'OT' && !StorageService.isNTComplete()) {
+          this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒');
           return;
         }
         this.openReader(nextBook.id, 1);
       } else {
-        this.showToast('신약의 마지막 장(요한계시록 22장)입니다! 👑');
+        this.showToast('성경의 마지막 장(요한계시록 22장)입니다! 👑');
       }
     }
   },
@@ -2308,11 +2350,13 @@ const App = {
       const currentIdx = BIBLE_BOOKS.findIndex(b => b.id === this.currentReadingBookId);
       if (currentIdx > 0) {
         const prevBook = BIBLE_BOOKS[currentIdx - 1];
-        if (prevBook.testament === 'OT') {
-          this.showToast('신약의 첫 장(마태복음 1장)입니다! 구약은 개발 중이에요 🔒');
+        if (prevBook.testament === 'OT' && !StorageService.isNTComplete()) {
+          this.showToast('신약의 첫 장(마태복음 1장)입니다! 신약을 다 읽으면 구약을 읽을 수 있어요 🔒');
           return;
         }
         this.openReader(prevBook.id, prevBook.chapters);
+      } else {
+        this.showToast('성경의 첫 장(창세기 1장)입니다! 📖');
       }
     }
   },
@@ -2339,7 +2383,8 @@ const App = {
     const bookId = this.currentReadingBookId;
     const chapter = this.currentReadingChapter;
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
-    if (!book || book.testament === 'OT') return;
+    if (!book) return;
+    if (book.testament === 'OT' && !StorageService.isNTComplete()) return;
 
     const wasNTCompleteBefore = StorageService.isNTComplete();
     const alreadyRead = StorageService.isChapterRead(bookId, chapter);
@@ -2366,7 +2411,8 @@ const App = {
       // 데이터 상 신약 260장 전체 완독 달성 확인
       const isNowNTComplete = StorageService.isNTComplete();
       if (!wasNTCompleteBefore && isNowNTComplete) {
-        this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 👑✨');
+        this.showToast('🎉 축하합니다! 신약 27권(260장) 전체를 완독하셨습니다! 이제 구약 39권이 열렸습니다! 👑✨');
+        this.updateTestamentTabButtons();
         const ntModal = document.getElementById('nt-grand-celebration-modal');
         if (ntModal) {
           ntModal.style.display = 'flex';
@@ -2379,16 +2425,19 @@ const App = {
     const completeBtn = document.getElementById('reader-btn-complete-next');
     if (!completeBtn) return;
 
-    const isLast = this.currentReadingBookId === 'REV' && this.currentReadingChapter === 22;
+    const isRevLast = this.currentReadingBookId === 'REV' && this.currentReadingChapter === 22;
+    const isMalLast = this.currentReadingBookId === 'MAL' && this.currentReadingChapter === 4;
     const isRead = StorageService.isChapterRead(this.currentReadingBookId, this.currentReadingChapter);
     const isNTComplete = StorageService.isNTComplete();
 
-    if (isLast) {
+    if (isRevLast) {
       if (isNTComplete) {
         completeBtn.textContent = '✓ 신약 전체 완독 완료 👑';
       } else {
         completeBtn.textContent = isRead ? '✓ 요한계시록 22장 완독됨' : '✓ 다 읽음 (마지막 장)';
       }
+    } else if (isMalLast) {
+      completeBtn.textContent = isRead ? '✓ 말라기 4장 완독됨 📖' : '✓ 다 읽음 (구약 마지막 장)';
     } else {
       completeBtn.textContent = isRead ? '다음 장으로 ➔' : '✓ 다 읽고 다음 장으로 ➔';
     }
@@ -2727,6 +2776,21 @@ const App = {
           }
         }
         if (nextBook) break;
+      }
+
+      // 신약 완독 시: 구약 다음 장 탐색
+      if (!nextBook && StorageService.isNTComplete()) {
+        const otBooks = BIBLE_BOOKS.filter(b => b.testament === 'OT');
+        for (const book of otBooks) {
+          for (let c = 1; c <= book.chapters; c++) {
+            if (!StorageService.isChapterRead(book.id, c)) {
+              nextBook = book;
+              nextChapter = c;
+              break;
+            }
+          }
+          if (nextBook) break;
+        }
       }
     }
 
