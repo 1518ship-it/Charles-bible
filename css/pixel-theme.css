@@ -714,18 +714,18 @@ body {
   image-rendering: pixelated;
 }
 
-/* 흙 블록 레이어 (갈색 토양 픽셀 & 3명 이름 배치) */
+/* 흙 블록 레이어 (갈색 토양 픽셀 & 3명 이름 배치) - 상하 여백 슬림화 */
 .pasture-platform-dirt {
-  height: 38px;
+  height: 26px;
   background-color: #5c3417;
   background-image:
     radial-gradient(#42220b 16%, transparent 16%),
     radial-gradient(#7c4a24 16%, transparent 16%);
   background-size: 16px 16px;
   background-position: 0 0, 8px 8px;
-  border-bottom: 3px solid #231207;
+  border-bottom: 2px solid #231207;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
   position: relative;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
@@ -737,16 +737,18 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 0 4px;
+  padding: 0 2px;
   cursor: pointer;
   user-select: none;
+  min-width: 0;
 }
 
 .pasture-char-name {
   color: #ffffff;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: -0.3px;
+  line-height: 1.1;
   text-shadow:
     1px 1px 0 #1b0e06,
     -1px -1px 0 #1b0e06,
@@ -756,7 +758,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 92%;
+  max-width: 95%;
   text-align: center;
 }
 
@@ -776,74 +778,124 @@ body {
   font-weight: 600;
 }
 
-/* 선반 아래: 3개의 반투명 캡슐 버튼 그리드 */
+/* 선반 아래: 3개의 반투명 캡슐 버튼 그리드 (모바일 화면 밖 밀림 방지) */
 .pasture-shelf-pills {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 8px;
-  align-items: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 6px;
+  gap: 4px;
+  align-items: stretch;
 }
 
 .pasture-pill-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0;
+  min-width: 0;
 }
 
 .pasture-pill-btn {
-  background: rgba(28, 28, 32, 0.78);
+  background: rgba(28, 28, 32, 0.82);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-  border-radius: 999px;
-  padding: 5px 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  padding: 4px 3px;
   color: #ffffff;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 1px;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  max-width: 95%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 38px;
+  text-align: center;
 }
 
 .pasture-pill-btn:hover {
-  background: rgba(48, 48, 54, 0.92);
+  background: rgba(48, 48, 54, 0.94);
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.45);
 }
 
 .pasture-pill-btn:active {
-  transform: scale(0.94);
+  transform: scale(0.95);
+}
+
+/* 오늘 n장 상단 행 */
+.pasture-pill-top {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #86efac;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* 응원 하단 행 */
+.pasture-pill-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* 단일 텍스트 행 (응원 🐑, + 초대 등) */
+.pasture-pill-single {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .pasture-pill-btn.is-me {
   background: rgba(32, 28, 16, 0.94);
   border: 1.5px solid #f59e0b;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35);
+}
+
+.pasture-pill-btn.is-me .pasture-pill-top {
+  color: #fde047;
+}
+
+.pasture-pill-btn.is-me .pasture-pill-sub,
+.pasture-pill-btn.is-me .pasture-pill-single {
   color: #fef08a;
-  font-weight: 800;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
 }
 
 .pasture-pill-btn.is-me:hover {
   background: rgba(48, 42, 24, 0.98);
   border-color: #fbbf24;
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 5px 14px rgba(245, 158, 11, 0.5);
 }
 
 .pasture-pill-btn.empty-btn {
   background: rgba(46, 125, 50, 0.2);
   border-color: rgba(46, 125, 50, 0.4);
+}
+
+.pasture-pill-btn.empty-btn .pasture-pill-single {
   color: #a5d6a7;
   font-size: 11px;
 }

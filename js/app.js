@@ -1621,35 +1621,55 @@ const App = {
         `;
       }).join('');
 
-      // 3) 하단 반투명 알약 캡슐 버튼 3개
+      // 3) 하단 반투명 알약 캡슐 버튼 3개 (오늘 n장 / 응원 2줄 분리)
       const pillsHtml = shelf.map(f => {
         if (f.isEmpty) {
           return `
             <div class="pasture-pill-cell">
               <button class="pasture-pill-btn empty-btn" onclick="event.stopPropagation(); App.shareOrInviteFriend()" title="친구 초대하기">
-                + 초대
+                <span class="pasture-pill-single">+ 초대</span>
               </button>
             </div>
           `;
         }
         if (f.isMe) {
-          const todayText = f.todayRead > 0 ? `오늘 ${f.todayRead}장 ⭐` : '내 찰스 🌿';
-          return `
-            <div class="pasture-pill-cell">
-              <button class="pasture-pill-btn is-me" onclick="event.stopPropagation(); App.showToast('오늘도 말씀 안에서 승리하세요! 💪✨')">
-                ${todayText}
-              </button>
-            </div>
-          `;
+          if (f.todayRead > 0) {
+            return `
+              <div class="pasture-pill-cell">
+                <button class="pasture-pill-btn is-me" onclick="event.stopPropagation(); App.showToast('오늘도 말씀 안에서 승리하세요! 💪✨')">
+                  <span class="pasture-pill-top">오늘 ${f.todayRead}장</span>
+                  <span class="pasture-pill-sub">내 찰스 ⭐</span>
+                </button>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="pasture-pill-cell">
+                <button class="pasture-pill-btn is-me" onclick="event.stopPropagation(); App.showToast('오늘도 말씀 안에서 승리하세요! 💪✨')">
+                  <span class="pasture-pill-single">내 찰스 🌿</span>
+                </button>
+              </div>
+            `;
+          }
         } else {
-          const pillLabel = f.todayRead > 0 ? `오늘 ${f.todayRead}장 · 응원🌿` : '응원 🐑';
-          return `
-            <div class="pasture-pill-cell">
-              <button class="pasture-pill-btn" onclick="event.stopPropagation(); App.sendCheer('${f.id}', '${f.callName}', event)" title="${f.callName}님에게 응원과 풀 보내기">
-                ${pillLabel}
-              </button>
-            </div>
-          `;
+          if (f.todayRead > 0) {
+            return `
+              <div class="pasture-pill-cell">
+                <button class="pasture-pill-btn" onclick="event.stopPropagation(); App.sendCheer('${f.id}', '${f.callName}', event)" title="${f.callName}님에게 응원과 풀 보내기">
+                  <span class="pasture-pill-top">오늘 ${f.todayRead}장</span>
+                  <span class="pasture-pill-sub">응원 🌿</span>
+                </button>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="pasture-pill-cell">
+                <button class="pasture-pill-btn" onclick="event.stopPropagation(); App.sendCheer('${f.id}', '${f.callName}', event)" title="${f.callName}님에게 응원과 풀 보내기">
+                  <span class="pasture-pill-single">응원 🐑</span>
+                </button>
+              </div>
+            `;
+          }
         }
       }).join('');
 
