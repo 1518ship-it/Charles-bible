@@ -1403,70 +1403,47 @@ const PRAISE_BANNER_THEMES = {
 
 /**
  * 머리 위 응원 배너 렌더러
- * - 테두리는 클래식 8비트 픽셀 테두리
+ * - 검정색 테두리 없이 산뜻하고 화사한 테마 전용 보더 & 파스텔 배경
  * - 찰스 머리 위로 시원하게 둥둥 뜨는 플로팅 배너 (지지대 없이 깔끔한 연출)
- * - 친구 화면에서도 또렷하게 읽히는 대형 폰트와 넓은 배너 규격 (y: -6.0 ~ -1.2)
+ * - 친구 화면에서도 또렷하게 읽히는 초대형 900 Black 폰트 (y: -6.0 ~ -1.2)
  */
 function renderAccessoryHeaderBanner(itemId, scale) {
   const theme = (typeof PRAISE_BANNER_THEMES !== 'undefined') ? PRAISE_BANNER_THEMES[itemId] : null;
   if (!theme) return '';
 
   let r = '';
-  const darkOutline = '#18181b';
 
-  // 1. 레트로 8-bit 픽셀 테두리 (Outer Stepped Outline, x: 0.5~23.5, y: -6.0 ~ -1.2)
-  // 상단 외곽 가로선
-  for (let x = 1.5; x <= 22.5; x++) {
-    r += `<rect x="${x * scale}" y="${-6.0 * scale}" width="${scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
-  }
-  // 하단 외곽 가로선
-  for (let x = 1.5; x <= 22.5; x++) {
-    r += `<rect x="${x * scale}" y="${-1.2 * scale}" width="${scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
-  }
-  // 좌측 외곽 세로선
-  for (let y = -5.2; y <= -2.0; y += 0.8) {
-    r += `<rect x="${0.5 * scale}" y="${y * scale}" width="${0.8 * scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
-  }
-  // 우측 외곽 세로선
-  for (let y = -5.2; y <= -2.0; y += 0.8) {
-    r += `<rect x="${22.7 * scale}" y="${y * scale}" width="${0.8 * scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
-  }
+  // 1. 검정 테두리 없는 산뜻하고 세련된 테마 전용 컨테이너 (x: 0.5~23.5, y: -6.0 ~ -1.2, width: 23, height: 4.8)
+  r += `<rect x="${0.5 * scale}" y="${-6.0 * scale}" width="${23.0 * scale}" height="${4.8 * scale}" rx="${0.6 * scale}" fill="${theme.bg}" stroke="${theme.border}" stroke-width="${0.75 * scale}" />`;
 
-  // 코너 베벨 픽셀 (모서리 스텝 연결)
-  r += `<rect x="${1.2 * scale}" y="${-5.6 * scale}" width="${0.7 * scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${22.1 * scale}" y="${-5.6 * scale}" width="${0.7 * scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${1.2 * scale}" y="${-1.6 * scale}" width="${0.7 * scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${22.1 * scale}" y="${-1.6 * scale}" width="${0.7 * scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
+  // 2. 상/하단 은은한 마이크로 하이라이트 액센트
+  r += `<rect x="${1.2 * scale}" y="${-5.6 * scale}" width="${21.6 * scale}" height="${0.25 * scale}" fill="${theme.border}" opacity="0.35" />`;
+  r += `<rect x="${1.2 * scale}" y="${-1.65 * scale}" width="${21.6 * scale}" height="${0.25 * scale}" fill="${theme.border}" opacity="0.35" />`;
 
-  // 2. 내부 배경 채우기 (High-legibility pastel/clean background, x: 1.2~22.8, y: -5.3~-1.7)
-  r += `<rect x="${1.2 * scale}" y="${-5.3 * scale}" width="${21.6 * scale}" height="${3.7 * scale}" fill="${theme.bg}" />`;
+  // 3. 좌우 미니멀 리본 팁 포인트 (테마 색상)
+  r += `<rect x="${0.1 * scale}" y="${-3.9 * scale}" width="${0.6 * scale}" height="${1.0 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${23.3 * scale}" y="${-3.9 * scale}" width="${0.6 * scale}" height="${1.0 * scale}" fill="${theme.border}" />`;
 
-  // 3. 안쪽 컬러 포인트 라인 (상/하단 테마 색상 엣지)
-  r += `<rect x="${1.5 * scale}" y="${-5.3 * scale}" width="${21.0 * scale}" height="${0.4 * scale}" fill="${theme.border}" />`;
-  r += `<rect x="${1.5 * scale}" y="${-2.0 * scale}" width="${21.0 * scale}" height="${0.4 * scale}" fill="${theme.border}" />`;
-
-  // 4. 좌우 리본 팁 날개 포인트
-  r += `<rect x="${0.0 * scale}" y="${-3.8 * scale}" width="${0.6 * scale}" height="${1.0 * scale}" fill="${theme.border}" />`;
-  r += `<rect x="${23.4 * scale}" y="${-3.8 * scale}" width="${0.6 * scale}" height="${1.0 * scale}" fill="${theme.border}" />`;
-
-  // 5. 찬양 이름 텍스트 렌더링 (친구 화면에서도 선명하게 읽히는 초대형 폰트)
-  let fontSize = scale * 1.5;
+  // 4. 찬양 이름 텍스트 렌더링 (글자 크기 한 번 더 대폭 확대, 가독성 극대화)
+  let fontSize = scale * 1.6;
   let letterSpacing = '-0.2px';
   if (theme.title.length <= 4) {
-    fontSize = scale * 2.35;
+    fontSize = scale * 2.85;
   } else if (theme.title.length <= 7) {
-    fontSize = scale * 2.0;
+    fontSize = scale * 2.45;
   } else if (theme.title.length <= 9) {
-    fontSize = scale * 1.75;
+    fontSize = scale * 2.15;
   } else if (theme.title.length <= 11) {
-    fontSize = scale * 1.55;
-    letterSpacing = '-0.3px';
+    fontSize = scale * 1.85;
+    letterSpacing = '-0.35px';
   } else {
-    fontSize = scale * 1.35;
-    letterSpacing = '-0.4px';
+    // 12자 이상 (예: 우리가 주를 더욱 사랑하고)
+    fontSize = scale * 1.6;
+    letterSpacing = '-0.45px';
   }
 
-  r += `<text x="${12 * scale}" y="${-3.45 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="${letterSpacing}">${theme.title}</text>`;
+  // Y축 정중앙 (-6.0 + 4.8 / 2 = -3.6)에 맞춘 완벽 수직 센터링
+  r += `<text x="${12 * scale}" y="${-3.5 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="${letterSpacing}">${theme.title}</text>`;
 
   return r;
 }
