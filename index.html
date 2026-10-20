@@ -24,7 +24,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=8.4">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=8.5">
 </head>
 <body>
 
@@ -214,11 +214,25 @@
 
         <!-- 홈 화면 하단 플로팅 액션 바 (하단 메뉴 바로 위 라인) -->
         <div class="home-bottom-actions">
-          <!-- 하단 좌측: 달란트 버튼 (상점 & 옷장) -->
-          <button id="btn-home-talents" class="home-talent-btn" type="button" title="달란트 상점 & 옷장">
-            <span class="talent-coin-icon"><span class="pixel-wooden-fence"></span></span>
-            <span id="home-talent-count" class="talent-count-num">0</span>
-          </button>
+          <!-- 하단 좌측: 느낌표(찬양집회 스페셜 설문) & 달란트 버튼 컬럼 -->
+          <div class="home-left-actions">
+            <!-- 🎶 찬양집회 스페셜 설문 이벤트 퀵 버튼 (느낌표) -->
+            <button id="btn-home-praise-event" class="home-praise-event-btn" type="button" title="찬양집회 스페셜 설문 이벤트 참여하기" onclick="window.location.href='praise-event.html'">
+              <!-- 픽셀 느낌표 아이콘 -->
+              <svg class="pixel-icon" viewBox="0 0 10 10" width="16" height="16" shape-rendering="crispEdges">
+                <rect x="4" y="1" width="2" height="5" fill="currentColor" />
+                <rect x="4" y="7" width="2" height="2" fill="currentColor" />
+              </svg>
+              <!-- 미니 음표 뱃지 -->
+              <span class="praise-event-badge">🎵</span>
+            </button>
+
+            <!-- 달란트 버튼 (상점 & 옷장) -->
+            <button id="btn-home-talents" class="home-talent-btn" type="button" title="달란트 상점 & 옷장">
+              <span class="talent-coin-icon"><span class="pixel-wooden-fence"></span></span>
+              <span id="home-talent-count" class="talent-count-num">0</span>
+            </button>
+          </div>
 
           <!-- 하단 우측: 두루마리 퀘스트 버튼 -->
           <button id="btn-home-quests" class="home-quest-btn" type="button" title="말씀 퀘스트 & 업적">
@@ -1639,13 +1653,13 @@
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
-  <script src="data/bible-nt-bundle.js?v=8.4"></script>
-  <script src="js/bible-data.js?v=8.4"></script>
-  <script src="js/charles-pixel.js?v=8.4"></script>
-  <script src="js/auth.js?v=8.4"></script>
-  <script src="js/storage.js?v=8.4"></script>
-  <script src="js/talent.js?v=8.4"></script>
-  <script src="js/app.js?v=8.4"></script>
+  <script src="data/bible-nt-bundle.js?v=8.5"></script>
+  <script src="js/bible-data.js?v=8.5"></script>
+  <script src="js/charles-pixel.js?v=8.5"></script>
+  <script src="js/auth.js?v=8.5"></script>
+  <script src="js/storage.js?v=8.5"></script>
+  <script src="js/talent.js?v=8.5"></script>
+  <script src="js/app.js?v=8.5"></script>
 
 </body>
 </html>

@@ -632,6 +632,14 @@ const App = {
       });
     }
 
+    // ==================== 찬양집회 스페셜 설문 이벤트 화면 이동 (느낌표 버튼) ====================
+    const btnHomePraiseEvent = document.getElementById('btn-home-praise-event');
+    if (btnHomePraiseEvent) {
+      btnHomePraiseEvent.addEventListener('click', () => {
+        window.location.href = 'praise-event.html';
+      });
+    }
+
     // ==================== 달란트 상점 & 옷장 전용 화면 열기/닫기 ====================
     const btnHomeTalents = document.getElementById('btn-home-talents');
     const btnBackFromShop = document.getElementById('btn-back-from-shop');
