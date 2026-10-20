@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Charles - 찬양집회 콜라보 이벤트</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3.5">
+  <link rel="alternate icon" type="image/png" href="favicon-32x32.png?v=3.5">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.5">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="css/pixel-theme.css?v=7.8">
+  <link rel="stylesheet" href="css/praise-event.css?v=1.0">
+</head>
+<body>
+
+  <!-- 모바일 쉘 컨테이너 -->
+  <div class="event-wrapper">
+
+    <!-- 🧪 관리자 전용 테스트 도구 바 -->
+    <div class="admin-test-bar">
+      <div class="admin-test-title">
+        <span>🧪</span>
+        <span>관리자 테스트 모드</span>
+      </div>
+      <div class="admin-test-actions">
+        <select id="admin-user-select" class="btn-test-action" title="테스트할 성도 계정 선택"></select>
+        <button type="button" class="btn-test-action danger" onclick="PraiseEventApp.adminResetVote()">🔄 투표 초기화</button>
+      </div>
+    </div>
+
+    <!-- 상단 네비게이션 헤더 -->
+    <header class="event-header">
+      <a href="index.html" class="btn-header-back">
+        ⬅ 메인 앱 (홈)
+      </a>
+      <div id="event-session-chip" class="event-session-chip">
+        <span>🐑</span>
+        <span>참여자: <strong>성도님</strong></span>
+      </div>
+    </header>
+
+    <!-- 이벤트 타이틀 히어로 -->
+    <section class="event-hero">
+      <div class="event-badge">✨ 청년부 찬양집회 스페셜 콜라보</div>
+      <h1>최애 찬양을 골라주세요! 🎶</h1>
+      <p>
+        가장 은혜받고 사모하는 찬양을 1곡 선택하시면<br>
+        그 찬양의 <strong>스페셜 응원 배너</strong>를 찰스 머리 위에 씌워드려요! 🐑👑
+      </p>
+    </section>
+
+    <!-- ==================== 1. 미참여 계정: 찬양 선택 및 실시간 피팅 폼 ==================== -->
+    <main id="section-voting-form">
+      <!-- 찰스 무대 라이브 피팅룸 -->
+      <section class="stage-fitting-box">
+        <div class="stage-light-glow"></div>
+        <div id="stage-avatar-slot" class="stage-avatar-container">
+          <!-- 찰스 픽셀 아바타 실시간 렌더링 -->
+        </div>
+        <div id="stage-selected-title" class="stage-selected-title">주 예수 나의 산 소망</div>
+        <div>
+          <span id="stage-selected-banner-tag" class="stage-selected-banner-tag">
+            <span>하늘빛 소망 ✝️</span>
+            <span>산 소망 머리띠 배너</span>
+          </span>
+        </div>
+        <div class="stage-hint-text">💡 아래 13곡을 누르면 찰스 머리 위 배너가 실시간으로 바뀝니다!</div>
+      </section>
+
+      <!-- 찬양곡 리스트 (13곡) -->
+      <div class="songs-grid-title">
+        <span>🎵 찬양집회 수록곡 (13곡)</span>
+        <span class="songs-count-badge">1곡 선택</span>
+      </div>
+      <div id="songs-list" class="songs-list">
+        <!-- JS에서 13곡 카드 렌더링 -->
+      </div>
+
+      <!-- 하단 고정 제출 버튼 -->
+      <div class="bottom-submit-bar">
+        <button id="btn-submit-vote" class="btn-submit-vote" type="button" onclick="PraiseEventApp.submitVote()" disabled>
+          찬양곡을 선택해 주세요
+        </button>
+      </div>
+    </main>
+
+    <!-- ==================== 2. [옵션 B] 참여 완료 계정: 내 배너 및 득표율 랭킹 차트 ==================== -->
+    <main id="section-voted-result" style="display: none;">
+      <!-- 참여 완료 안내 & 내 찰스 배너 프리뷰 -->
+      <section class="voted-result-box">
+        <div class="voted-badge">✓ 찬양집회 설문 참여 완료!</div>
+        <h2 class="voted-title">은혜로운 찬양의 배너를 받으셨어요!</h2>
+        <p class="voted-subtitle">
+          선택하신 찬양의 응원 배너가 찰스 머리 위에 착용되었습니다.<br>
+          메인 앱과 친구들의 양떼목장에서도 확인하실 수 있습니다! 🐑✨
+        </p>
+
+        <div id="voted-stage-avatar" class="stage-avatar-container">
+          <!-- 착용된 찰스 아바타 -->
+        </div>
+
+        <div class="voted-chosen-card">
+          <div style="font-size: 26px;">🎶</div>
+          <div>
+            <div id="voted-chosen-song-name" style="font-size: 15px; font-weight: 800; color: #ffffff;"></div>
+            <div id="voted-chosen-banner-name" style="font-size: 12px; color: var(--accent-gold); margin-top: 2px;"></div>
+          </div>
+        </div>
+
+        <a href="index.html" class="btn-submit-vote" style="text-decoration: none; margin-top: 10px;">
+          <span>📖</span>
+          <span>말씀양 찰스와 성경 읽으러 가기</span>
+        </a>
+      </section>
+
+      <!-- 실시간 13곡 찬양 득표율 랭킹 차트 -->
+      <section class="poll-ranking-section">
+        <div class="poll-ranking-header">
+          <div class="poll-ranking-title">
+            <span>📊</span>
+            <span>실시간 찬양 득표율 랭킹</span>
+          </div>
+          <div id="poll-total-count" class="poll-total-votes"></div>
+        </div>
+        <div id="poll-ranking-list" class="poll-list">
+          <!-- 실시간 집계 1~13위 막대 그래프 -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================== 축하 팝업 모달 ==================== -->
+    <div id="event-success-modal" class="event-modal-overlay">
+      <div class="event-modal-card">
+        <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+        <h2 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">배너 수령 및 착용 완료!</h2>
+        <p style="font-size: 13px; color: #a1a1aa; margin-bottom: 14px; line-height: 1.6;">
+          <strong id="modal-song-title" style="color: var(--accent-gold);"></strong> 찬양을 위한<br>
+          <strong id="modal-banner-name" style="color: #ffffff;"></strong>가 찰스 머리 위에 장착되었습니다!
+        </p>
+        <div id="modal-celebrate-avatar" class="modal-celebrate-avatar"></div>
+        <button type="button" class="btn-modal-primary" onclick="PraiseEventApp.closeSuccessModal()">
+          확인 및 실시간 득표율 보기 ➔
+        </button>
+        <a href="index.html" class="btn-modal-secondary" style="display: block; text-decoration: none;">
+          메인 앱(홈)으로 이동
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Supabase 클라이언트 SDK & 설정 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+
+  <!-- 핵심 모듈 로드: 인증 -> 스토리지 -> 달란트/아이템 -> 그래픽 -> 이벤트 컨트롤러 -->
+  <script src="js/auth.js?v=7.8"></script>
+  <script src="js/storage.js?v=7.8"></script>
+  <script src="js/talent.js?v=7.8"></script>
+  <script src="js/charles-pixel.js?v=7.8"></script>
+  <script src="js/praise-event.js?v=1.0"></script>
+
+</body>
+</html>

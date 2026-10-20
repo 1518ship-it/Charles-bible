@@ -1,0 +1,644 @@
+/**
+ * Charles' Bible - 찬양집회 콜라보 이벤트 전용 스타일 (Praise Concert Aesthetic)
+ * [콘서트 무대 스포트라이트, 네온 글로우, 픽셀 글래스모피즘, 실시간 피팅룸]
+ */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --bg-color: #09090b;
+  --card-bg: rgba(24, 24, 27, 0.85);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --accent-gold: #facc15;
+  --accent-cyan: #38bdf8;
+  --accent-pink: #ec4899;
+  --accent-purple: #a855f7;
+  --accent-green: #10b981;
+  --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(ellipse at 50% -10%, rgba(168, 85, 247, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 40%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  line-height: 1.5;
+  letter-spacing: -0.2px;
+}
+
+/* 모바일 쉘 컨테이너 */
+.event-wrapper {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  padding: 16px 16px 80px 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 관리자 테스트 툴바 */
+.admin-test-bar {
+  background: rgba(39, 39, 42, 0.95);
+  border: 1.5px dashed #facc15;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.admin-test-title {
+  color: #facc15;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.admin-test-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.btn-test-action {
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f4f4f5;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.btn-test-action:hover {
+  background: #27272a;
+  border-color: #facc15;
+}
+
+.btn-test-action.danger {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+.btn-test-action.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* 상단 네비게이션 헤더 */
+.event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.btn-header-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f4f4f5;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-header-back:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateX(-2px);
+}
+
+.event-session-chip {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.event-session-chip strong {
+  color: var(--accent-gold);
+}
+
+/* 히어로 타이틀 섹션 */
+.event-hero {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.event-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(236, 72, 153, 0.2));
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  color: var(--accent-gold);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.event-hero h1 {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 40%, #facc15 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+
+.event-hero p {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 찰스 라이브 피팅룸 무대 (Live Stage) */
+.stage-fitting-box {
+  background: radial-gradient(circle at 50% 60%, rgba(250, 204, 21, 0.18) 0%, rgba(24, 24, 27, 0.9) 65%);
+  border: 1.5px solid rgba(250, 204, 21, 0.35);
+  border-radius: 16px;
+  padding: 16px 14px;
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.stage-light-glow {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.4) 0%, transparent 80%);
+  pointer-events: none;
+}
+
+.stage-avatar-container {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cheer-bounce 2.6s ease-in-out infinite;
+}
+
+@keyframes cheer-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.stage-selected-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.stage-selected-banner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--accent-gold);
+}
+
+.stage-hint-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* 13곡 찬양 리스트 그리드 */
+.songs-grid-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.songs-count-badge {
+  font-size: 11px;
+  color: var(--accent-gold);
+  background: rgba(250, 204, 21, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+
+.songs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.song-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  user-select: none;
+}
+
+.song-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(39, 39, 42, 0.9);
+}
+
+.song-card.selected {
+  border-color: var(--card-selected-color, var(--accent-gold));
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.12) 0%, rgba(24, 24, 27, 0.95) 100%);
+  box-shadow: 0 0 16px var(--card-selected-glow, rgba(250, 204, 21, 0.35));
+}
+
+.song-num {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.song-card.selected .song-num {
+  background: var(--card-selected-color, var(--accent-gold));
+  color: #111111;
+}
+
+.song-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.song-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.song-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f4f4f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-banner-preview {
+  flex-shrink: 0;
+  width: 48px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-check-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: transparent;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.song-card.selected .song-check-icon {
+  background: var(--card-selected-color, var(--accent-gold));
+  border-color: var(--card-selected-color, var(--accent-gold));
+  color: #111111;
+  font-weight: 900;
+}
+
+/* 고정 하단 제출 바 */
+.bottom-submit-bar {
+  position: sticky;
+  bottom: 12px;
+  background: rgba(18, 18, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+.btn-submit-vote {
+  width: 100%;
+  background: linear-gradient(135deg, #f59e0b, #ec4899 50%, #8b5cf6 100%);
+  border: none;
+  color: #ffffff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-submit-vote:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+}
+
+.btn-submit-vote:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================
+ * 옵션 B: 이미 투표 완료한 계정 전용 뷰 (Result View)
+ * ========================================== */
+.voted-result-box {
+  background: var(--card-bg);
+  border: 1.5px solid rgba(250, 204, 21, 0.4);
+  border-radius: 16px;
+  padding: 20px 16px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.voted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #22c55e;
+  color: #4ade80;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.voted-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.voted-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.voted-chosen-card {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+/* 실시간 득표율 랭킹 차트 */
+.poll-ranking-section {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 24px;
+}
+
+.poll-ranking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.poll-ranking-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.poll-total-votes {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.poll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poll-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.poll-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.poll-item-rank {
+  font-weight: 800;
+  width: 22px;
+  display: inline-block;
+  color: var(--text-muted);
+}
+.poll-item.rank-1 .poll-item-rank { color: #facc15; }
+.poll-item.rank-2 .poll-item-rank { color: #e2e8f0; }
+.poll-item.rank-3 .poll-item-rank { color: #f97316; }
+
+.poll-item-title {
+  font-weight: 600;
+  color: #f4f4f5;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 8px;
+}
+
+.poll-item-votes {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.poll-bar-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.poll-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(90deg, var(--bar-color, #facc15) 0%, rgba(255, 255, 255, 0.8) 100%);
+}
+
+/* 모달 팝업 */
+.event-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.event-modal-card {
+  background: #18181b;
+  border: 1.5px solid rgba(250, 204, 21, 0.5);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 20px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  animation: modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modal-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-celebrate-avatar {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 12px auto;
+  animation: cheer-bounce 2s infinite ease-in-out;
+}
+
+.btn-modal-primary {
+  width: 100%;
+  background: #facc15;
+  color: #111111;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+}
+
+.btn-modal-primary:hover {
+  background: #fde047;
+}
+
+.btn-modal-secondary {
+  width: 100%;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btn-modal-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}

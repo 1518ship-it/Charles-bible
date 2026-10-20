@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Charles' Bible - 찰스 단계별 그래픽 및 픽셀 악세사리 렌더러
  * [공식 신규 1~5단계 찰스 및 가을/기본 컬렉션 24x24 완벽 핏 지원]
  */
@@ -1329,6 +1329,172 @@ function renderAutumnAccessory(itemId, scale) {
   return r;
 }
 
+// ==========================================
+// 🎶 찬양집회 머리 위 13종 응원 배너 (Header Floating Banner)
+// ==========================================
+const PRAISE_BANNER_THEMES = {
+  'banner_living_hope': {
+    primary: '#38bdf8', dark: '#0284c7', light: '#bae6fd',
+    emblem: [
+      [12, 1, '#ffffff'],
+      [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'],
+      [12, 3, '#ffffff']
+    ]
+  },
+  'banner_king_god': {
+    primary: '#eab308', dark: '#ca8a04', light: '#fef08a',
+    emblem: [
+      [10, 1, '#ffffff'], [12, 1, '#ffffff'], [14, 1, '#ffffff'],
+      [10, 2, '#ca8a04'], [11, 2, '#ffffff'], [12, 2, '#ca8a04'], [13, 2, '#ffffff'], [14, 2, '#ca8a04'],
+      [10, 3, '#78350f'], [11, 3, '#78350f'], [12, 3, '#78350f'], [13, 3, '#78350f'], [14, 3, '#78350f']
+    ]
+  },
+  'banner_thank_god': {
+    primary: '#f97316', dark: '#c2410c', light: '#ffedd5',
+    emblem: [
+      [12, 1, '#fef08a'],
+      [11, 2, '#ea580c'], [12, 2, '#ffffff'], [13, 2, '#ea580c'],
+      [11, 3, '#c2410c'], [12, 3, '#fef08a'], [13, 3, '#c2410c']
+    ]
+  },
+  'banner_rock_ages': {
+    primary: '#b45309', dark: '#78350f', light: '#fde68a',
+    emblem: [
+      [11, 1, '#f5f5f4'], [12, 1, '#e7e5e4'], [13, 1, '#d6d3d1'],
+      [10, 2, '#f5f5f4'], [11, 2, '#e7e5e4'], [12, 2, '#d6d3d1'], [13, 2, '#a8a29e'], [14, 2, '#78716c'],
+      [10, 3, '#78716c'], [11, 3, '#78716c'], [12, 3, '#57534e'], [13, 3, '#44403c'], [14, 3, '#292524']
+    ]
+  },
+  'banner_only_jesus': {
+    primary: '#2563eb', dark: '#1d4ed8', light: '#ffffff',
+    emblem: [
+      [12, 1, '#ffffff'],
+      [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'],
+      [12, 3, '#ffffff']
+    ]
+  },
+  'banner_whisper_love': {
+    primary: '#ec4899', dark: '#be185d', light: '#fce7f3',
+    emblem: [
+      [11, 1, '#ffffff'], [13, 1, '#ffffff'],
+      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
+      [11, 3, '#ffffff'], [12, 3, '#ffffff'], [13, 3, '#ffffff']
+    ]
+  },
+  'banner_all_my_possession': {
+    primary: '#10b981', dark: '#047857', light: '#a7f3d0',
+    emblem: [
+      [10, 1, '#ffffff'], [14, 1, '#ffffff'],
+      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
+      [11, 3, '#ffffff'], [12, 3, '#ffffff'], [13, 3, '#ffffff']
+    ]
+  },
+  'banner_love_more': {
+    primary: '#f43f5e', dark: '#be123c', light: '#ffe4e6',
+    emblem: [
+      [10, 1, '#ffffff'], [12, 1, '#ffffff'], [14, 1, '#ffffff'],
+      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
+      [11, 3, '#ffffff'], [13, 3, '#ffffff']
+    ]
+  },
+  'banner_rejoice_lord': {
+    primary: '#facc15', dark: '#d97706', light: '#fef9c3',
+    emblem: [
+      [11, 1, '#18181b'], [12, 1, '#18181b'], [13, 1, '#18181b'],
+      [13, 2, '#18181b'],
+      [11, 3, '#18181b'], [12, 3, '#18181b'], [13, 3, '#18181b']
+    ]
+  },
+  'banner_i_am_free': {
+    primary: '#06b6d4', dark: '#0e7490', light: '#cffafe',
+    emblem: [
+      [10, 1, '#ffffff'], [14, 1, '#ffffff'],
+      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
+      [11, 3, '#ffffff'], [12, 3, '#ffffff'], [13, 3, '#ffffff']
+    ]
+  },
+  'banner_glory_halle': {
+    primary: '#8b5cf6', dark: '#6d28d9', light: '#ede9fe',
+    emblem: [
+      [12, 1, '#fef08a'],
+      [11, 2, '#fef08a'], [12, 2, '#ffffff'], [13, 2, '#fef08a'],
+      [12, 3, '#fef08a']
+    ]
+  },
+  'banner_the_truth': {
+    primary: '#4f46e5', dark: '#3730a3', light: '#e0e7ff',
+    emblem: [
+      [10, 1, '#fef3c7'], [14, 1, '#fef3c7'],
+      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
+      [11, 3, '#ffffff'], [12, 3, '#fef3c7'], [13, 3, '#ffffff']
+    ]
+  },
+  'banner_reason_life': {
+    primary: '#84cc16', dark: '#4d7c0f', light: '#ecfccb',
+    emblem: [
+      [11, 1, '#ffffff'], [13, 1, '#ffffff'],
+      [12, 2, '#ffffff'],
+      [12, 3, '#4d7c0f']
+    ]
+  }
+};
+
+function renderAccessoryHeaderBanner(itemId, scale) {
+  const theme = (typeof PRAISE_BANNER_THEMES !== 'undefined') ? PRAISE_BANNER_THEMES[itemId] : null;
+  if (!theme) return '';
+
+  let r = '';
+  const darkOutline = '#18181b';
+  const poleColor = '#71717a';
+
+  // 1. 머리띠 지지 폴 (y:4, x:8, 15)
+  r += `<rect x="${8 * scale}" y="${4 * scale}" width="${scale}" height="${scale}" fill="${poleColor}" />`;
+  r += `<rect x="${15 * scale}" y="${4 * scale}" width="${scale}" height="${scale}" fill="${poleColor}" />`;
+
+  // 2. 좌우 리본 꼬리 (y:1~3, x:4~5 및 x:18~19)
+  r += `<rect x="${4 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${4 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${19 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${19 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+
+  r += `<rect x="${5 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${theme.light}" />`;
+  r += `<rect x="${4 * scale}" y="${2 * scale}" width="${2 * scale}" height="${scale}" fill="${theme.primary}" />`;
+  r += `<rect x="${5 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${theme.dark}" />`;
+
+  r += `<rect x="${18 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${theme.light}" />`;
+  r += `<rect x="${18 * scale}" y="${2 * scale}" width="${2 * scale}" height="${scale}" fill="${theme.primary}" />`;
+  r += `<rect x="${18 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${theme.dark}" />`;
+
+  // 3. 메인 배너 외곽선 (Top: y:0, Bottom: y:4)
+  for (let x = 6; x <= 17; x++) {
+    r += `<rect x="${x * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  }
+  for (let x = 6; x <= 17; x++) {
+    r += `<rect x="${x * scale}" y="${4 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  }
+
+  // 4. 메인 배너 바디 (y:1: light, y:2: primary, y:3: dark)
+  for (let x = 6; x <= 17; x++) {
+    r += `<rect x="${x * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${theme.light}" />`;
+    r += `<rect x="${x * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${theme.primary}" />`;
+    r += `<rect x="${x * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${theme.dark}" />`;
+  }
+
+  // 5. 중앙 고유 엠블럼 심볼
+  if (theme.emblem && Array.isArray(theme.emblem)) {
+    for (let i = 0; i < theme.emblem.length; i++) {
+      const p = theme.emblem[i];
+      r += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${scale}" height="${scale}" fill="${p[2]}" />`;
+    }
+  }
+
+  // 6. 양옆 반짝이 별 포인트 (x:3, y:0 및 x:20, y:0)
+  r += `<rect x="${3 * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="#ffffff" />`;
+  r += `<rect x="${20 * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="#ffffff" />`;
+
+  return r;
+}
+
 /**
  * 아이템별 상점/옷장 전용 고화질 픽셀 SVG 아이콘 생성
  */
@@ -1341,6 +1507,8 @@ function getAccessoryIconSvg(itemId) {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="14.5 10.5 5 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryBible(1)}</svg>`;
   } else if (itemId === 'back_daisy_field') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 14.5 20 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryDaisyField(1)}</svg>`;
+  } else if (itemId && itemId.startsWith('banner_')) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 0 20 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
   } else if (typeof AUTUMN_ITEM_PIXELS !== 'undefined' && AUTUMN_ITEM_PIXELS[itemId]) {
     const b = AUTUMN_ITEM_PIXELS[itemId].bounds;
     const pad = 1;
@@ -1427,6 +1595,15 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
     }
   }
 
+  // Layer 6: Banner 악세사리 (머리 위 13종 찬양 응원 배너)
+  let bannerRects = '';
+  if (equipped) {
+    const bannerId = equipped.banner || (equipped.hold && String(equipped.hold).startsWith('banner_') ? equipped.hold : null);
+    if (bannerId) {
+      bannerRects += renderAccessoryHeaderBanner(bannerId, scale);
+    }
+  }
+
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" 
          class="charles-svg ${animClass}" 
@@ -1438,6 +1615,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
       <g class="layer-glasses">${glassesRects}</g>
       <g class="layer-head">${headRects}</g>
       <g class="layer-hold">${holdRects}</g>
+      <g class="layer-banner">${bannerRects}</g>
     </svg>
   `;
 }
@@ -1465,5 +1643,5 @@ function getCharlesVisual(stage = 1, scale = 9, equipped = null) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CHARLES_STAGES, CHARLES_NEW_STAGES, AUTUMN_ITEM_PIXELS, getCharlesVisual, renderSimplePixelGrid, getAccessoryIconSvg };
+  module.exports = { CHARLES_STAGES, CHARLES_NEW_STAGES, AUTUMN_ITEM_PIXELS, PRAISE_BANNER_THEMES, renderAccessoryHeaderBanner, getCharlesVisual, renderSimplePixelGrid, getAccessoryIconSvg };
 }

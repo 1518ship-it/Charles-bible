@@ -95,6 +95,151 @@ const TALENT_ITEMS = {
     price: 9,
     icon: '🍂',
     desc: '찰스 발밑에 곱게 깔린 황금빛 가을 낙엽 카펫'
+  },
+
+  // 🎶 찬양집회 스페셜 컬렉션 머리 위 배너 13종
+  'banner_living_hope': {
+    id: 'banner_living_hope',
+    slot: 'banner',
+    category: '배너',
+    name: '산 소망 배너',
+    songTitle: '주 예수 나의 산 소망',
+    price: 0,
+    icon: '✝️',
+    themeColor: '#38bdf8',
+    desc: '주 예수 나의 산 소망 - 하늘빛 은혜의 머리 위 응원 배너'
+  },
+  'banner_king_god': {
+    id: 'banner_king_god',
+    slot: 'banner',
+    category: '배너',
+    name: '왕이신 하나님 배너',
+    songTitle: '왕이신 하나님',
+    price: 0,
+    icon: '👑',
+    themeColor: '#eab308',
+    desc: '왕이신 하나님 - 눈부신 영광의 골드 머리 위 배너'
+  },
+  'banner_thank_god': {
+    id: 'banner_thank_god',
+    slot: 'banner',
+    category: '배너',
+    name: 'I Thank God 배너',
+    songTitle: 'I Thank God',
+    price: 0,
+    icon: '🔥',
+    themeColor: '#f97316',
+    desc: 'I Thank God - 감사의 기쁨이 타오르는 비비드 오렌지 배너'
+  },
+  'banner_rock_ages': {
+    id: 'banner_rock_ages',
+    slot: 'banner',
+    category: '배너',
+    name: '만세반석 배너',
+    songTitle: '만세반석',
+    price: 0,
+    icon: '🪨',
+    themeColor: '#b45309',
+    desc: '만세반석 - 든든하고 견고한 반석 앰버 브라운 배너'
+  },
+  'banner_only_jesus': {
+    id: 'banner_only_jesus',
+    slot: 'banner',
+    category: '배너',
+    name: '오직 예수 배너',
+    songTitle: '오직 예수',
+    price: 0,
+    icon: '✝️',
+    themeColor: '#2563eb',
+    desc: '오직 예수 - 순결한 화이트 & 코발트 블루 배너'
+  },
+  'banner_whisper_love': {
+    id: 'banner_whisper_love',
+    slot: 'banner',
+    category: '배너',
+    name: '사랑의 음성 배너',
+    songTitle: '사랑한다 말하시네',
+    price: 0,
+    icon: '💖',
+    themeColor: '#ec4899',
+    desc: '사랑한다 말하시네 - 포근하고 따뜻한 로즈 핑크 하트 배너'
+  },
+  'banner_all_my_possession': {
+    id: 'banner_all_my_possession',
+    slot: 'banner',
+    category: '배너',
+    name: '온 맘 다해 배너',
+    songTitle: '나의 모습 나의 소유',
+    price: 0,
+    icon: '🤲',
+    themeColor: '#10b981',
+    desc: '나의 모습 나의 소유 - 전심으로 주를 찬양하는 에메랄드 배너'
+  },
+  'banner_love_more': {
+    id: 'banner_love_more',
+    slot: 'banner',
+    category: '배너',
+    name: '주 사랑 배너',
+    songTitle: '우리가 주를 더욱 사랑하고',
+    price: 0,
+    icon: '💕',
+    themeColor: '#f43f5e',
+    desc: '우리가 주를 더욱 사랑하고 - 사랑이 넘치는 코랄 마젠타 배너'
+  },
+  'banner_rejoice_lord': {
+    id: 'banner_rejoice_lord',
+    slot: 'banner',
+    category: '배너',
+    name: '기쁨의 찬양 배너',
+    songTitle: '주안에서 기뻐해',
+    price: 0,
+    icon: '🎵',
+    themeColor: '#facc15',
+    desc: '주안에서 기뻐해 - 햇살처럼 밝고 싱그러운 레몬 옐로우 배너'
+  },
+  'banner_i_am_free': {
+    id: 'banner_i_am_free',
+    slot: 'banner',
+    category: '배너',
+    name: '자유의 날개 배너',
+    songTitle: '나는 자유해',
+    price: 0,
+    icon: '🕊️',
+    themeColor: '#06b6d4',
+    desc: '나는 자유해 - 주 안에서 참 자유를 누리는 청량 터콰이즈 배너'
+  },
+  'banner_glory_halle': {
+    id: 'banner_glory_halle',
+    slot: 'banner',
+    category: '배너',
+    name: '영광 할렐루야 배너',
+    songTitle: '영광 할렐루야',
+    price: 0,
+    icon: '✨',
+    themeColor: '#8b5cf6',
+    desc: '영광 할렐루야 - 거룩한 보좌를 비추는 바이올렛 퍼플 배너'
+  },
+  'banner_the_truth': {
+    id: 'banner_the_truth',
+    slot: 'banner',
+    category: '배너',
+    name: '진리의 등불 배너',
+    songTitle: '진리',
+    price: 0,
+    icon: '📖',
+    themeColor: '#4f46e5',
+    desc: '진리 - 내 발의 등이요 길의 빛이 되는 딥 인디고 배너'
+  },
+  'banner_reason_life': {
+    id: 'banner_reason_life',
+    slot: 'banner',
+    category: '배너',
+    name: '내 삶의 이유 배너',
+    songTitle: '내 삶의 이유라',
+    price: 0,
+    icon: '🌿',
+    themeColor: '#84cc16',
+    desc: '내 삶의 이유라 - 오직 주만 따르기로 결단하는 올리브 라벤더 배너'
   }
 };
 
@@ -259,11 +404,12 @@ const TalentService = {
         neck: equipped.neck || null,
         hold: equipped.hold || null,
         side: equipped.side || null,
+        banner: equipped.banner || null,
         grass: equipped.grass || equipped.back || null,
         back: equipped.back || equipped.grass || null
       };
     } catch (e) {
-      return { head: null, glasses: null, neck: null, hold: null, side: null, grass: null, back: null };
+      return { head: null, glasses: null, neck: null, hold: null, side: null, banner: null, grass: null, back: null };
     }
   },
 
