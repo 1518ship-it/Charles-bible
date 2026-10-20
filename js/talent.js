@@ -97,7 +97,7 @@ const TALENT_ITEMS = {
     desc: '찰스 발밑에 곱게 깔린 황금빛 가을 낙엽 카펫'
   },
 
-  // 🎶 찬양집회 스페셜 컬렉션 머리 위 배너 13종
+  // 🎶 찬양집회 스페셜 컬렉션 머리 위 배너 13종 (특별 이벤트 전용 - 상점 비노출)
   'banner_living_hope': {
     id: 'banner_living_hope',
     slot: 'banner',
@@ -105,6 +105,8 @@ const TALENT_ITEMS = {
     name: '산 소망 배너',
     songTitle: '주 예수 나의 산 소망',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '✝️',
     themeColor: '#38bdf8',
     desc: '주 예수 나의 산 소망 - 하늘빛 은혜의 머리 위 응원 배너'
@@ -116,6 +118,8 @@ const TALENT_ITEMS = {
     name: '왕이신 하나님 배너',
     songTitle: '왕이신 하나님',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '👑',
     themeColor: '#eab308',
     desc: '왕이신 하나님 - 눈부신 영광의 골드 머리 위 배너'
@@ -127,6 +131,8 @@ const TALENT_ITEMS = {
     name: 'I Thank God 배너',
     songTitle: 'I Thank God',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '🔥',
     themeColor: '#f97316',
     desc: 'I Thank God - 감사의 기쁨이 타오르는 비비드 오렌지 배너'
@@ -138,6 +144,8 @@ const TALENT_ITEMS = {
     name: '만세반석 배너',
     songTitle: '만세반석',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '🪨',
     themeColor: '#b45309',
     desc: '만세반석 - 든든하고 견고한 반석 앰버 브라운 배너'
@@ -149,6 +157,8 @@ const TALENT_ITEMS = {
     name: '오직 예수 배너',
     songTitle: '오직 예수',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '✝️',
     themeColor: '#2563eb',
     desc: '오직 예수 - 순결한 화이트 & 코발트 블루 배너'
@@ -160,6 +170,8 @@ const TALENT_ITEMS = {
     name: '사랑의 음성 배너',
     songTitle: '사랑한다 말하시네',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '💖',
     themeColor: '#ec4899',
     desc: '사랑한다 말하시네 - 포근하고 따뜻한 로즈 핑크 하트 배너'
@@ -171,6 +183,8 @@ const TALENT_ITEMS = {
     name: '온 맘 다해 배너',
     songTitle: '나의 모습 나의 소유',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '🤲',
     themeColor: '#10b981',
     desc: '나의 모습 나의 소유 - 전심으로 주를 찬양하는 에메랄드 배너'
@@ -182,6 +196,8 @@ const TALENT_ITEMS = {
     name: '주 사랑 배너',
     songTitle: '우리가 주를 더욱 사랑하고',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '💕',
     themeColor: '#f43f5e',
     desc: '우리가 주를 더욱 사랑하고 - 사랑이 넘치는 코랄 마젠타 배너'
@@ -193,6 +209,8 @@ const TALENT_ITEMS = {
     name: '기쁨의 찬양 배너',
     songTitle: '주안에서 기뻐해',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '🎵',
     themeColor: '#facc15',
     desc: '주안에서 기뻐해 - 햇살처럼 밝고 싱그러운 레몬 옐로우 배너'
@@ -204,6 +222,8 @@ const TALENT_ITEMS = {
     name: '자유의 날개 배너',
     songTitle: '나는 자유해',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '🕊️',
     themeColor: '#06b6d4',
     desc: '나는 자유해 - 주 안에서 참 자유를 누리는 청량 터콰이즈 배너'
@@ -215,6 +235,8 @@ const TALENT_ITEMS = {
     name: '영광 할렐루야 배너',
     songTitle: '영광 할렐루야',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '✨',
     themeColor: '#8b5cf6',
     desc: '영광 할렐루야 - 거룩한 보좌를 비추는 바이올렛 퍼플 배너'
@@ -226,6 +248,8 @@ const TALENT_ITEMS = {
     name: '진리의 등불 배너',
     songTitle: '진리',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '📖',
     themeColor: '#4f46e5',
     desc: '진리 - 내 발의 등이요 길의 빛이 되는 딥 인디고 배너'
@@ -237,6 +261,8 @@ const TALENT_ITEMS = {
     name: '내 삶의 이유 배너',
     songTitle: '내 삶의 이유라',
     price: 0,
+    inShop: false,
+    isEventReward: true,
     icon: '🌿',
     themeColor: '#84cc16',
     desc: '내 삶의 이유라 - 오직 주만 따르기로 결단하는 올리브 라벤더 배너'
@@ -339,17 +365,76 @@ const TalentService = {
   },
 
   // ==================== 2. 인벤토리 및 착용 ====================
+  // 🧹 비정상 노출 배너 아이템 전량 긴급 회수 및 로컬/클라우드 스토리지 정화
+  cleanupBannerItems() {
+    try {
+      const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+      const invKey = this.getUserKey('inventory');
+      const eqKey = this.getUserKey('equipped');
+
+      let modified = false;
+
+      // 1) 인벤토리에서 banner_ 아이템 전량 회수
+      const rawInv = localStorage.getItem(invKey);
+      if (rawInv) {
+        const inv = JSON.parse(rawInv);
+        if (Array.isArray(inv)) {
+          const cleanedInv = inv.filter(id => !String(id).startsWith('banner_'));
+          if (cleanedInv.length !== inv.length) {
+            localStorage.setItem(invKey, JSON.stringify(cleanedInv));
+            modified = true;
+            console.log(`🧹 [TalentService] 유저 [${uid}] 인벤토리에서 배너 아이템 ${inv.length - cleanedInv.length}개 전량 회수 완료.`);
+          }
+        }
+      }
+
+      // 2) 착용 슬롯에서 배너 해제
+      const rawEq = localStorage.getItem(eqKey);
+      if (rawEq) {
+        const eq = JSON.parse(rawEq);
+        if (eq.banner) {
+          eq.banner = null;
+          modified = true;
+        }
+        if (eq.hold && String(eq.hold).startsWith('banner_')) {
+          eq.hold = null;
+          modified = true;
+        }
+        if (eq.head && String(eq.head).startsWith('banner_')) {
+          eq.head = null;
+          modified = true;
+        }
+        if (modified) {
+          localStorage.setItem(eqKey, JSON.stringify(eq));
+          console.log(`🧹 [TalentService] 유저 [${uid}] 착용 배너 슬롯 해제 완료.`);
+        }
+      }
+
+      // 회수 발생 시 즉시 클라우드에 확정 동기화
+      if (modified && typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
+        StorageService.saveToCloud();
+      }
+      return modified;
+    } catch (e) {
+      console.warn('⚠️ [TalentService] 배너 회수 중 오류:', e);
+      return false;
+    }
+  },
+
   getInventory() {
     try {
       const data = localStorage.getItem(this.getUserKey('inventory'));
-      return data ? JSON.parse(data) : [];
+      const list = data ? JSON.parse(data) : [];
+      // 비정상 배너 아이템 노출 방지 필터링
+      return Array.isArray(list) ? list.filter(id => !String(id).startsWith('banner_')) : [];
     } catch (e) {
       return [];
     }
   },
 
   saveInventory(list) {
-    localStorage.setItem(this.getUserKey('inventory'), JSON.stringify(list || []));
+    const safeList = Array.isArray(list) ? list.filter(id => !String(id).startsWith('banner_')) : [];
+    localStorage.setItem(this.getUserKey('inventory'), JSON.stringify(safeList));
     localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
       StorageService.scheduleCloudSync();
@@ -357,12 +442,16 @@ const TalentService = {
   },
 
   hasItem(itemId) {
+    if (!itemId || String(itemId).startsWith('banner_')) return false;
     return this.getInventory().includes(itemId);
   },
 
   buyItem(itemId) {
     const item = TALENT_ITEMS[itemId];
     if (!item) return { success: false, error: '존재하지 않는 아이템입니다.' };
+    if (item.inShop === false || item.slot === 'banner' || String(itemId).startsWith('banner_')) {
+      return { success: false, error: '상점에서 구매할 수 없는 특별 이벤트 전용 아이템입니다.' };
+    }
     if (this.hasItem(itemId)) return { success: false, error: '이미 보유한 아이템입니다.' };
     
     if (!this.spendTalents(item.price)) {
@@ -398,13 +487,24 @@ const TalentService = {
         equipped.grass = equipped.back;
       }
 
+      // 배너 착용 슬롯 강제 해제 (비정상 착용 수거)
+      if (equipped.banner && String(equipped.banner).startsWith('banner_')) {
+        equipped.banner = null;
+      }
+      if (equipped.hold && String(equipped.hold).startsWith('banner_')) {
+        equipped.hold = null;
+      }
+      if (equipped.head && String(equipped.head).startsWith('banner_')) {
+        equipped.head = null;
+      }
+
       return {
         head: equipped.head || null,
         glasses: equipped.glasses || null,
         neck: equipped.neck || null,
         hold: equipped.hold || null,
         side: equipped.side || null,
-        banner: equipped.banner || null,
+        banner: null, // 상점 노출 사고로 인한 배너 전량 회수
         grass: equipped.grass || equipped.back || null,
         back: equipped.back || equipped.grass || null
       };

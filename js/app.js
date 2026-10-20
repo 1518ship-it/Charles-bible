@@ -28,6 +28,12 @@ const App = {
     this.loadSavedFontSize();
     this.bindEvents();
     this.applySavedTheme();
+
+    // 🧹 비정상 노출 배너 아이템 전량 긴급 회수 및 스토리지 정화
+    if (typeof TalentService !== 'undefined' && TalentService.cleanupBannerItems) {
+      TalentService.cleanupBannerItems();
+    }
+
     this.renderAll();
     this.updateUnreadNotificationDot();
 
@@ -35,6 +41,9 @@ const App = {
     if (AuthService.isAuthenticated()) {
       try {
         await StorageService.syncFromCloud();
+        if (typeof TalentService !== 'undefined' && TalentService.cleanupBannerItems) {
+          TalentService.cleanupBannerItems();
+        }
         this.renderAll();
         console.log('☁️ [초기화] Supabase로부터 최신 통독 진행도 및 오늘 읽은 장수가 동기화되었습니다.');
       } catch (err) {
@@ -1247,8 +1256,9 @@ const App = {
     const allItems = Object.values(TALENT_ITEMS);
 
     if (tab === 'store') {
-      // 상점: 4개 아이템 전체 노출
-      grid.innerHTML = allItems.map(item => {
+      // 상점: 배너 및 특별 이벤트 아이템 제외하고 일반/한정 아이템만 노출
+      const storeItems = allItems.filter(item => item.inShop !== false && item.slot !== 'banner' && !String(item.id).startsWith('banner_'));
+      grid.innerHTML = storeItems.map(item => {
         const isOwned = TalentService.hasItem(item.id);
         const isTryingOn = this.shopPreviewEquipped && this.shopPreviewEquipped[item.slot] === item.id;
 
@@ -1279,8 +1289,8 @@ const App = {
         `;
       }).join('');
     } else {
-      // 내 옷장: 보유한 아이템만 노출
-      const ownedItems = allItems.filter(item => TalentService.hasItem(item.id));
+      // 내 옷장: 보유한 일반 아이템만 노출 (배너 아이템 노출 차단)
+      const ownedItems = allItems.filter(item => TalentService.hasItem(item.id) && item.slot !== 'banner' && !String(item.id).startsWith('banner_'));
 
       if (ownedItems.length === 0) {
         grid.innerHTML = `
@@ -1363,6 +1373,11 @@ const App = {
 
   buyTalentItem(itemId) {
     if (typeof TalentService === 'undefined') return;
+    const item = TALENT_ITEMS[itemId];
+    if (!item || item.inShop === false || item.slot === 'banner' || String(itemId).startsWith('banner_')) {
+      this.showToast('⚠️ 상점에서 구매할 수 없는 특별 아이템입니다.');
+      return;
+    }
     const res = TalentService.buyItem(itemId);
     if (!res.success) {
       this.showToast(res.error || '구매할 수 없습니다.');
