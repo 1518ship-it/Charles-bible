@@ -1331,166 +1331,146 @@ function renderAutumnAccessory(itemId, scale) {
 
 // ==========================================
 // 🎶 찬양집회 머리 위 13종 응원 배너 (Header Floating Banner)
+// [테두리만 픽셀 아트 + 내부 찬양 곡명 텍스트 렌더링]
 // ==========================================
 const PRAISE_BANNER_THEMES = {
   'banner_living_hope': {
-    primary: '#38bdf8', dark: '#0284c7', light: '#bae6fd',
-    emblem: [
-      [12, 1, '#ffffff'],
-      [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'],
-      [12, 3, '#ffffff']
-    ]
+    title: '주 예수 나의 산 소망', icon: '✝️',
+    bg: '#f0f9ff', border: '#0284c7', text: '#0369a1',
+    primary: '#38bdf8', dark: '#0284c7', light: '#bae6fd'
   },
   'banner_king_god': {
-    primary: '#eab308', dark: '#ca8a04', light: '#fef08a',
-    emblem: [
-      [10, 1, '#ffffff'], [12, 1, '#ffffff'], [14, 1, '#ffffff'],
-      [10, 2, '#ca8a04'], [11, 2, '#ffffff'], [12, 2, '#ca8a04'], [13, 2, '#ffffff'], [14, 2, '#ca8a04'],
-      [10, 3, '#78350f'], [11, 3, '#78350f'], [12, 3, '#78350f'], [13, 3, '#78350f'], [14, 3, '#78350f']
-    ]
+    title: '왕이신 하나님', icon: '👑',
+    bg: '#fefce8', border: '#ca8a04', text: '#854d0e',
+    primary: '#eab308', dark: '#ca8a04', light: '#fef08a'
   },
   'banner_thank_god': {
-    primary: '#f97316', dark: '#c2410c', light: '#ffedd5',
-    emblem: [
-      [12, 1, '#fef08a'],
-      [11, 2, '#ea580c'], [12, 2, '#ffffff'], [13, 2, '#ea580c'],
-      [11, 3, '#c2410c'], [12, 3, '#fef08a'], [13, 3, '#c2410c']
-    ]
+    title: 'I Thank God', icon: '🔥',
+    bg: '#fff7ed', border: '#ea580c', text: '#9a3412',
+    primary: '#f97316', dark: '#c2410c', light: '#ffedd5'
   },
   'banner_rock_ages': {
-    primary: '#b45309', dark: '#78350f', light: '#fde68a',
-    emblem: [
-      [11, 1, '#f5f5f4'], [12, 1, '#e7e5e4'], [13, 1, '#d6d3d1'],
-      [10, 2, '#f5f5f4'], [11, 2, '#e7e5e4'], [12, 2, '#d6d3d1'], [13, 2, '#a8a29e'], [14, 2, '#78716c'],
-      [10, 3, '#78716c'], [11, 3, '#78716c'], [12, 3, '#57534e'], [13, 3, '#44403c'], [14, 3, '#292524']
-    ]
+    title: '만세반석', icon: '🪨',
+    bg: '#fef3c7', border: '#b45309', text: '#78350f',
+    primary: '#b45309', dark: '#78350f', light: '#fde68a'
   },
   'banner_only_jesus': {
-    primary: '#2563eb', dark: '#1d4ed8', light: '#ffffff',
-    emblem: [
-      [12, 1, '#ffffff'],
-      [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'],
-      [12, 3, '#ffffff']
-    ]
+    title: '오직 예수', icon: '✝️',
+    bg: '#eff6ff', border: '#2563eb', text: '#1e40af',
+    primary: '#2563eb', dark: '#1d4ed8', light: '#dbeafe'
   },
   'banner_whisper_love': {
-    primary: '#ec4899', dark: '#be185d', light: '#fce7f3',
-    emblem: [
-      [11, 1, '#ffffff'], [13, 1, '#ffffff'],
-      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
-      [11, 3, '#ffffff'], [12, 3, '#ffffff'], [13, 3, '#ffffff']
-    ]
+    title: '사랑한다 말하시네', icon: '💖',
+    bg: '#fdf2f8', border: '#db2777', text: '#9d174d',
+    primary: '#ec4899', dark: '#be185d', light: '#fce7f3'
   },
   'banner_all_my_possession': {
-    primary: '#10b981', dark: '#047857', light: '#a7f3d0',
-    emblem: [
-      [10, 1, '#ffffff'], [14, 1, '#ffffff'],
-      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
-      [11, 3, '#ffffff'], [12, 3, '#ffffff'], [13, 3, '#ffffff']
-    ]
+    title: '나의 모습 나의 소유', icon: '🤲',
+    bg: '#ecfdf5', border: '#059669', text: '#065f46',
+    primary: '#10b981', dark: '#047857', light: '#a7f3d0'
   },
   'banner_love_more': {
-    primary: '#f43f5e', dark: '#be123c', light: '#ffe4e6',
-    emblem: [
-      [10, 1, '#ffffff'], [12, 1, '#ffffff'], [14, 1, '#ffffff'],
-      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
-      [11, 3, '#ffffff'], [13, 3, '#ffffff']
-    ]
+    title: '우리가 주를 더욱 사랑하고', icon: '💕',
+    bg: '#fff1f2', border: '#e11d48', text: '#9f1239',
+    primary: '#f43f5e', dark: '#be123c', light: '#ffe4e6'
   },
   'banner_rejoice_lord': {
-    primary: '#facc15', dark: '#d97706', light: '#fef9c3',
-    emblem: [
-      [11, 1, '#18181b'], [12, 1, '#18181b'], [13, 1, '#18181b'],
-      [13, 2, '#18181b'],
-      [11, 3, '#18181b'], [12, 3, '#18181b'], [13, 3, '#18181b']
-    ]
+    title: '주안에서 기뻐해', icon: '🎵',
+    bg: '#fef9c3', border: '#d97706', text: '#92400e',
+    primary: '#facc15', dark: '#d97706', light: '#fef9c3'
   },
   'banner_i_am_free': {
-    primary: '#06b6d4', dark: '#0e7490', light: '#cffafe',
-    emblem: [
-      [10, 1, '#ffffff'], [14, 1, '#ffffff'],
-      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [12, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
-      [11, 3, '#ffffff'], [12, 3, '#ffffff'], [13, 3, '#ffffff']
-    ]
+    title: '나는 자유해', icon: '🕊️',
+    bg: '#ecfeff', border: '#0891b2', text: '#155e75',
+    primary: '#06b6d4', dark: '#0e7490', light: '#cffafe'
   },
   'banner_glory_halle': {
-    primary: '#8b5cf6', dark: '#6d28d9', light: '#ede9fe',
-    emblem: [
-      [12, 1, '#fef08a'],
-      [11, 2, '#fef08a'], [12, 2, '#ffffff'], [13, 2, '#fef08a'],
-      [12, 3, '#fef08a']
-    ]
+    title: '영광 할렐루야', icon: '✨',
+    bg: '#f5f3ff', border: '#7c3aed', text: '#5b21b6',
+    primary: '#8b5cf6', dark: '#6d28d9', light: '#ede9fe'
   },
   'banner_the_truth': {
-    primary: '#4f46e5', dark: '#3730a3', light: '#e0e7ff',
-    emblem: [
-      [10, 1, '#fef3c7'], [14, 1, '#fef3c7'],
-      [10, 2, '#ffffff'], [11, 2, '#ffffff'], [13, 2, '#ffffff'], [14, 2, '#ffffff'],
-      [11, 3, '#ffffff'], [12, 3, '#fef3c7'], [13, 3, '#ffffff']
-    ]
+    title: '진리', icon: '📖',
+    bg: '#eef2ff', border: '#4f46e5', text: '#3730a3',
+    primary: '#4f46e5', dark: '#3730a3', light: '#e0e7ff'
   },
   'banner_reason_life': {
-    primary: '#84cc16', dark: '#4d7c0f', light: '#ecfccb',
-    emblem: [
-      [11, 1, '#ffffff'], [13, 1, '#ffffff'],
-      [12, 2, '#ffffff'],
-      [12, 3, '#4d7c0f']
-    ]
+    title: '내 삶의 이유라', icon: '🌿',
+    bg: '#f7fee7', border: '#65a30d', text: '#3f6212',
+    primary: '#84cc16', dark: '#4d7c0f', light: '#ecfccb'
   }
 };
 
+/**
+ * 머리 위 응원 배너 렌더러
+ * - 테두리는 클래식 8비트 픽셀 테두리
+ * - 배너 내부에 각 찬양의 정체성과 곡명 텍스트 배치
+ */
 function renderAccessoryHeaderBanner(itemId, scale) {
   const theme = (typeof PRAISE_BANNER_THEMES !== 'undefined') ? PRAISE_BANNER_THEMES[itemId] : null;
   if (!theme) return '';
 
   let r = '';
   const darkOutline = '#18181b';
-  const poleColor = '#71717a';
+  const poleColor = '#52525b';
+  const boltColor = '#f59e0b';
 
-  // 1. 머리띠 지지 폴 (y:4, x:8, 15)
-  r += `<rect x="${8 * scale}" y="${4 * scale}" width="${scale}" height="${scale}" fill="${poleColor}" />`;
-  r += `<rect x="${15 * scale}" y="${4 * scale}" width="${scale}" height="${scale}" fill="${poleColor}" />`;
+  // 1. 머리띠 연결 지지 기둥 (x:7.5, x:15.5, y:4~5.5)
+  r += `<rect x="${7.5 * scale}" y="${4 * scale}" width="${1 * scale}" height="${1.6 * scale}" fill="${poleColor}" />`;
+  r += `<rect x="${15.5 * scale}" y="${4 * scale}" width="${1 * scale}" height="${1.6 * scale}" fill="${poleColor}" />`;
+  r += `<rect x="${7.5 * scale}" y="${3.6 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
+  r += `<rect x="${15.5 * scale}" y="${3.6 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
 
-  // 2. 좌우 리본 꼬리 (y:1~3, x:4~5 및 x:18~19)
-  r += `<rect x="${4 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${4 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${19 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${19 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
-
-  r += `<rect x="${5 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${theme.light}" />`;
-  r += `<rect x="${4 * scale}" y="${2 * scale}" width="${2 * scale}" height="${scale}" fill="${theme.primary}" />`;
-  r += `<rect x="${5 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${theme.dark}" />`;
-
-  r += `<rect x="${18 * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${theme.light}" />`;
-  r += `<rect x="${18 * scale}" y="${2 * scale}" width="${2 * scale}" height="${scale}" fill="${theme.primary}" />`;
-  r += `<rect x="${18 * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${theme.dark}" />`;
-
-  // 3. 메인 배너 외곽선 (Top: y:0, Bottom: y:4)
-  for (let x = 6; x <= 17; x++) {
-    r += `<rect x="${x * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  // 2. 레트로 8-bit 픽셀 테두리 (Stepped Pixel Outer Outline)
+  // 상단 외곽 가로선 (x: 2~21, y: 0.3)
+  for (let x = 2; x <= 21; x++) {
+    r += `<rect x="${x * scale}" y="${0.3 * scale}" width="${scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
   }
-  for (let x = 6; x <= 17; x++) {
-    r += `<rect x="${x * scale}" y="${4 * scale}" width="${scale}" height="${scale}" fill="${darkOutline}" />`;
+  // 하단 외곽 가로선 (x: 2~21, y: 3.7)
+  for (let x = 2; x <= 21; x++) {
+    r += `<rect x="${x * scale}" y="${3.7 * scale}" width="${scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
   }
-
-  // 4. 메인 배너 바디 (y:1: light, y:2: primary, y:3: dark)
-  for (let x = 6; x <= 17; x++) {
-    r += `<rect x="${x * scale}" y="${1 * scale}" width="${scale}" height="${scale}" fill="${theme.light}" />`;
-    r += `<rect x="${x * scale}" y="${2 * scale}" width="${scale}" height="${scale}" fill="${theme.primary}" />`;
-    r += `<rect x="${x * scale}" y="${3 * scale}" width="${scale}" height="${scale}" fill="${theme.dark}" />`;
+  // 좌측 외곽 세로선 (x: 1, y: 0.9~3.2)
+  for (let y = 0.9; y <= 3.2; y += 0.8) {
+    r += `<rect x="${1 * scale}" y="${y * scale}" width="${0.8 * scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
+  }
+  // 우측 외곽 세로선 (x: 22.2, y: 0.9~3.2)
+  for (let y = 0.9; y <= 3.2; y += 0.8) {
+    r += `<rect x="${22.2 * scale}" y="${y * scale}" width="${0.8 * scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
   }
 
-  // 5. 중앙 고유 엠블럼 심볼
-  if (theme.emblem && Array.isArray(theme.emblem)) {
-    for (let i = 0; i < theme.emblem.length; i++) {
-      const p = theme.emblem[i];
-      r += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${scale}" height="${scale}" fill="${p[2]}" />`;
-    }
+  // 코너 베벨 픽셀 (모서리 스텝 연결)
+  r += `<rect x="${1.6 * scale}" y="${0.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${21.8 * scale}" y="${0.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${1.6 * scale}" y="${3.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${21.8 * scale}" y="${3.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+
+  // 3. 내부 배경 채우기 (High-legibility pastel/clean background)
+  r += `<rect x="${1.8 * scale}" y="${0.7 * scale}" width="${20.4 * scale}" height="${3.1 * scale}" fill="${theme.bg}" />`;
+
+  // 4. 안쪽 컬러 포인트 라인 (상/하단 테마 색상 엣지)
+  r += `<rect x="${2 * scale}" y="${0.7 * scale}" width="${20 * scale}" height="${0.35 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${2 * scale}" y="${3.45 * scale}" width="${20 * scale}" height="${0.35 * scale}" fill="${theme.border}" />`;
+
+  // 5. 좌우 리본 팁 날개 포인트
+  r += `<rect x="${0.7 * scale}" y="${1.8 * scale}" width="${0.6 * scale}" height="${0.8 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${22.7 * scale}" y="${1.8 * scale}" width="${0.6 * scale}" height="${0.8 * scale}" fill="${theme.border}" />`;
+
+  // 6. 찬양 이름 텍스트 렌더링 (가독성 극대화 및 길이별 동적 폰트 스케일링)
+  let fontSize = scale * 1.05;
+  if (theme.title.length <= 4) {
+    fontSize = scale * 1.3;
+  } else if (theme.title.length <= 7) {
+    fontSize = scale * 1.12;
+  } else if (theme.title.length <= 9) {
+    fontSize = scale * 1.0;
+  } else {
+    fontSize = scale * 0.86;
   }
 
-  // 6. 양옆 반짝이 별 포인트 (x:3, y:0 및 x:20, y:0)
-  r += `<rect x="${3 * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="#ffffff" />`;
-  r += `<rect x="${20 * scale}" y="${0 * scale}" width="${scale}" height="${scale}" fill="#ffffff" />`;
+  const displayText = `${theme.icon} ${theme.title}`;
+
+  r += `<text x="${12 * scale}" y="${2.55 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="-0.3px">${displayText}</text>`;
 
   return r;
 }
@@ -1508,7 +1488,7 @@ function getAccessoryIconSvg(itemId) {
   } else if (itemId === 'back_daisy_field') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 14.5 20 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryDaisyField(1)}</svg>`;
   } else if (itemId && itemId.startsWith('banner_')) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 0 20 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
   } else if (typeof AUTUMN_ITEM_PIXELS !== 'undefined' && AUTUMN_ITEM_PIXELS[itemId]) {
     const b = AUTUMN_ITEM_PIXELS[itemId].bounds;
     const pad = 1;
