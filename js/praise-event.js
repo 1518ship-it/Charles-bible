@@ -66,8 +66,18 @@ const PraiseEventApp = {
     }
   },
 
-  // 2. 관리자 테스트 도구 바 설정
+  // 2. 관리자 테스트 도구 바 설정 (?admin=true 일 때만 노출, 일반 배포 시 완전 비노출)
   async setupAdminTestToolbar() {
+    const adminBar = document.querySelector('.admin-test-bar');
+    const urlParams = new URLSearchParams(window.location.search);
+    const showAdmin = urlParams.get('admin') === 'true' || urlParams.get('admin') === '1';
+
+    if (adminBar) {
+      adminBar.style.display = showAdmin ? 'flex' : 'none';
+    }
+
+    if (!showAdmin) return;
+
     const userSelect = document.getElementById('admin-user-select');
     if (!userSelect) return;
 

@@ -551,14 +551,17 @@ const StorageService = {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return false;
 
     try {
-      // 1) 달란트 및 퀘스트 데이터 패키징 (배너 아이템 필터링 및 착용 해제 보장)
+      // 1) 달란트 및 퀘스트 데이터 패키징 (정당한 투표자 배너 보존 & 미투표자 배너 회수)
+      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
       const rawEquipped = typeof TalentService !== 'undefined' ? TalentService.getEquipped() : JSON.parse(localStorage.getItem(this.getUserKey('equipped')) || '{}');
-      if (rawEquipped.banner) rawEquipped.banner = null;
-      if (rawEquipped.hold && String(rawEquipped.hold).startsWith('banner_')) rawEquipped.hold = null;
-      if (rawEquipped.head && String(rawEquipped.head).startsWith('banner_')) rawEquipped.head = null;
+      if (!hasVoted) {
+        if (rawEquipped.banner) rawEquipped.banner = null;
+        if (rawEquipped.hold && String(rawEquipped.hold).startsWith('banner_')) rawEquipped.hold = null;
+        if (rawEquipped.head && String(rawEquipped.head).startsWith('banner_')) rawEquipped.head = null;
+      }
 
       const rawInventory = typeof TalentService !== 'undefined' ? TalentService.getInventory() : JSON.parse(localStorage.getItem(this.getUserKey('inventory')) || '[]');
-      const cleanInventory = Array.isArray(rawInventory) ? rawInventory.filter(id => !String(id).startsWith('banner_')) : [];
+      const cleanInventory = (hasVoted || !Array.isArray(rawInventory)) ? (rawInventory || []) : rawInventory.filter(id => !String(id).startsWith('banner_'));
 
       const talentPayload = {
         talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10),
@@ -753,12 +756,15 @@ const StorageService = {
         }
         localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify(mergedClaims));
 
-        // 8) 인벤토리 합집합 병합 (어느 기기에서 샀든 모든 기기에서 보유 - 비정상 배너 아이템 제외)
-        const remoteInv = ((remoteTalentMeta && Array.isArray(remoteTalentMeta.inventory))
+        // 8) 인벤토리 합집합 병합 (투표 참여자는 배너 보존, 미투표자는 비정상 배너 제외)
+        const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`) || (data && data.equipped && data.equipped.banner);
+        const remoteInv = (remoteTalentMeta && Array.isArray(remoteTalentMeta.inventory))
           ? remoteTalentMeta.inventory
-          : (Array.isArray(data.inventory) ? data.inventory : [])).filter(id => !String(id).startsWith('banner_'));
-        const localInv = (JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]')).filter(id => !String(id).startsWith('banner_'));
-        const combinedInv = Array.from(new Set([...remoteInv, ...localInv]));
+          : (Array.isArray(data.inventory) ? data.inventory : []);
+        const cleanRemoteInv = hasVoted ? remoteInv : remoteInv.filter(id => !String(id).startsWith('banner_'));
+        const localInv = JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]');
+        const cleanLocalInv = hasVoted ? localInv : localInv.filter(id => !String(id).startsWith('banner_'));
+        const combinedInv = Array.from(new Set([...cleanRemoteInv, ...cleanLocalInv]));
         if (combinedInv.length > remoteInv.length) {
           hasNewerLocalData = true;
         }
@@ -815,14 +821,16 @@ const StorageService = {
           hasNewerLocalData = true;
         }
 
-        // 10) 착용 아이템 (equipped) 동기화 (배너 아이템 착용 해제 보장)
+        // 10) 착용 아이템 (equipped) 동기화 (투표 참여자는 배너 보존)
         const remoteEq = (remoteTalentMeta && remoteTalentMeta.equipped && typeof remoteTalentMeta.equipped === 'object')
           ? remoteTalentMeta.equipped
           : ((data.equipped && typeof data.equipped === 'object') ? data.equipped : null);
         if (remoteEq) {
-          if (remoteEq.banner) remoteEq.banner = null;
-          if (remoteEq.hold && String(remoteEq.hold).startsWith('banner_')) remoteEq.hold = null;
-          if (remoteEq.head && String(remoteEq.head).startsWith('banner_')) remoteEq.head = null;
+          if (!hasVoted) {
+            if (remoteEq.banner) remoteEq.banner = null;
+            if (remoteEq.hold && String(remoteEq.hold).startsWith('banner_')) remoteEq.hold = null;
+            if (remoteEq.head && String(remoteEq.head).startsWith('banner_')) remoteEq.head = null;
+          }
           const hasLocalEq = !!localStorage.getItem(`charles_user_${uid}_equipped`);
           const remoteTime = new Date(remoteTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
           const localTime = new Date(localTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();

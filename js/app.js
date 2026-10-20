@@ -67,6 +67,17 @@ const App = {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) handleReactivation();
     });
+
+    // 👑 운영자 관련 메뉴 제어: ?admin=true 파라미터 또는 관리자 권한이 있을 때만 노출
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminLinkBtn = document.getElementById('btn-admin-link');
+    if (adminLinkBtn) {
+      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || localStorage.getItem('charles_admin_unlocked') === 'true') {
+        adminLinkBtn.style.display = 'block';
+      } else {
+        adminLinkBtn.style.display = 'none';
+      }
+    }
   },
 
   loadSavedFontSize() {

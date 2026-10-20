@@ -365,10 +365,15 @@ const TalentService = {
   },
 
   // ==================== 2. 인벤토리 및 착용 ====================
-  // 🧹 비정상 노출 배너 아이템 전량 긴급 회수 및 로컬/클라우드 스토리지 정화
+  // 🧹 비정상 노출 배너 아이템 회수 (정당한 투표 참여자의 배너는 안전하게 보존)
   cleanupBannerItems() {
     try {
       const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
+
+      // 찬양집회 투표에 참여하여 정당하게 배너를 수령한 성도는 회수 대상에서 제외
+      if (hasVoted) return false;
+
       const invKey = this.getUserKey('inventory');
       const eqKey = this.getUserKey('equipped');
 
@@ -383,7 +388,7 @@ const TalentService = {
           if (cleanedInv.length !== inv.length) {
             localStorage.setItem(invKey, JSON.stringify(cleanedInv));
             modified = true;
-            console.log(`🧹 [TalentService] 유저 [${uid}] 인벤토리에서 배너 아이템 ${inv.length - cleanedInv.length}개 전량 회수 완료.`);
+            console.log(`🧹 [TalentService] 유저 [${uid}] 인벤토리에서 미투표 배너 아이템 ${inv.length - cleanedInv.length}개 회수 완료.`);
           }
         }
       }
@@ -406,7 +411,7 @@ const TalentService = {
         }
         if (modified) {
           localStorage.setItem(eqKey, JSON.stringify(eq));
-          console.log(`🧹 [TalentService] 유저 [${uid}] 착용 배너 슬롯 해제 완료.`);
+          console.log(`🧹 [TalentService] 유저 [${uid}] 미투표 착용 배너 슬롯 해제 완료.`);
         }
       }
 
@@ -425,7 +430,9 @@ const TalentService = {
     try {
       const data = localStorage.getItem(this.getUserKey('inventory'));
       const list = data ? JSON.parse(data) : [];
-      // 비정상 배너 아이템 노출 방지 필터링
+      const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
+      if (hasVoted) return Array.isArray(list) ? list : [];
       return Array.isArray(list) ? list.filter(id => !String(id).startsWith('banner_')) : [];
     } catch (e) {
       return [];
@@ -433,7 +440,9 @@ const TalentService = {
   },
 
   saveInventory(list) {
-    const safeList = Array.isArray(list) ? list.filter(id => !String(id).startsWith('banner_')) : [];
+    const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+    const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
+    const safeList = (hasVoted || !Array.isArray(list)) ? (list || []) : list.filter(id => !String(id).startsWith('banner_'));
     localStorage.setItem(this.getUserKey('inventory'), JSON.stringify(safeList));
     localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
@@ -442,7 +451,10 @@ const TalentService = {
   },
 
   hasItem(itemId) {
-    if (!itemId || String(itemId).startsWith('banner_')) return false;
+    if (!itemId) return false;
+    const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+    const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
+    if (String(itemId).startsWith('banner_') && !hasVoted) return false;
     return this.getInventory().includes(itemId);
   },
 
@@ -487,15 +499,13 @@ const TalentService = {
         equipped.grass = equipped.back;
       }
 
-      // 배너 착용 슬롯 강제 해제 (비정상 착용 수거)
-      if (equipped.banner && String(equipped.banner).startsWith('banner_')) {
-        equipped.banner = null;
-      }
-      if (equipped.hold && String(equipped.hold).startsWith('banner_')) {
-        equipped.hold = null;
-      }
-      if (equipped.head && String(equipped.head).startsWith('banner_')) {
-        equipped.head = null;
+      const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
+
+      // 투표하지 않은 계정의 비정상 착용 배너만 해제
+      let validBanner = null;
+      if (hasVoted && equipped.banner && String(equipped.banner).startsWith('banner_')) {
+        validBanner = equipped.banner;
       }
 
       return {
@@ -504,7 +514,7 @@ const TalentService = {
         neck: equipped.neck || null,
         hold: equipped.hold || null,
         side: equipped.side || null,
-        banner: null, // 상점 노출 사고로 인한 배너 전량 회수
+        banner: validBanner,
         grass: equipped.grass || equipped.back || null,
         back: equipped.back || equipped.grass || null
       };
