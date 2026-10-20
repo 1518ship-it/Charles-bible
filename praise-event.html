@@ -28,6 +28,7 @@
       </div>
       <div class="admin-test-actions">
         <select id="admin-user-select" class="btn-test-action" title="테스트할 성도 계정 선택"></select>
+        <button type="button" class="btn-test-action" onclick="PraiseEventApp.toggleRanking()">📊 득표율 차트</button>
         <button type="button" class="btn-test-action danger" onclick="PraiseEventApp.adminResetVote()">🔄 투표 초기화</button>
       </div>
     </div>
@@ -46,10 +47,10 @@
     <!-- 이벤트 타이틀 히어로 -->
     <section class="event-hero">
       <div class="event-badge">✨ 청년부 찬양집회 스페셜 콜라보</div>
-      <h1>최애 찬양을 골라주세요! 🎶</h1>
+      <h1>The LORD is my Song!</h1>
       <p>
-        가장 은혜받고 사모하는 찬양을 1곡 선택하시면<br>
-        그 찬양의 <strong>스페셜 응원 배너</strong>를 찰스 머리 위에 씌워드려요! 🐑👑
+        다가오는 리조이스 찬양집회!! 여러분은 어떤마음으로 준비하고 있나요?<br>
+        찰스에서도 여러분의 노래로 하나님을 찬양해보아요~
       </p>
     </section>
 
@@ -117,8 +118,8 @@
         </a>
       </section>
 
-      <!-- 실시간 13곡 찬양 득표율 랭킹 차트 -->
-      <section class="poll-ranking-section">
+      <!-- 실시간 13곡 찬양 득표율 랭킹 차트 (기본 비노출 처리) -->
+      <section id="poll-ranking-section" class="poll-ranking-section" style="display: none;">
         <div class="poll-ranking-header">
           <div class="poll-ranking-title">
             <span>📊</span>
@@ -142,11 +143,8 @@
           <strong id="modal-banner-name" style="color: #ffffff;"></strong>가 찰스 머리 위에 장착되었습니다!
         </p>
         <div id="modal-celebrate-avatar" class="modal-celebrate-avatar"></div>
-        <button type="button" class="btn-modal-primary" onclick="PraiseEventApp.closeSuccessModal()">
-          확인 및 실시간 득표율 보기 ➔
-        </button>
-        <a href="index.html" class="btn-modal-secondary" style="display: block; text-decoration: none;">
-          메인 앱(홈)으로 이동
+        <a href="index.html" class="btn-modal-primary" style="display: block; text-decoration: none; text-align: center; margin-top: 14px;">
+          확인 및 메인 앱으로 이동 ➔
         </a>
       </div>
     </div>
@@ -162,7 +160,7 @@
   <script src="js/storage.js?v=8.3"></script>
   <script src="js/talent.js?v=8.3"></script>
   <script src="js/charles-pixel.js?v=8.3"></script>
-  <script src="js/praise-event.js?v=1.5"></script>
+  <script src="js/praise-event.js?v=1.6"></script>
 
 </body>
 </html>

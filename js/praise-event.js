@@ -386,6 +386,17 @@ const PraiseEventApp = {
     this.renderMainView();
   },
 
+  toggleRanking() {
+    const section = document.getElementById('poll-ranking-section');
+    if (section) {
+      const isHidden = (section.style.display === 'none' || getComputedStyle(section).display === 'none');
+      section.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+        this.renderPollRankingChart();
+      }
+    }
+  },
+
   // [옵션 B] 이미 투표 완료한 계정 전용 결과 뷰
   renderVotedResultView() {
     if (!this.userVote) return;
