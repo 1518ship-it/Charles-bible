@@ -251,7 +251,7 @@ body {
 
 /* 양 아래의 Charles is ____ 문구 & 물음표 버튼 */
 .charles-status-wrap {
-  margin-top: 52px;
+  margin-top: 38px;
   margin-bottom: 0px;
   display: flex;
   flex-direction: column;
@@ -304,8 +304,8 @@ body {
 .today-reading-gauge-wrap {
   width: 100%;
   max-width: 190px;
-  margin-top: -34px;
-  margin-bottom: 46px;
+  margin-top: -24px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -524,7 +524,7 @@ body {
 .pasture-world {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 36px;
   position: relative;
   padding-top: 14px;
 }
@@ -592,7 +592,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: flex-end;
-  min-height: 94px;
+  min-height: 106px;
   position: relative;
   margin-bottom: -2px;
   z-index: 4;
@@ -636,6 +636,11 @@ body {
   z-index: 10;
   pointer-events: none;
   animation: none !important;
+  transition: top 0.2s ease;
+}
+
+.pasture-sheep-box.has-banner .pasture-me-tag-wrap {
+  top: -26px;
 }
 
 .pasture-me-badge {
@@ -666,11 +671,13 @@ body {
 }
 
 .pasture-sheep-svg-wrap {
-  width: 72px;
-  height: 66px;
+  width: 74px;
+  min-height: 66px;
+  height: 82px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  overflow: visible;
 }
 
 .pasture-sheep-svg-wrap svg {

@@ -216,8 +216,8 @@ body {
 }
 
 .stage-avatar-container {
-  width: 130px;
-  height: 130px;
+  width: 140px;
+  height: 145px;
   margin: 0 auto 10px auto;
   display: flex;
   align-items: center;

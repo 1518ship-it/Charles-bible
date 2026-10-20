@@ -1589,10 +1589,11 @@ const App = {
 
         const visual = getCharlesVisual(f.stage || 1, 5, f.equipped || {});
         const isMe = f.isMe;
+        const hasBanner = !!(f.equipped && (f.equipped.banner || (f.equipped.hold && String(f.equipped.hold).startsWith('banner_'))));
 
         return `
           <div class="pasture-char-slot" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
-            <div class="pasture-sheep-box">
+            <div class="pasture-sheep-box ${hasBanner ? 'has-banner' : ''}">
               ${isMe ? `
                 <div class="pasture-me-tag-wrap">
                   <span class="pasture-me-badge">me</span>

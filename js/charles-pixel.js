@@ -1404,7 +1404,8 @@ const PRAISE_BANNER_THEMES = {
 /**
  * 머리 위 응원 배너 렌더러
  * - 테두리는 클래식 8비트 픽셀 테두리
- * - 배너 내부에 각 찬양의 정체성과 곡명 텍스트 배치
+ * - 찰스 머리 위로 시원하게 띄운 높은 위치 (y: -4.3 ~ -0.9)
+ * - 이모지 제외, 찬양 곡명 텍스트만 크고 선명하게 렌더링
  */
 function renderAccessoryHeaderBanner(itemId, scale) {
   const theme = (typeof PRAISE_BANNER_THEMES !== 'undefined') ? PRAISE_BANNER_THEMES[itemId] : null;
@@ -1415,62 +1416,67 @@ function renderAccessoryHeaderBanner(itemId, scale) {
   const poleColor = '#52525b';
   const boltColor = '#f59e0b';
 
-  // 1. 머리띠 연결 지지 기둥 (x:7.5, x:15.5, y:4~5.5)
-  r += `<rect x="${7.5 * scale}" y="${4 * scale}" width="${1 * scale}" height="${1.6 * scale}" fill="${poleColor}" />`;
-  r += `<rect x="${15.5 * scale}" y="${4 * scale}" width="${1 * scale}" height="${1.6 * scale}" fill="${poleColor}" />`;
-  r += `<rect x="${7.5 * scale}" y="${3.6 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
-  r += `<rect x="${15.5 * scale}" y="${3.6 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
+  // 1. 머리띠 연결 지지 기둥 (높아진 배너 하단 y:-0.5부터 찰스 머리 y:5.0까지)
+  r += `<rect x="${7.5 * scale}" y="${-0.5 * scale}" width="${1 * scale}" height="${5.5 * scale}" fill="${poleColor}" />`;
+  r += `<rect x="${15.5 * scale}" y="${-0.5 * scale}" width="${1 * scale}" height="${5.5 * scale}" fill="${poleColor}" />`;
+  r += `<rect x="${7.5 * scale}" y="${-0.8 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
+  r += `<rect x="${15.5 * scale}" y="${-0.8 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
+  r += `<rect x="${7.5 * scale}" y="${4.6 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
+  r += `<rect x="${15.5 * scale}" y="${4.6 * scale}" width="${1 * scale}" height="${0.6 * scale}" fill="${boltColor}" />`;
 
-  // 2. 레트로 8-bit 픽셀 테두리 (Stepped Pixel Outer Outline)
-  // 상단 외곽 가로선 (x: 2~21, y: 0.3)
+  // 2. 레트로 8-bit 픽셀 테두리 (Stepped Pixel Outer Outline, y: -4.3 ~ -0.9)
+  // 상단 외곽 가로선
   for (let x = 2; x <= 21; x++) {
-    r += `<rect x="${x * scale}" y="${0.3 * scale}" width="${scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
+    r += `<rect x="${x * scale}" y="${-4.3 * scale}" width="${scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
   }
-  // 하단 외곽 가로선 (x: 2~21, y: 3.7)
+  // 하단 외곽 가로선
   for (let x = 2; x <= 21; x++) {
-    r += `<rect x="${x * scale}" y="${3.7 * scale}" width="${scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
+    r += `<rect x="${x * scale}" y="${-0.9 * scale}" width="${scale}" height="${0.7 * scale}" fill="${darkOutline}" />`;
   }
-  // 좌측 외곽 세로선 (x: 1, y: 0.9~3.2)
-  for (let y = 0.9; y <= 3.2; y += 0.8) {
+  // 좌측 외곽 세로선
+  for (let y = -3.7; y <= -1.4; y += 0.8) {
     r += `<rect x="${1 * scale}" y="${y * scale}" width="${0.8 * scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
   }
-  // 우측 외곽 세로선 (x: 22.2, y: 0.9~3.2)
-  for (let y = 0.9; y <= 3.2; y += 0.8) {
+  // 우측 외곽 세로선
+  for (let y = -3.7; y <= -1.4; y += 0.8) {
     r += `<rect x="${22.2 * scale}" y="${y * scale}" width="${0.8 * scale}" height="${0.8 * scale}" fill="${darkOutline}" />`;
   }
 
   // 코너 베벨 픽셀 (모서리 스텝 연결)
-  r += `<rect x="${1.6 * scale}" y="${0.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${21.8 * scale}" y="${0.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${1.6 * scale}" y="${3.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
-  r += `<rect x="${21.8 * scale}" y="${3.5 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${1.6 * scale}" y="${-4.1 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${21.8 * scale}" y="${-4.1 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${1.6 * scale}" y="${-1.1 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
+  r += `<rect x="${21.8 * scale}" y="${-1.1 * scale}" width="${0.6 * scale}" height="${0.6 * scale}" fill="${darkOutline}" />`;
 
   // 3. 내부 배경 채우기 (High-legibility pastel/clean background)
-  r += `<rect x="${1.8 * scale}" y="${0.7 * scale}" width="${20.4 * scale}" height="${3.1 * scale}" fill="${theme.bg}" />`;
+  r += `<rect x="${1.8 * scale}" y="${-3.9 * scale}" width="${20.4 * scale}" height="${3.1 * scale}" fill="${theme.bg}" />`;
 
   // 4. 안쪽 컬러 포인트 라인 (상/하단 테마 색상 엣지)
-  r += `<rect x="${2 * scale}" y="${0.7 * scale}" width="${20 * scale}" height="${0.35 * scale}" fill="${theme.border}" />`;
-  r += `<rect x="${2 * scale}" y="${3.45 * scale}" width="${20 * scale}" height="${0.35 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${2 * scale}" y="${-3.9 * scale}" width="${20 * scale}" height="${0.35 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${2 * scale}" y="${-1.15 * scale}" width="${20 * scale}" height="${0.35 * scale}" fill="${theme.border}" />`;
 
   // 5. 좌우 리본 팁 날개 포인트
-  r += `<rect x="${0.7 * scale}" y="${1.8 * scale}" width="${0.6 * scale}" height="${0.8 * scale}" fill="${theme.border}" />`;
-  r += `<rect x="${22.7 * scale}" y="${1.8 * scale}" width="${0.6 * scale}" height="${0.8 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${0.7 * scale}" y="${-2.7 * scale}" width="${0.6 * scale}" height="${0.8 * scale}" fill="${theme.border}" />`;
+  r += `<rect x="${22.7 * scale}" y="${-2.7 * scale}" width="${0.6 * scale}" height="${0.8 * scale}" fill="${theme.border}" />`;
 
-  // 6. 찬양 이름 텍스트 렌더링 (가독성 극대화 및 길이별 동적 폰트 스케일링)
-  let fontSize = scale * 1.05;
+  // 6. 찬양 이름 텍스트 렌더링 (이모지 제외 + 폰트 크기 대폭 확대)
+  let fontSize = scale * 1.15;
+  let letterSpacing = '-0.2px';
   if (theme.title.length <= 4) {
-    fontSize = scale * 1.3;
+    fontSize = scale * 1.55;
   } else if (theme.title.length <= 7) {
-    fontSize = scale * 1.12;
+    fontSize = scale * 1.35;
   } else if (theme.title.length <= 9) {
-    fontSize = scale * 1.0;
+    fontSize = scale * 1.20;
+  } else if (theme.title.length <= 11) {
+    fontSize = scale * 1.08;
+    letterSpacing = '-0.3px';
   } else {
-    fontSize = scale * 0.86;
+    fontSize = scale * 0.98;
+    letterSpacing = '-0.4px';
   }
 
-  const displayText = `${theme.icon} ${theme.title}`;
-
-  r += `<text x="${12 * scale}" y="${2.55 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="-0.3px">${displayText}</text>`;
+  r += `<text x="${12 * scale}" y="${-2.35 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="${letterSpacing}">${theme.title}</text>`;
 
   return r;
 }
@@ -1488,7 +1494,7 @@ function getAccessoryIconSvg(itemId) {
   } else if (itemId === 'back_daisy_field') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 14.5 20 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryDaisyField(1)}</svg>`;
   } else if (itemId && itemId.startsWith('banner_')) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -5 24 5.5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
   } else if (typeof AUTUMN_ITEM_PIXELS !== 'undefined' && AUTUMN_ITEM_PIXELS[itemId]) {
     const b = AUTUMN_ITEM_PIXELS[itemId].bounds;
     const pad = 1;
@@ -1500,13 +1506,21 @@ function getAccessoryIconSvg(itemId) {
 
 /**
  * 24x24 통일 규격 찰스 메인 픽셀 그리드 렌더러
+ * (배너 착용 시 상단 공간을 자동으로 확장하여 높은 배너를 완벽하게 포용)
  */
 function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-static', equipped = {}) {
-  // 캔버스 크기: 24x24 (찰스 중앙 배치, 모든 아이템과 100% 무결점 일체화)
+  // 캔버스 크기: 24x24 (배너 착용 여부에 따라 상단 여백 동적 확장)
+  const hasBanner = !!(equipped && (equipped.banner || (equipped.hold && String(equipped.hold).startsWith('banner_'))));
+  const bannerId = hasBanner ? (equipped.banner || equipped.hold) : null;
+
   const canvasWidth = 24;
   const canvasHeight = 24;
   const svgWidth = canvasWidth * scale;
   const svgHeight = canvasHeight * scale;
+
+  // 배너가 머리 위로 올라가므로, 배너 착용 시 viewBox를 y: -5 * scale 부터 시작하여 29 * scale 높이로 자동 확장
+  const viewBoxMinY = hasBanner ? Math.round(-5 * scale) : 0;
+  const viewBoxHeight = hasBanner ? Math.round(29 * scale) : svgHeight;
 
   // Layer 1: Back / Floor 악세사리 (바닥 잔디/낙엽)
   let backRects = '';
@@ -1577,16 +1591,13 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
 
   // Layer 6: Banner 악세사리 (머리 위 13종 찬양 응원 배너)
   let bannerRects = '';
-  if (equipped) {
-    const bannerId = equipped.banner || (equipped.hold && String(equipped.hold).startsWith('banner_') ? equipped.hold : null);
-    if (bannerId) {
-      bannerRects += renderAccessoryHeaderBanner(bannerId, scale);
-    }
+  if (bannerId) {
+    bannerRects += renderAccessoryHeaderBanner(bannerId, scale);
   }
 
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" 
-         class="charles-svg ${animClass}" 
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
+         class="charles-svg ${animClass} ${hasBanner ? 'has-charles-banner' : ''}" 
          style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 150px; display: block; margin: 0 auto;">
       <g class="layer-back">${backRects}</g>
       <g class="layer-side">${sideRects}</g>
