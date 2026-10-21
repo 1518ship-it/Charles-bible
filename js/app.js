@@ -1630,13 +1630,6 @@ const App = {
     const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
     const myCell = (currentUser && currentUser.cell) ? String(currentUser.cell).trim() : '';
 
-    // 셀 목록 자동 수집 및 가나다 정렬
-    const cellSet = new Set();
-    allFriends.forEach(f => {
-      if (f.cell && String(f.cell).trim()) cellSet.add(String(f.cell).trim());
-    });
-    const sortedCells = Array.from(cellSet).sort((a, b) => a.localeCompare(b, 'ko'));
-
     // 커스텀 소그룹 목록 (StorageService)
     const customGroups = (typeof StorageService !== 'undefined') ? StorageService.getCustomGroups() : [];
 
@@ -1651,31 +1644,26 @@ const App = {
       </button>
     `;
 
-    // 2. [우리 셀] 칩 (내 셀이 등록되어 있는 경우)
-    if (myCell) {
-      const isMyCell = this.activePastureGroup === 'my_cell';
-      const myCellCount = allFriends.filter(f => f.cell === myCell).length;
-      chipsHtml += `
-        <button type="button" class="pasture-group-chip ${isMyCell ? 'active' : ''}" onclick="App.selectPastureGroup('my_cell')">
-          <span>🐑</span>
-          <span>우리 셀 (${myCellCount})</span>
-        </button>
-      `;
-    }
+    // 2. [우리 셀] 칩 (전체 버튼 바로 오른쪽에는 우리셀만 표시)
+    const isMyCell = this.activePastureGroup === 'my_cell';
+    const myCellCount = myCell ? allFriends.filter(f => f.cell === myCell).length : 0;
+    const myCellLabel = myCell ? `우리 셀 (${myCellCount})` : '우리 셀';
+    chipsHtml += `
+      <button type="button" class="pasture-group-chip ${isMyCell ? 'active' : ''}" onclick="App.selectPastureGroup('my_cell')">
+        <span>🐑</span>
+        <span>${myCellLabel}</span>
+      </button>
+    `;
 
-    // 3. 개별 셀 칩들 (1셀, 2셀, 3셀...)
-    sortedCells.forEach(cellName => {
-      const gid = `cell_${cellName}`;
-      const isActive = this.activePastureGroup === gid;
-      const count = allFriends.filter(f => f.cell === cellName).length;
-      chipsHtml += `
-        <button type="button" class="pasture-group-chip ${isActive ? 'active' : ''}" onclick="App.selectPastureGroup('${gid}')">
-          <span>${cellName} (${count})</span>
-        </button>
-      `;
-    });
+    // 3. 바로 소그룹 만들기 버튼 칩 [➕ 소그룹]
+    chipsHtml += `
+      <button type="button" class="pasture-group-chip add-chip" onclick="App.openCustomGroupModal()" title="새 소그룹 만들기">
+        <span>➕</span>
+        <span>소그룹</span>
+      </button>
+    `;
 
-    // 4. 커스텀 소그룹 칩들
+    // 4. 사용자가 직접 생성한 커스텀 소그룹 칩들
     customGroups.forEach(grp => {
       const gid = `custom_${grp.id}`;
       const isActive = this.activePastureGroup === gid;
@@ -1689,19 +1677,18 @@ const App = {
       `;
     });
 
-    // 5. [+ 소그룹] 생성 버튼 칩
-    chipsHtml += `
-      <button type="button" class="pasture-group-chip add-chip" onclick="App.openCustomGroupModal()" title="새 소그룹 만들기">
-        <span>➕</span>
-        <span>소그룹</span>
-      </button>
-    `;
-
     bar.innerHTML = chipsHtml;
   },
 
   selectPastureGroup(groupId) {
     RetroAudio.click();
+    if (groupId === 'my_cell') {
+      const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+      if (!currentUser || !currentUser.cell) {
+        this.showToast('💡 우측 상단 ⚙️ 설정에서 내 소속 셀을 먼저 등록해 주세요!');
+        return;
+      }
+    }
     this.activePastureGroup = groupId;
     if (typeof StorageService !== 'undefined') {
       StorageService.setPastureActiveGroup(groupId);
