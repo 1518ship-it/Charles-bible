@@ -22,8 +22,18 @@ const App = {
   calendarMonth: new Date().getMonth() + 1,
   selectedDateStr: null,
 
+  // 양떼목장 소그룹 및 커스텀 순서 상태
+  activePastureGroup: 'all',
+  pastureGroupByCell: false,
+  pastureEditingOrderList: [],
+  currentFriendDetailId: null,
+
   async init() {
     this.selectedDateStr = StorageService.getTodayDateStr();
+    if (typeof StorageService !== 'undefined') {
+      this.activePastureGroup = StorageService.getPastureActiveGroup();
+      this.pastureGroupByCell = StorageService.getPastureGroupByCell();
+    }
     this.initAuth();
     this.loadSavedFontSize();
     this.bindEvents();
@@ -1550,7 +1560,7 @@ const App = {
     // 1단계: 로컬 캐시 즉시 렌더링
     const localUsers = AuthService.getAllUsersLocal();
     this.pastureFriends = buildList(localUsers);
-    this.renderPastureShelves(this.pastureFriends);
+    this.applyPastureDisplay();
 
     // 2단계: 최신 상태 비동기 동기화 (Supabase & 각 유저 스토리지 상태)
     AuthService.getAllUsers().then(async (remoteUsers) => {
@@ -1573,17 +1583,278 @@ const App = {
       });
 
       // 갱신된 최신 데이터로 화면 업데이트
-      if (this.pastureSearchQuery) {
-        this.filterPastureFriends(this.pastureSearchQuery);
-      } else {
-        this.renderPastureShelves(this.pastureFriends);
-      }
+      this.applyPastureDisplay();
     }).catch(err => {
       console.warn('양떼목장 원격 동기화 알림:', err);
     });
   },
 
-  // 3인 1조 선반(Platform Shelf) 렌더러
+  // ==================== 양떼목장 소그룹 & 커스텀 정렬 통합 파이프라인 ====================
+  applyPastureDisplay() {
+    this.renderPastureGroupChips();
+    this.updatePastureGroupByCellButton();
+
+    let list = Array.isArray(this.pastureFriends) ? [...this.pastureFriends] : [];
+
+    // 1) 검색어 필터가 있는 경우 검색 우선
+    if (this.pastureSearchQuery) {
+      list = list.filter(f => {
+        if (f.isEmpty) return false;
+        const name = (f.callName || '').toLowerCase();
+        const disp = (f.displayName || '').toLowerCase();
+        const cell = (f.cell || '').toLowerCase();
+        return name.includes(this.pastureSearchQuery) || disp.includes(this.pastureSearchQuery) || cell.includes(this.pastureSearchQuery);
+      });
+    } else {
+      // 2) 소그룹 필터 적용
+      list = this.filterFriendsByGroup(list, this.activePastureGroup);
+    }
+
+    // 3) 커스텀 순서 & 즐겨찾기(★) 정렬 적용
+    const sorted = this.applyCustomFriendOrder(list);
+
+    // 4) 셀별 묶어보기 모드 활성화 & 전체 탭일 때
+    if (this.pastureGroupByCell && this.activePastureGroup === 'all' && !this.pastureSearchQuery) {
+      this.renderPastureShelvesWithSections(sorted);
+    } else {
+      this.renderPastureShelves(sorted);
+    }
+  },
+
+  // 상단 소그룹 칩 바 렌더러
+  renderPastureGroupChips() {
+    const bar = document.getElementById('pasture-group-chips-bar');
+    if (!bar) return;
+
+    const allFriends = (this.pastureFriends || []).filter(f => !f.isEmpty);
+    const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    const myCell = (currentUser && currentUser.cell) ? String(currentUser.cell).trim() : '';
+
+    // 셀 목록 자동 수집 및 가나다 정렬
+    const cellSet = new Set();
+    allFriends.forEach(f => {
+      if (f.cell && String(f.cell).trim()) cellSet.add(String(f.cell).trim());
+    });
+    const sortedCells = Array.from(cellSet).sort((a, b) => a.localeCompare(b, 'ko'));
+
+    // 커스텀 소그룹 목록 (StorageService)
+    const customGroups = (typeof StorageService !== 'undefined') ? StorageService.getCustomGroups() : [];
+
+    let chipsHtml = '';
+
+    // 1. [전체] 칩
+    const isAll = this.activePastureGroup === 'all';
+    chipsHtml += `
+      <button type="button" class="pasture-group-chip ${isAll ? 'active' : ''}" onclick="App.selectPastureGroup('all')">
+        <span>🌿</span>
+        <span>전체 (${allFriends.length})</span>
+      </button>
+    `;
+
+    // 2. [우리 셀] 칩 (내 셀이 등록되어 있는 경우)
+    if (myCell) {
+      const isMyCell = this.activePastureGroup === 'my_cell';
+      const myCellCount = allFriends.filter(f => f.cell === myCell).length;
+      chipsHtml += `
+        <button type="button" class="pasture-group-chip ${isMyCell ? 'active' : ''}" onclick="App.selectPastureGroup('my_cell')">
+          <span>🐑</span>
+          <span>우리 셀 (${myCellCount})</span>
+        </button>
+      `;
+    }
+
+    // 3. 개별 셀 칩들 (1셀, 2셀, 3셀...)
+    sortedCells.forEach(cellName => {
+      const gid = `cell_${cellName}`;
+      const isActive = this.activePastureGroup === gid;
+      const count = allFriends.filter(f => f.cell === cellName).length;
+      chipsHtml += `
+        <button type="button" class="pasture-group-chip ${isActive ? 'active' : ''}" onclick="App.selectPastureGroup('${gid}')">
+          <span>${cellName} (${count})</span>
+        </button>
+      `;
+    });
+
+    // 4. 커스텀 소그룹 칩들
+    customGroups.forEach(grp => {
+      const gid = `custom_${grp.id}`;
+      const isActive = this.activePastureGroup === gid;
+      const memberCount = allFriends.filter(f => (grp.memberIds || []).includes(f.id)).length;
+      chipsHtml += `
+        <button type="button" class="pasture-group-chip ${isActive ? 'active' : ''}" onclick="App.selectPastureGroup('${gid}')">
+          <span>🏷️</span>
+          <span>${grp.name} (${memberCount})</span>
+          <span class="chip-delete-btn" onclick="App.deleteCustomGroup('${grp.id}', event)" title="소그룹 삭제">✕</span>
+        </button>
+      `;
+    });
+
+    // 5. [+ 소그룹] 생성 버튼 칩
+    chipsHtml += `
+      <button type="button" class="pasture-group-chip add-chip" onclick="App.openCustomGroupModal()" title="새 소그룹 만들기">
+        <span>➕</span>
+        <span>소그룹</span>
+      </button>
+    `;
+
+    bar.innerHTML = chipsHtml;
+  },
+
+  selectPastureGroup(groupId) {
+    RetroAudio.click();
+    this.activePastureGroup = groupId;
+    if (typeof StorageService !== 'undefined') {
+      StorageService.setPastureActiveGroup(groupId);
+    }
+    this.applyPastureDisplay();
+  },
+
+  // 소그룹 필터 적용
+  filterFriendsByGroup(friends, groupId) {
+    if (!Array.isArray(friends)) return [];
+    if (!groupId || groupId === 'all') return friends;
+
+    const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    const myCell = (currentUser && currentUser.cell) ? String(currentUser.cell).trim() : '';
+
+    if (groupId === 'my_cell') {
+      return friends.filter(f => f.isMe || (myCell && f.cell === myCell));
+    }
+
+    if (groupId.startsWith('cell_')) {
+      const targetCell = groupId.replace('cell_', '');
+      return friends.filter(f => f.isMe || f.cell === targetCell);
+    }
+
+    if (groupId.startsWith('custom_')) {
+      const targetGid = groupId.replace('custom_', '');
+      const groups = (typeof StorageService !== 'undefined') ? StorageService.getCustomGroups() : [];
+      const grp = groups.find(g => g.id === targetGid);
+      if (!grp) return friends;
+      const memIds = grp.memberIds || [];
+      return friends.filter(f => f.isMe || memIds.includes(f.id));
+    }
+
+    return friends;
+  },
+
+  // 커스텀 순서 & 즐겨찾기(★) 정렬 파이프라인
+  applyCustomFriendOrder(friendsList) {
+    if (!Array.isArray(friendsList)) return [];
+    const customOrder = (typeof StorageService !== 'undefined') ? StorageService.getPastureCustomOrder() : [];
+    const starredList = (typeof StorageService !== 'undefined') ? StorageService.getPastureStarredFriends() : [];
+
+    const list = [...friendsList];
+
+    list.sort((a, b) => {
+      // 0순위: 내 계정 항상 최상단
+      if (a.isMe) return -1;
+      if (b.isMe) return 1;
+
+      // 1순위: 즐겨찾기(★)된 친구 우선
+      const aStarred = starredList.includes(String(a.id));
+      const bStarred = starredList.includes(String(b.id));
+      if (aStarred && !bStarred) return -1;
+      if (!aStarred && bStarred) return 1;
+
+      // 2순위: 커스텀 지정 순서
+      const aIdx = customOrder.indexOf(String(a.id));
+      const bIdx = customOrder.indexOf(String(b.id));
+      if (aIdx >= 0 && bIdx >= 0) return aIdx - bIdx;
+      if (aIdx >= 0) return -1;
+      if (bIdx >= 0) return 1;
+
+      // 3순위: 닉네임/이름 순 가나다 정렬
+      const nameA = a.callName || a.nickname || a.name || '';
+      const nameB = b.callName || b.nickname || b.name || '';
+      return nameA.localeCompare(nameB, 'ko');
+    });
+
+    return list;
+  },
+
+  // 셀별 묶어보기 토글 스위치 제어
+  togglePastureGroupByCell() {
+    RetroAudio.click();
+    this.pastureGroupByCell = !this.pastureGroupByCell;
+    if (typeof StorageService !== 'undefined') {
+      StorageService.setPastureGroupByCell(this.pastureGroupByCell);
+    }
+    this.updatePastureGroupByCellButton();
+    this.applyPastureDisplay();
+    this.showToast(this.pastureGroupByCell ? '셀별 구역 묶어보기가 켜졌습니다! 🪵' : '전체 연속 목장 뷰로 전환되었습니다! 🌿');
+  },
+
+  updatePastureGroupByCellButton() {
+    const btn = document.getElementById('btn-toggle-group-by-cell');
+    if (btn) {
+      btn.classList.toggle('active', !!this.pastureGroupByCell);
+    }
+  },
+
+  // 셀별 묶어보기 모드 시 섹션 분할 렌더러
+  renderPastureShelvesWithSections(friendsList) {
+    const listEl = document.getElementById('social-friends-list');
+    if (!listEl) return;
+
+    const realFriends = (friendsList || []).filter(f => !f.isEmpty);
+    const countEl = document.getElementById('pasture-member-count');
+    if (countEl) {
+      countEl.textContent = `${realFriends.length}마리 🌿`;
+    }
+
+    // 셀별로 분할
+    const cellGroups = {};
+    const noCellKey = '기타 / 셀 미지정';
+
+    realFriends.forEach(f => {
+      const c = f.cell ? String(f.cell).trim() : noCellKey;
+      if (!cellGroups[c]) cellGroups[c] = [];
+      cellGroups[c].push(f);
+    });
+
+    const cellKeys = Object.keys(cellGroups).sort((a, b) => {
+      if (a === noCellKey) return 1;
+      if (b === noCellKey) return -1;
+      return a.localeCompare(b, 'ko');
+    });
+
+    let overallHtml = '';
+
+    cellKeys.forEach(cName => {
+      const members = cellGroups[cName];
+      const sectionHeaderHtml = `
+        <div class="pasture-section-divider">
+          <div class="pasture-section-title">
+            <span>🪵</span>
+            <span>${cName} 푸른초장</span>
+          </div>
+          <span class="pasture-section-count">${members.length}마리 🌿</span>
+        </div>
+      `;
+
+      // 해당 셀 멤버 3인 1조 선반 생성
+      const shelves = [];
+      for (let i = 0; i < members.length; i += 3) {
+        shelves.push(members.slice(i, i + 3));
+      }
+      if (shelves.length === 0) {
+        shelves.push([{ isEmpty: true }, { isEmpty: true }, { isEmpty: true }]);
+      } else {
+        const lastShelf = shelves[shelves.length - 1];
+        while (lastShelf.length < 3) {
+          lastShelf.push({ isEmpty: true });
+        }
+      }
+
+      const shelvesHtml = this.generateShelvesHtml(shelves);
+      overallHtml += sectionHeaderHtml + shelvesHtml;
+    });
+
+    listEl.innerHTML = overallHtml;
+  },
+
+  // 3인 1조 선반(Platform Shelf) 렌더러 (기본)
   renderPastureShelves(friendsList) {
     const listEl = document.getElementById('social-friends-list');
     if (!listEl) return;
@@ -1610,7 +1881,14 @@ const App = {
       }
     }
 
-    const html = shelves.map(shelf => {
+    listEl.innerHTML = this.generateShelvesHtml(shelves);
+  },
+
+  // 선반 HTML 공통 조립기 (즐겨찾기 ★ 핀 포함)
+  generateShelvesHtml(shelves) {
+    const starredList = (typeof StorageService !== 'undefined') ? StorageService.getPastureStarredFriends() : [];
+
+    return shelves.map(shelf => {
       // 1) 캐릭터 슬롯 3개
       const charSlotsHtml = shelf.map(f => {
         if (f.isEmpty) {
@@ -1624,10 +1902,14 @@ const App = {
         const visual = getCharlesVisual(f.stage || 1, 5, f.equipped || {});
         const isMe = f.isMe;
         const hasBanner = !!(f.equipped && (f.equipped.banner || (f.equipped.hold && String(f.equipped.hold).startsWith('banner_'))));
+        const isStarred = starredList.includes(String(f.id));
 
         return `
           <div class="pasture-char-slot" onclick="App.openFriendDetail('${f.id}')" title="${f.displayName} 정보 보기">
             <div class="pasture-sheep-box ${hasBanner ? 'has-banner' : ''}">
+              ${isStarred && !isMe ? `
+                <div class="pasture-star-pin-badge" title="즐겨찾기 친구">⭐</div>
+              ` : ''}
               ${isMe ? `
                 <div class="pasture-me-tag-wrap">
                   <span class="pasture-me-badge">me</span>
@@ -1731,8 +2013,6 @@ const App = {
         </div>
       `;
     }).join('');
-
-    listEl.innerHTML = html;
   },
 
   // 검색 토글
@@ -1747,29 +2027,19 @@ const App = {
       if (input) input.focus();
     } else {
       this.pastureSearchQuery = '';
-      this.renderPastureShelves(this.pastureFriends);
+      this.applyPastureDisplay();
     }
   },
 
   // 친구 검색 필터
   onPastureSearch(query) {
     this.pastureSearchQuery = (query || '').trim().toLowerCase();
-    this.filterPastureFriends(this.pastureSearchQuery);
+    this.applyPastureDisplay();
   },
 
   filterPastureFriends(query) {
-    if (!query) {
-      this.renderPastureShelves(this.pastureFriends);
-      return;
-    }
-    const filtered = this.pastureFriends.filter(f => {
-      if (f.isEmpty) return false;
-      const name = (f.callName || '').toLowerCase();
-      const disp = (f.displayName || '').toLowerCase();
-      const cell = (f.cell || '').toLowerCase();
-      return name.includes(query) || disp.includes(query) || cell.includes(query);
-    });
-    this.renderPastureShelves(filtered);
+    this.pastureSearchQuery = (query || '').trim().toLowerCase();
+    this.applyPastureDisplay();
   },
 
   // 말씀 발자국 안내 팝업 모달 오픈
@@ -1973,6 +2243,22 @@ const App = {
     const subEl = document.getElementById('friend-modal-sub');
     if (subEl) subEl.textContent = `${cellName}${realName}`;
 
+    // 즐겨찾기(★) 버튼 상태 제어
+    const starBtn = document.getElementById('btn-friend-modal-star');
+    if (starBtn) {
+      if (isMe) {
+        starBtn.style.display = 'none';
+      } else {
+        starBtn.style.display = 'inline-flex';
+        const isStarred = (typeof StorageService !== 'undefined') && StorageService.isPastureStarred(userId);
+        starBtn.classList.toggle('active', isStarred);
+        const starIcon = document.getElementById('friend-modal-star-icon');
+        const starText = document.getElementById('friend-modal-star-text');
+        if (starIcon) starIcon.textContent = isStarred ? '⭐' : '☆';
+        if (starText) starText.textContent = isStarred ? '즐겨찾기 해제' : '즐겨찾기';
+      }
+    }
+
     const streakEl = document.getElementById('friend-modal-stat-streak');
     const todayEl = document.getElementById('friend-modal-stat-today');
     if (streakEl) streakEl.textContent = '...';
@@ -1997,6 +2283,235 @@ const App = {
 
     if (streakEl) streakEl.textContent = `${state.streakCount}일`;
     if (todayEl) todayEl.textContent = `${state.todayRead}장`;
+  },
+
+  // 친구 상세 모달에서 즐겨찾기 토글
+  toggleCurrentFriendStar() {
+    RetroAudio.click();
+    if (!this.currentFriendDetailId) return;
+    if (typeof StorageService === 'undefined') return;
+
+    const isStarred = StorageService.togglePastureStar(this.currentFriendDetailId);
+    const starBtn = document.getElementById('btn-friend-modal-star');
+    const starIcon = document.getElementById('friend-modal-star-icon');
+    const starText = document.getElementById('friend-modal-star-text');
+
+    if (starBtn) starBtn.classList.toggle('active', isStarred);
+    if (starIcon) starIcon.textContent = isStarred ? '⭐' : '☆';
+    if (starText) starText.textContent = isStarred ? '즐겨찾기 해제' : '즐겨찾기';
+
+    this.applyPastureDisplay();
+    this.showToast(isStarred ? `${this.currentFriendDetailName}님이 즐겨찾기(★)에 추가되었습니다!` : `${this.currentFriendDetailName}님 즐겨찾기가 해제되었습니다.`);
+  },
+
+  // ==================== 양떼목장 친구 순서 편집 모달 제어 ====================
+  openPastureOrderModal() {
+    RetroAudio.click();
+    const modal = document.getElementById('pasture-order-modal-overlay');
+    if (!modal) return;
+
+    // 현재 목장 멤버 복제 (내 계정 제외하고 순서 편집)
+    const all = (this.pastureFriends || []).filter(f => !f.isEmpty && !f.isMe);
+    const customOrder = (typeof StorageService !== 'undefined') ? StorageService.getPastureCustomOrder() : [];
+    const starredList = (typeof StorageService !== 'undefined') ? StorageService.getPastureStarredFriends() : [];
+
+    // 현재 순서대로 정렬하여 복제
+    all.sort((a, b) => {
+      const aStarred = starredList.includes(String(a.id));
+      const bStarred = starredList.includes(String(b.id));
+      if (aStarred && !bStarred) return -1;
+      if (!aStarred && bStarred) return 1;
+
+      const aIdx = customOrder.indexOf(String(a.id));
+      const bIdx = customOrder.indexOf(String(b.id));
+      if (aIdx >= 0 && bIdx >= 0) return aIdx - bIdx;
+      if (aIdx >= 0) return -1;
+      if (bIdx >= 0) return 1;
+
+      return (a.callName || '').localeCompare(b.callName || '', 'ko');
+    });
+
+    this.pastureEditingOrderList = [...all];
+    this.renderPastureOrderList();
+    modal.style.display = 'flex';
+  },
+
+  closePastureOrderModal() {
+    RetroAudio.click();
+    const modal = document.getElementById('pasture-order-modal-overlay');
+    if (modal) modal.style.display = 'none';
+  },
+
+  renderPastureOrderList() {
+    const listEl = document.getElementById('pasture-order-list');
+    if (!listEl) return;
+
+    const starredList = (typeof StorageService !== 'undefined') ? StorageService.getPastureStarredFriends() : [];
+
+    if (this.pastureEditingOrderList.length === 0) {
+      listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">등록된 친구가 없습니다.</div>';
+      return;
+    }
+
+    listEl.innerHTML = this.pastureEditingOrderList.map((f, idx) => {
+      const isStarred = starredList.includes(String(f.id));
+      const isFirst = idx === 0;
+      const isLast = idx === this.pastureEditingOrderList.length - 1;
+      const cellText = f.cell ? ` · ${f.cell}` : '';
+      const readText = ` · 오늘 ${f.todayRead || 0}장`;
+
+      return `
+        <div class="pasture-order-item ${isStarred ? 'is-starred' : ''}" data-id="${f.id}">
+          <div class="order-item-left">
+            <span class="order-item-index">${idx + 1}</span>
+            <button type="button" class="order-item-star-btn ${isStarred ? 'active' : ''}" onclick="App.toggleOrderListStar('${f.id}')" title="즐겨찾기 토글">
+              ${isStarred ? '⭐' : '☆'}
+            </button>
+            <div class="order-item-name-wrap">
+              <div class="order-item-name">${f.callName}</div>
+              <div class="order-item-sub">${f.stage || 1}단계${cellText}${readText}</div>
+            </div>
+          </div>
+          <div class="order-item-moves">
+            <button type="button" class="btn-order-move" onclick="App.movePastureOrderItem(${idx}, -1)" ${isFirst ? 'disabled' : ''} title="위로 이동">▲</button>
+            <button type="button" class="btn-order-move" onclick="App.movePastureOrderItem(${idx}, 1)" ${isLast ? 'disabled' : ''} title="아래로 이동">▼</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  movePastureOrderItem(index, direction) {
+    RetroAudio.click();
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= this.pastureEditingOrderList.length) return;
+
+    const item = this.pastureEditingOrderList.splice(index, 1)[0];
+    this.pastureEditingOrderList.splice(targetIdx, 0, item);
+    this.renderPastureOrderList();
+  },
+
+  toggleOrderListStar(friendId) {
+    RetroAudio.click();
+    if (typeof StorageService !== 'undefined') {
+      StorageService.togglePastureStar(friendId);
+    }
+    this.renderPastureOrderList();
+  },
+
+  applyOrderPreset(presetType) {
+    RetroAudio.click();
+    if (!Array.isArray(this.pastureEditingOrderList)) return;
+
+    if (presetType === 'name') {
+      this.pastureEditingOrderList.sort((a, b) => (a.callName || '').localeCompare(b.callName || '', 'ko'));
+      this.showToast('가나다순으로 정렬되었습니다!');
+    } else if (presetType === 'today') {
+      this.pastureEditingOrderList.sort((a, b) => (b.todayRead || 0) - (a.todayRead || 0));
+      this.showToast('오늘 통독 장수 순으로 정렬되었습니다! 📖');
+    } else if (presetType === 'streak') {
+      this.pastureEditingOrderList.sort((a, b) => (b.streakCount || 0) - (a.streakCount || 0));
+      this.showToast('연속 통독일(스트릭) 순으로 정렬되었습니다! ⚡');
+    }
+    this.renderPastureOrderList();
+  },
+
+  saveAndApplyPastureOrder() {
+    RetroAudio.click();
+    const newOrderIds = this.pastureEditingOrderList.map(f => String(f.id));
+    if (typeof StorageService !== 'undefined') {
+      StorageService.savePastureCustomOrder(newOrderIds);
+    }
+    this.closePastureOrderModal();
+    this.applyPastureDisplay();
+    this.showToast('친구 목장 순서가 성공적으로 적용되었습니다! 🐑✨');
+  },
+
+  // ==================== 나만의 커스텀 소그룹 모달 제어 ====================
+  openCustomGroupModal() {
+    RetroAudio.click();
+    const modal = document.getElementById('custom-group-modal-overlay');
+    if (!modal) return;
+
+    const nameInput = document.getElementById('input-custom-group-name');
+    if (nameInput) nameInput.value = '';
+
+    const listEl = document.getElementById('custom-group-member-list');
+    const countEl = document.getElementById('custom-group-select-count');
+    if (countEl) countEl.textContent = '0명 선택';
+
+    const friends = (this.pastureFriends || []).filter(f => !f.isEmpty && !f.isMe);
+    if (listEl) {
+      listEl.innerHTML = friends.map(f => `
+        <label class="custom-group-member-item">
+          <input type="checkbox" class="custom-group-checkbox" value="${f.id}" onchange="App.onCustomGroupCheckboxChange()">
+          <span class="custom-group-member-name">${f.callName}</span>
+          <span class="custom-group-member-cell">${f.cell || '셀 미지정'}</span>
+        </label>
+      `).join('');
+    }
+
+    modal.style.display = 'flex';
+  },
+
+  closeCustomGroupModal() {
+    RetroAudio.click();
+    const modal = document.getElementById('custom-group-modal-overlay');
+    if (modal) modal.style.display = 'none';
+  },
+
+  onCustomGroupCheckboxChange() {
+    const checkboxes = document.querySelectorAll('.custom-group-checkbox:checked');
+    const countEl = document.getElementById('custom-group-select-count');
+    if (countEl) countEl.textContent = `${checkboxes.length}명 선택`;
+  },
+
+  submitCreateCustomGroup() {
+    RetroAudio.click();
+    const nameInput = document.getElementById('input-custom-group-name');
+    const name = nameInput ? nameInput.value.trim() : '';
+    if (!name) {
+      this.showToast('소그룹 이름을 입력해 주세요! (예: 찬양팀, 임원단)');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+
+    const checkedBoxes = document.querySelectorAll('.custom-group-checkbox:checked');
+    const memberIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    if (memberIds.length === 0) {
+      this.showToast('소그룹에 포함할 친구를 최소 1명 이상 선택해 주세요!');
+      return;
+    }
+
+    if (typeof StorageService !== 'undefined') {
+      const created = StorageService.saveCustomGroup({ name, memberIds });
+      if (created) {
+        this.activePastureGroup = `custom_${created.id}`;
+        StorageService.setPastureActiveGroup(this.activePastureGroup);
+      }
+    }
+
+    this.closeCustomGroupModal();
+    this.applyPastureDisplay();
+    this.showToast(`'${name}' 소그룹이 생성되었습니다! 🏷️✨`);
+  },
+
+  deleteCustomGroup(groupId, event) {
+    if (event) event.stopPropagation();
+    RetroAudio.click();
+    if (!confirm('이 소그룹을 삭제하시겠습니까?')) return;
+
+    if (typeof StorageService !== 'undefined') {
+      StorageService.deleteCustomGroup(groupId);
+      if (this.activePastureGroup === `custom_${groupId}`) {
+        this.activePastureGroup = 'all';
+        StorageService.setPastureActiveGroup('all');
+      }
+    }
+
+    this.applyPastureDisplay();
+    this.showToast('소그룹이 삭제되었습니다.');
   },
 
   renderQuickContinue() {

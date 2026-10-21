@@ -5119,5 +5119,471 @@ body {
   font-weight: 800;
 }
 
+/* ==========================================
+ * 🐑 서원경 청년부 양떼목장 소그룹 & 순서 커스텀 시스템
+ * ========================================== */
+
+/* 목장 컨트롤 바 우측 알약 컨트롤 버튼 (셀별 묶기, 순서 편집) */
+.pasture-pill-ctrl-btn {
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border-color, #e4e4e7);
+  border-radius: 18px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pasture-pill-ctrl-btn:hover {
+  border-color: #2E7D32;
+  transform: translateY(-1px);
+}
+
+.pasture-pill-ctrl-btn:active {
+  transform: scale(0.95);
+}
+
+.pasture-pill-ctrl-btn.active {
+  background: #e8f5e9;
+  border-color: #4caf50;
+  color: #2e7d32;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.25);
+}
+
+/* 상단 소그룹 칩 바 (가로 스크롤) */
+.pasture-chips-scroll-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 2px;
+}
+
+.pasture-chips-scroll-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.pasture-group-chips-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+  min-width: 100%;
+}
+
+.pasture-group-chip {
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border-color, #e4e4e7);
+  border-radius: 16px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted, #71717a);
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.pasture-group-chip:hover {
+  color: var(--text-color, #18181b);
+  border-color: #a1a1aa;
+}
+
+.pasture-group-chip.active {
+  background: linear-gradient(135deg, #fef08a, #facc15);
+  border-color: #ca8a04;
+  color: #713f12;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(250, 204, 21, 0.35);
+  transform: translateY(-1px);
+}
+
+.pasture-group-chip.add-chip {
+  background: transparent;
+  border: 1.5px dashed #a1a1aa;
+  color: var(--text-muted, #71717a);
+}
+
+.pasture-group-chip.add-chip:hover {
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.pasture-group-chip .chip-delete-btn {
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.4);
+  margin-left: 2px;
+  padding: 0 2px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.pasture-group-chip .chip-delete-btn:hover {
+  color: #e11d48;
+}
+
+/* 셀별 묶어보기 모드 시 나무 팻말 구분선 */
+.pasture-section-divider {
+  margin: 18px 0 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #8d6e63, #6d4c41);
+  border: 2px solid #4e342e;
+  border-radius: 10px;
+  box-shadow: 0 3px 0 #3e2723, 0 4px 10px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+}
+
+.pasture-section-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.pasture-section-count {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* 양떼목장 선반 캐릭터 상단 즐겨찾기(★) 뱃지 */
+.pasture-star-pin-badge {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 12px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(234, 179, 8, 0.6));
+  animation: star-sparkle 2.2s infinite ease-in-out;
+  z-index: 5;
+}
+
+@keyframes star-sparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.25) rotate(10deg); }
+}
+
+/* 친구 상세 모달 즐겨찾기 토글 버튼 */
+.btn-friend-star-action {
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border-color, #e4e4e7);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-friend-star-action:hover {
+  border-color: #ca8a04;
+}
+
+.btn-friend-star-action.active {
+  background: #fef9c3;
+  border-color: #eab308;
+  color: #854d0e;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.3);
+}
+
+/* 친구 순서 편집 모달 (#pasture-order-modal-overlay) */
+.pasture-order-modal-body {
+  padding-top: 10px;
+}
+
+.order-preset-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.order-preset-bar::-webkit-scrollbar { display: none; }
+
+.order-preset-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted, #71717a);
+  white-space: nowrap;
+}
+
+.order-preset-btn {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.order-preset-btn:hover {
+  background: #f4f4f5;
+  border-color: #a1a1aa;
+}
+
+.order-preset-btn:active {
+  transform: scale(0.96);
+}
+
+.order-hint-text {
+  font-size: 11.5px;
+  color: var(--text-muted, #71717a);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.pasture-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 14px;
+}
+
+.pasture-order-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border-color, #e4e4e7);
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+
+.pasture-order-item.is-me {
+  background: rgba(46, 125, 50, 0.06);
+  border-color: rgba(46, 125, 50, 0.3);
+}
+
+.pasture-order-item.is-starred {
+  border-color: rgba(234, 179, 8, 0.6);
+  background: rgba(254, 249, 195, 0.3);
+}
+
+.order-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.order-item-index {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted, #a1a1aa);
+  width: 20px;
+  text-align: center;
+}
+
+.order-item-star-btn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  opacity: 0.35;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.order-item-star-btn.active {
+  opacity: 1;
+  filter: drop-shadow(0 1px 4px rgba(234, 179, 8, 0.5));
+}
+
+.order-item-star-btn:hover {
+  transform: scale(1.2);
+}
+
+.order-item-name-wrap {
+  min-width: 0;
+}
+
+.order-item-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-item-sub {
+  font-size: 11px;
+  color: var(--text-muted, #71717a);
+}
+
+.order-item-moves {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-order-move {
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #3f3f46;
+  transition: all 0.12s ease;
+}
+
+.btn-order-move:hover:not(:disabled) {
+  background: #e4e4e7;
+  color: #18181b;
+}
+
+.btn-order-move:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 소그룹 만들기 모달 (#custom-group-modal-overlay) */
+.custom-group-modal-body {
+  padding-top: 10px;
+}
+
+.custom-group-input-wrap {
+  margin-bottom: 14px;
+}
+
+.custom-group-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted, #71717a);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.custom-group-name-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border-color, #e4e4e7);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--card-bg, #ffffff);
+  color: var(--text-color, #18181b);
+  box-sizing: border-box;
+}
+
+.custom-group-name-input:focus {
+  outline: none;
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.custom-group-members-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.custom-group-select-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.custom-group-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 14px;
+}
+
+.custom-group-member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-group-member-item:hover {
+  background: #f9f9fb;
+}
+
+.custom-group-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #2e7d32;
+  cursor: pointer;
+}
+
+.custom-group-member-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color, #18181b);
+  flex: 1;
+}
+
+.custom-group-member-cell {
+  font-size: 11px;
+  color: var(--text-muted, #71717a);
+}
+
+.order-modal-footer {
+  margin-top: 10px;
+}
+
+
 
 

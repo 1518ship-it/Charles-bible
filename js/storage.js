@@ -1209,6 +1209,107 @@ const StorageService = {
     }
   },
 
+  // ==================== 8. 양떼목장 커스텀 설정 (순서, 즐겨찾기, 소그룹) ====================
+  // 1) 커스텀 친구 순서 배열 (friendId 문자열 리스트)
+  getPastureCustomOrder() {
+    try {
+      const data = localStorage.getItem(this.getUserKey('pasture_custom_order'));
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  savePastureCustomOrder(orderList) {
+    if (!Array.isArray(orderList)) return;
+    localStorage.setItem(this.getUserKey('pasture_custom_order'), JSON.stringify(orderList));
+  },
+
+  // 2) 즐겨찾기(★) 친구 ID 목록
+  getPastureStarredFriends() {
+    try {
+      const data = localStorage.getItem(this.getUserKey('pasture_starred'));
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  isPastureStarred(friendId) {
+    if (!friendId) return false;
+    const list = this.getPastureStarredFriends();
+    return list.includes(String(friendId));
+  },
+
+  togglePastureStar(friendId) {
+    if (!friendId) return false;
+    const cleanId = String(friendId);
+    let list = this.getPastureStarredFriends();
+    let isNowStarred = false;
+    if (list.includes(cleanId)) {
+      list = list.filter(id => id !== cleanId);
+      isNowStarred = false;
+    } else {
+      list.push(cleanId);
+      isNowStarred = true;
+    }
+    localStorage.setItem(this.getUserKey('pasture_starred'), JSON.stringify(list));
+    return isNowStarred;
+  },
+
+  // 3) 커스텀 소그룹 리스트: [{ id: 'grp_123', name: '찬양팀', memberIds: ['u1', 'u2'] }]
+  getCustomGroups() {
+    try {
+      const data = localStorage.getItem(this.getUserKey('custom_groups'));
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveCustomGroup(groupObj) {
+    if (!groupObj || !groupObj.name) return null;
+    const list = this.getCustomGroups();
+    const cleanObj = {
+      id: groupObj.id || `grp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      name: String(groupObj.name).trim(),
+      memberIds: Array.isArray(groupObj.memberIds) ? groupObj.memberIds : [],
+      createdAt: groupObj.createdAt || new Date().toISOString()
+    };
+    const existIdx = list.findIndex(g => g.id === cleanObj.id);
+    if (existIdx >= 0) {
+      list[existIdx] = cleanObj;
+    } else {
+      list.push(cleanObj);
+    }
+    localStorage.setItem(this.getUserKey('custom_groups'), JSON.stringify(list));
+    return cleanObj;
+  },
+
+  deleteCustomGroup(groupId) {
+    let list = this.getCustomGroups();
+    list = list.filter(g => g.id !== groupId);
+    localStorage.setItem(this.getUserKey('custom_groups'), JSON.stringify(list));
+  },
+
+  // 4) 셀별 묶어보기 토글 상태 (기본 false)
+  getPastureGroupByCell() {
+    return localStorage.getItem(this.getUserKey('pasture_group_by_cell')) === 'true';
+  },
+
+  setPastureGroupByCell(boolVal) {
+    localStorage.setItem(this.getUserKey('pasture_group_by_cell'), boolVal ? 'true' : 'false');
+  },
+
+  // 5) 활성화된 소그룹 탭 ID (기본 'all', 'my_cell', 'cell_1셀', 'grp_123' 등)
+  getPastureActiveGroup() {
+    return localStorage.getItem(this.getUserKey('pasture_active_group')) || 'all';
+  },
+
+  setPastureActiveGroup(groupId) {
+    localStorage.setItem(this.getUserKey('pasture_active_group'), String(groupId || 'all'));
+  },
+
   resetAll() {
     const uid = this.getCurrentUserId();
     localStorage.removeItem(`charles_user_${uid}_progress`);
