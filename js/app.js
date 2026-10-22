@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
+  APP_VERSION: 'v8.8',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
   searchKeyword: '',
@@ -29,6 +30,7 @@ const App = {
   currentFriendDetailId: null,
 
   async init() {
+    console.log(`🐑 Charles Bible App Version: ${this.APP_VERSION}`);
     this.selectedDateStr = StorageService.getTodayDateStr();
     if (typeof StorageService !== 'undefined') {
       this.activePastureGroup = StorageService.getPastureActiveGroup();
@@ -3191,6 +3193,10 @@ const App = {
     const regDateEl = document.getElementById('settings-reg-date');
     if (regDateEl && user) {
       regDateEl.textContent = user.registeredAt ? user.registeredAt.slice(0, 10) : '-';
+    }
+    const verEl = document.getElementById('settings-app-version');
+    if (verEl) {
+      verEl.textContent = `${this.APP_VERSION || 'v8.8'} (최신)`;
     }
   },
 
