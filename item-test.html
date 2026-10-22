@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Charles - 아이템 연구소 & 피팅 스튜디오</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=8.9">
+  <link rel="alternate icon" type="image/png" href="favicon-32x32.png?v=8.9">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=8.9">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="css/pixel-theme.css?v=8.9">
+  <link rel="stylesheet" href="css/item-test.css?v=1.0">
+</head>
+<body class="studio-body">
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="studio-header">
+    <div class="studio-header-left">
+      <div class="studio-logo-badge">🧪</div>
+      <div class="studio-title-box">
+        <h1>찰스 아이템 연구소 & 피팅 스튜디오</h1>
+        <p>아이템 출시 전 핏 검증 · 1~5단계 진화 테스트 · 픽셀 도트 에디터</p>
+      </div>
+    </div>
+    <div class="studio-header-nav">
+      <span id="studio-user-chip" class="studio-user-chip">🐑 확인 중...</span>
+      <a href="index.html" class="studio-nav-btn">
+        <span>🏠</span> 메인 앱
+      </a>
+      <a href="admin.html" class="studio-nav-btn">
+        <span>👑</span> 관리자 콘솔
+      </a>
+      <button type="button" class="studio-nav-btn primary" onclick="ItemStudio.resetAllEquipped()">
+        <span>🧹</span> 전체 벗기기
+      </button>
+    </div>
+  </header>
+
+  <!-- 메인 스튜디오 레이아웃 (좌: 뷰포트 / 우: 아이템 팔레트 & 에디터) -->
+  <main class="studio-main-layout">
+
+    <!-- ==================== 좌측: 실시간 캔버스 뷰포트 패널 ==================== -->
+    <section class="studio-viewport-panel">
+
+      <!-- 찰스 피팅룸 캔버스 카드 -->
+      <div class="studio-card">
+        <div class="studio-card-header">
+          <div class="studio-card-title">
+            <span>🐑</span> 찰스 실시간 피팅룸
+          </div>
+          <div class="ctrl-group">
+            <span style="font-size: 11px; color: #6b7280; font-weight: 700;">줌:</span>
+            <input type="range" id="zoom-slider" min="4" max="16" value="10" step="1" oninput="ItemStudio.setScale(this.value)" style="width: 80px; accent-color: #10b981;">
+            <span id="zoom-val-text" style="font-size: 11px; font-weight: 800; color: #10b981; min-width: 26px;">10x</span>
+          </div>
+        </div>
+
+        <!-- 찰스 무대 캔버스 -->
+        <div id="charles-stage-box" class="charles-canvas-stage theme-white">
+          <div id="charles-avatar-slot" class="charles-avatar-box">
+            <!-- 찰스 SVG 주입 -->
+          </div>
+          <div id="charles-grid-overlay" class="charles-grid-overlay"></div>
+          <div class="canvas-hud-overlay">
+            <span id="hud-coords-text">X: -, Y: -</span>
+            <span style="opacity: 0.5;">|</span>
+            <span>24x24 픽셀 캔버스</span>
+          </div>
+        </div>
+
+        <!-- 뷰포트 하단 컨트롤러 -->
+        <div class="viewport-ctrl-bar">
+          <!-- 배경 테마 선택 칩 -->
+          <div class="ctrl-group">
+            <span style="font-weight: 700; color: #6b7280;">배경:</span>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-transparent')" title="투명 모눈">🔲 투명</button>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-white')" title="화이트">⚪ 화이트</button>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-pasture')" title="초원">🌿 초원</button>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-autumn')" title="가을">🍂 가을</button>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-winter')" title="겨울">❄️ 겨울</button>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-night')" title="별밤">🌌 별밤</button>
+            <button type="button" class="ctrl-btn" onclick="ItemStudio.setTheme('theme-dark')" title="다크">🌙 다크</button>
+          </div>
+
+          <!-- 모션 & 격자 토글 -->
+          <div class="ctrl-group">
+            <label style="display: flex; align-items: center; gap: 4px; font-weight: 700; cursor: pointer;">
+              <input type="checkbox" onchange="ItemStudio.toggleGrid(this.checked)"> 격자선
+            </label>
+            <select class="ctrl-btn" onchange="ItemStudio.setAnim(this.value)" style="font-weight: 700;">
+              <option value="charles-static">정지 (Static)</option>
+              <option value="charles-bounce">숨쉬기 (Bounce)</option>
+              <option value="envelope-wobble">콩닥콩닥 (Wobble)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 1~5단계 진화 스테이지 선택 바 -->
+        <div style="margin-top: 14px;">
+          <div style="font-size: 12px; font-weight: 800; color: #374151; margin-bottom: 4px;">
+            🌱 찰스 성장 단계 (1~5단계 선택):
+          </div>
+          <div class="stage-btn-grid">
+            <button type="button" class="stage-select-btn" onclick="ItemStudio.setStage(1)">
+              <span class="stage-btn-num">1단계</span>
+              <span class="stage-btn-label">배고픈</span>
+            </button>
+            <button type="button" class="stage-select-btn" onclick="ItemStudio.setStage(2)">
+              <span class="stage-btn-num">2단계</span>
+              <span class="stage-btn-label">풀먹는</span>
+            </button>
+            <button type="button" class="stage-select-btn active" onclick="ItemStudio.setStage(3)">
+              <span class="stage-btn-num">3단계</span>
+              <span class="stage-btn-label">행복한</span>
+            </button>
+            <button type="button" class="stage-select-btn" onclick="ItemStudio.setStage(4)">
+              <span class="stage-btn-num">4단계</span>
+              <span class="stage-btn-label">풍성한</span>
+            </button>
+            <button type="button" class="stage-select-btn" onclick="ItemStudio.setStage(5)">
+              <span class="stage-btn-num" style="color: #ca8a04;">5단계 👑</span>
+              <span class="stage-btn-label" style="color: #854d0e;">성령충만</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 현재 착용 중인 슬롯 상태 카드 -->
+      <div class="studio-card">
+        <div class="studio-card-header">
+          <div class="studio-card-title">
+            <span>👒</span> 현재 장착 부위 목록
+          </div>
+          <button type="button" class="ctrl-btn" onclick="ItemStudio.copyEquippedJson()" title="JSON 복사">
+            📋 JSON 복사
+          </button>
+        </div>
+        <div id="equipped-slots-list" class="equipped-slots-grid">
+          <!-- JS 동적 주입 -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== 우측: 탭 네비게이션 & 아이템/도트 셀렉터 패널 ==================== -->
+    <section class="studio-content-panel">
+
+      <!-- 상단 4개 탭 버튼 -->
+      <div class="studio-tabs-bar">
+        <button type="button" class="studio-tab-btn active" data-tab="released">
+          <span>🛍️</span> 기존 출시 아이템 (23종)
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="prototype">
+          <span>❄️</span> 신규 프로토타입 (12종)
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="editor">
+          <span>🎨</span> 픽셀 도트 에디터
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="presets">
+          <span>💾</span> 코디 프리셋 & 계정 주입
+        </button>
+      </div>
+
+      <!-- 탭 1: 기존 출시 아이템 목록 -->
+      <div id="tab-pane-released" class="tab-pane active">
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div class="studio-card-title">
+              <span>🛍️</span> 현재 정식 출시된 상점 & 찬양집회 배너 아이템
+            </div>
+            <span style="font-size: 11.5px; color: #6b7280;">카드를 클릭하면 실시간으로 착용/해제됩니다.</span>
+          </div>
+          <div id="released-items-container" class="item-cards-grid">
+            <!-- JS 동적 주입 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 2: 신규 프로토타입 아이템 목록 -->
+      <div id="tab-pane-prototype" class="tab-pane">
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div class="studio-card-title">
+              <span>❄️</span> 겨울 & 믿음의 프리미엄 신규 컬렉션 프로토타입
+            </div>
+            <span style="font-size: 11.5px; color: #0284c7; font-weight: 700;">★ 찰스 24x24 규격에 완벽 핏팅된 신작 아이템</span>
+          </div>
+          <div id="prototype-items-container" class="item-cards-grid">
+            <!-- JS 동적 주입 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 3: 인터랙티브 픽셀 도트 에디터 -->
+      <div id="tab-pane-editor" class="tab-pane">
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div class="studio-card-title">
+              <span>🎨</span> 24x24 픽셀 도트 스튜디오 & 코드 생성기
+            </div>
+            <div class="ctrl-group">
+              <button type="button" id="tool-pencil" class="ctrl-btn active" onclick="ItemStudio.setDrawTool('pencil')">✏️ 연필</button>
+              <button type="button" id="tool-eraser" class="ctrl-btn" onclick="ItemStudio.setDrawTool('eraser')">🧹 지우개</button>
+              <button type="button" class="ctrl-btn" onclick="ItemStudio.clearPixelCanvas()">전체 지우기</button>
+            </div>
+          </div>
+
+          <div class="pixel-editor-layout">
+            <!-- 좌측: 도트 캔버스 -->
+            <div>
+              <div id="pixel-grid-canvas" class="pixel-grid-canvas">
+                <!-- 24x24 셀 주입 -->
+              </div>
+              <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                <label style="font-size: 12px; font-weight: 700; cursor: pointer;">
+                  <input type="checkbox" onchange="ItemStudio.toggleGuideLayer(this.checked)"> 찰스 실루엣 가이드 보기
+                </label>
+                <div style="font-size: 11px; color: #6b7280;">클릭 & 드래그로 그리기</div>
+              </div>
+
+              <!-- 팔레트 -->
+              <div style="margin-top: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font-size: 12px; font-weight: 800; color: #374151;">색상 팔레트:</span>
+                  <input type="color" id="custom-color-picker" value="#18181b" style="width: 24px; height: 24px; border: none; padding: 0; cursor: pointer;">
+                </div>
+                <div id="color-palette-container" class="color-palette-grid">
+                  <!-- JS 동적 주입 -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 우측: 슬롯 설정 및 실시간 생성 코드 뷰어 -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <label style="font-size: 12px; font-weight: 800; color: #374151; display: block; margin-bottom: 4px;">
+                  장착할 부위 (Slot):
+                </label>
+                <select class="ctrl-btn" style="width: 100%; padding: 7px 10px; font-size: 13px;" onchange="ItemStudio.setCustomSlot(this.value)">
+                  <option value="head">머리 (head) - 모자 / 화관 / 리본</option>
+                  <option value="hold">소품 (hold) - 지팡이 / 손에 드는 소품</option>
+                  <option value="neck">목 (neck) - 목도리 / 넥타이</option>
+                  <option value="side">옆 (side) - 찰스 곁에 놓이는 선물 / 동물</option>
+                  <option value="grass">바닥 (grass/floor) - 풀밭 / 카펫 / 눈</option>
+                  <option value="back">등 (back) - 날개 / 망토</option>
+                </select>
+              </div>
+
+              <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-size: 12px; font-weight: 800; color: #374151;">자동 생성된 JavaScript 픽셀 코드:</span>
+                  <button type="button" class="ctrl-btn" onclick="ItemStudio.copyDotCode()">📋 코드 복사</button>
+                </div>
+                <div id="dot-code-export-viewer" class="code-export-box">
+                  // 도트를 찍으면 이곳에 JavaScript 코드가 실시간으로 자동 생성됩니다.
+                </div>
+              </div>
+
+              <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px; font-size: 12px; color: #065f46; line-height: 1.4;">
+                💡 <strong>개발 꿀팁</strong>: 도트를 찍으면 실시간으로 왼쪽 찰스 피팅룸에 입혀집니다! 완성이 끝나면 [코드 복사]를 눌러 <code>charles-pixel.js</code>에 바로 등록할 수 있습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 4: 코디 프리셋 & 계정 주입 -->
+      <div id="tab-pane-presets" class="tab-pane">
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div class="studio-card-title">
+              <span>💾</span> 원클릭 완성형 코디 프리셋
+            </div>
+            <span style="font-size: 11.5px; color: #6b7280;">버튼을 누르면 세트 아이템과 배경이 한 번에 적용됩니다.</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left;" onclick="ItemStudio.applyPreset('classic')">
+              <div style="font-size: 14px; font-weight: 800;">🌾 시골 목장 클래식 세트</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">밀짚모자 + 범생이안경 + 성경책 + 데이지풀 (3단계 찰스)</div>
+            </button>
+            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left;" onclick="ItemStudio.applyPreset('autumn')">
+              <div style="font-size: 14px; font-weight: 800;">🍁 풍성한 가을 수확 세트</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">단풍베레모 + 도토리목도리 + 사과바구니 + 단호박 + 낙엽카펫</div>
+            </button>
+            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left;" onclick="ItemStudio.applyPreset('xmas')">
+              <div style="font-size: 14px; font-weight: 800;">❄️ 화이트 크리스마스 세트</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">산타모자 + 체크목도리 + 핫초코 + 눈사람 + 눈꽃카펫</div>
+            </button>
+            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left;" onclick="ItemStudio.applyPreset('blessed')">
+              <div style="font-size: 14px; font-weight: 800;">👑 성령의 승리자 세트</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">황금면류관 + 천사날개 + 목자지팡이 + 오직예수 배너 (5단계)</div>
+            </button>
+          </div>
+
+          <!-- 내 계정 임시 주입 -->
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
+            <div style="font-size: 14px; font-weight: 800; margin-bottom: 6px;">
+              📱 현재 브라우저 내 실제 계정에 임시 주입하기
+            </div>
+            <p style="font-size: 12px; color: #6b7280; margin: 0 0 12px;">
+              지금 피팅룸에서 세팅한 착용 상태를 현재 기기의 로컬스토리지에 주입하여, 메인 앱(<code>index.html</code>) 화면에서 실제 어떻게 보이는지 바로 확인해볼 수 있습니다.
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="studio-nav-btn primary" onclick="ItemStudio.injectToMyAccount()">
+                <span>📥</span> 내 계정에 이 코디 임시 장착하기
+              </button>
+              <button type="button" class="studio-nav-btn" onclick="ItemStudio.restoreMyAccount()">
+                <span>🔄</span> 원래 내 장착 상태로 되돌리기
+              </button>
+              <a href="index.html" target="_blank" class="studio-nav-btn" style="background: #fef08a; border-color: #facc15; color: #854d0e;">
+                <span>🔗</span> 새 탭에서 메인 앱 열기 ➔
+              </a>
+            </div>
+          </div>
+
+          <!-- 현재 세팅 JSON 뷰어 -->
+          <div style="margin-top: 20px;">
+            <div style="font-size: 13px; font-weight: 800; color: #374151; margin-bottom: 4px;">
+              📦 현재 코디 세팅 JSON 데이터:
+            </div>
+            <div id="json-code-viewer" class="code-export-box">
+              {}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 토스트 알림 메시지 팝업 -->
+  <div id="studio-toast" class="studio-toast">알림</div>
+
+  <!-- 스크립트 로드 순서: 그래픽 -> 달란트/스토리지 -> 스튜디오 제어 -->
+  <script src="js/charles-pixel.js?v=8.9"></script>
+  <script src="js/talent.js?v=8.9"></script>
+  <script src="js/storage.js?v=8.9"></script>
+  <script src="js/item-test.js?v=1.0"></script>
+</body>
+</html>

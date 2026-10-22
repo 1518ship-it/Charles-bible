@@ -1,0 +1,686 @@
+/**
+ * Charles' Bible - 찰스 아이템 연구소 & 피팅 스튜디오 스타일시트
+ * [레트로 픽셀 아트 + 글래스모피즘 + 반응형 스튜디오 레이아웃]
+ */
+
+:root {
+  --studio-bg: #f3f4f6;
+  --studio-card-bg: #ffffff;
+  --studio-border: #e5e7eb;
+  --studio-text: #1f2937;
+  --studio-muted: #6b7280;
+  --studio-primary: #10b981;
+  --studio-primary-hover: #059669;
+  --studio-accent: #3b82f6;
+  --studio-danger: #ef4444;
+  --pixel-border-color: #27272a;
+}
+
+body.studio-body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--studio-bg);
+  color: var(--studio-text);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 네비게이션 헤더 */
+.studio-header {
+  background: #ffffff;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.studio-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.studio-logo-badge {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.studio-title-box h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.studio-title-box p {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--studio-muted);
+}
+
+.studio-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.studio-nav-btn:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.studio-nav-btn.primary {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+.studio-nav-btn.primary:hover {
+  background: #059669;
+}
+
+.studio-user-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* 메인 스튜디오 레이아웃 (2열: 좌측 뷰포트, 우측 컨트롤) */
+.studio-main-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .studio-main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================================
+ * 좌측 패널: 피팅 룸 & 캔버스 뷰포트
+ * =================================================== */
+.studio-viewport-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 76px;
+  height: fit-content;
+}
+
+.studio-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.studio-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.studio-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #111827;
+}
+
+/* 찰스 디스플레이 캔버스 */
+.charles-canvas-stage {
+  position: relative;
+  width: 100%;
+  min-height: 290px;
+  border-radius: 10px;
+  border: 2px dashed #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: background 0.25s ease;
+  user-select: none;
+}
+
+/* 배경 프리셋 테마 */
+.charles-canvas-stage.theme-transparent {
+  background-color: #ffffff;
+  background-image: 
+    linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+.charles-canvas-stage.theme-white {
+  background: #ffffff;
+}
+
+.charles-canvas-stage.theme-light {
+  background: #f8fafc;
+}
+
+.charles-canvas-stage.theme-gameboy {
+  background: #8bac0f;
+}
+
+.charles-canvas-stage.theme-dark {
+  background: #18181b;
+}
+
+.charles-canvas-stage.theme-pasture {
+  background: linear-gradient(180deg, #bbf7d0 0%, #4ade80 100%);
+}
+
+.charles-canvas-stage.theme-autumn {
+  background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.charles-canvas-stage.theme-night {
+  background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 100%);
+}
+
+.charles-canvas-stage.theme-winter {
+  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+}
+
+/* 캔버스 내부 찰스 래퍼 */
+.charles-avatar-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.charles-avatar-box svg {
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08));
+}
+
+/* 마우스 좌표 오버레이 HUD */
+.canvas-hud-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(17, 24, 39, 0.75);
+  color: #f3f4f6;
+  font-size: 11px;
+  font-family: 'D2Coding', Consolas, monospace;
+  padding: 3px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 픽셀 격자선 (Grid Lines) */
+.charles-grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: 9px 9px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  display: none;
+}
+
+.charles-grid-overlay.active {
+  display: block;
+}
+
+/* 뷰포트 하단 컨트롤 툴바 */
+.viewport-ctrl-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ctrl-btn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.ctrl-btn:hover {
+  background: #e5e7eb;
+}
+
+.ctrl-btn.active {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+/* 스테이지 5버튼 바 */
+.stage-btn-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.stage-select-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.stage-select-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.stage-select-btn.active {
+  background: #ecfdf5;
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.stage-btn-num {
+  font-size: 11px;
+  font-weight: 800;
+  color: #059669;
+}
+
+.stage-btn-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: 2px;
+}
+
+/* 착용 중인 슬롯 인벤토리 칩 */
+.equipped-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.slot-chip {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slot-chip-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.slot-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.slot-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-type {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+.slot-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-slot-remove {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.btn-slot-remove:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* ===================================================
+ * 우측 패널: 탭 네비게이션 & 아이템/도트 셀렉터
+ * =================================================== */
+.studio-content-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.studio-tabs-bar {
+  display: flex;
+  gap: 6px;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.studio-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.studio-tab-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.studio-tab-btn.active {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* 아이템 카드 그리드 */
+.item-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.item-test-card {
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.item-test-card:hover {
+  border-color: #10b981;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);
+}
+
+.item-test-card.equipped {
+  border-color: #10b981;
+  background: #ecfdf5;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.item-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.item-slot-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.item-test-card.equipped .item-slot-tag {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.item-equip-status {
+  font-size: 11px;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.item-preview-box {
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.item-preview-box svg {
+  max-width: 48px;
+  max-height: 48px;
+}
+
+.item-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.item-desc {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.35;
+  flex: 1;
+}
+
+/* ===================================================
+ * 탭 3: 인터랙티브 픽셀 도트 에디터
+ * =================================================== */
+.pixel-editor-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .pixel-editor-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pixel-grid-canvas {
+  width: 288px;
+  height: 288px;
+  border: 2px solid #111827;
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  grid-template-rows: repeat(24, 1fr);
+  background: #ffffff;
+  user-select: none;
+  cursor: crosshair;
+  position: relative;
+}
+
+.pixel-grid-cell {
+  border-right: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  box-sizing: border-box;
+}
+
+.pixel-grid-cell:hover {
+  outline: 1px solid #10b981;
+  z-index: 2;
+}
+
+/* 컬러 팔레트 */
+.color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.active {
+  border: 2px solid #111827;
+  box-shadow: 0 0 0 2px #10b981;
+}
+
+/* JSON 코드 내보내기 뷰어 */
+.code-export-box {
+  background: #111827;
+  color: #a7f3d0;
+  font-family: 'D2Coding', Consolas, monospace;
+  font-size: 11.5px;
+  padding: 12px;
+  border-radius: 8px;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border: 1px solid #374151;
+}
+
+/* 토스트 알림 */
+.studio-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #111827;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
+}
+
+.studio-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
