@@ -263,6 +263,227 @@ const PROTOTYPE_ITEM_PIXELS = {
 };
 
 // ==========================================
+// 🎸 찬양집회 스페셜 악기 및 소품 픽셀 데이터 (8종)
+// ==========================================
+const PRAISE_MUSIC_ITEM_PIXELS = {
+  // 1. 워십 보컬 무선 마이크 (Hold: 찰스 입가에 쥔 마이크 + 황금 음표)
+  'hold_worship_mic': {
+    slot: 'hold',
+    name: '워십 보컬 마이크',
+    category: '찬양 악기',
+    icon: '🎤',
+    desc: '주를 향한 찬양의 고백이 은혜롭게 울려 퍼지는 실버 & 골드 보컬 마이크',
+    pixels: [
+      // 피어오르는 황금 음표 (♪) (x: 18~19, y: 6~8)
+      [19, 6, '#facc15'], [18, 7, '#facc15'], [19, 7, '#facc15'], [18, 8, '#f59e0b'],
+      // 은빛 돔 그릴 메쉬
+      [15, 9, '#ffffff'], [16, 9, '#e2e8f0'],
+      [14, 10, '#cbd5e1'], [15, 10, '#94a3b8'], [16, 10, '#64748b'],
+      // 골드 링
+      [15, 11, '#facc15'], [16, 11, '#eab308'],
+      // 마이크 무광 블랙 바디
+      [15, 12, '#3f3f46'], [16, 12, '#18181b'],
+      [16, 13, '#3f3f46'], [17, 13, '#18181b'],
+      [16, 14, '#27272a'], [17, 14, '#18181b'],
+      [17, 15, '#52525b']
+    ]
+  },
+
+  // 2. 어쿠스틱 찬양 통기타 (Hold: 멜빵을 메고 가슴에 안은 나무결 통기타)
+  'hold_acoustic_guitar': {
+    slot: 'hold',
+    name: '어쿠스틱 찬양 통기타',
+    category: '찬양 악기',
+    icon: '🎸',
+    desc: '주님의 선하심을 온 맘 다해 노래하는 따스한 나무 울림의 통기타',
+    pixels: [
+      // 헤드 & 조율 페그
+      [9, 8, '#b45309'], [10, 8, '#facc15'],
+      [9, 9, '#78350f'], [10, 9, '#b45309'],
+      // 넥 지판
+      [11, 10, '#92400e'], [12, 10, '#fef08a'],
+      [12, 11, '#92400e'], [13, 11, '#fef08a'],
+      [13, 12, '#92400e'], [14, 12, '#fef08a'],
+      // 기타 바디 상단
+      [14, 13, '#b45309'], [15, 13, '#d97706'], [16, 13, '#18181b'], [17, 13, '#d97706'], [18, 13, '#b45309'],
+      // 바디 중앙 & 사운드홀
+      [13, 14, '#b45309'], [14, 14, '#d97706'], [15, 14, '#fde68a'], [16, 14, '#18181b'], [17, 14, '#18181b'], [18, 14, '#f59e0b'], [19, 14, '#b45309'],
+      // 바디 하단 울림통
+      [14, 15, '#b45309'], [15, 15, '#d97706'], [16, 15, '#f59e0b'], [17, 15, '#f59e0b'], [18, 15, '#d97706'], [19, 15, '#b45309'], [20, 15, '#78350f'],
+      [15, 16, '#78350f'], [16, 16, '#b45309'], [17, 16, '#b45309'], [18, 16, '#b45309'], [19, 16, '#78350f'],
+      // 멜빵 스트랩
+      [10, 11, '#451a03'], [11, 12, '#451a03'], [12, 13, '#451a03']
+    ]
+  },
+
+  // 3. 은빛 빈티지 스탠드 마이크 (Side: 찰스 앞 왼쪽에 세워진 크롬 스탠드 마이크)
+  'side_vintage_stand_mic': {
+    slot: 'side',
+    name: '은빛 스탠드 마이크',
+    category: '찬양 악기',
+    icon: '🎙️',
+    desc: '무대 위에서 은혜로운 찬양을 이끄는 프로페셔널 빈티지 스탠드 마이크',
+    pixels: [
+      // 공중에 뜬 핑크빛 음표
+      [3, 6, '#f43f5e'], [4, 6, '#f43f5e'], [3, 7, '#fb7185'],
+      // 마이크 헤드 돔
+      [5, 7, '#cbd5e1'], [6, 7, '#ffffff'], [7, 7, '#cbd5e1'],
+      [4, 8, '#94a3b8'], [5, 8, '#ffffff'], [6, 8, '#e2e8f0'], [7, 8, '#64748b'],
+      [4, 9, '#64748b'], [5, 9, '#94a3b8'], [6, 9, '#94a3b8'], [7, 9, '#475569'],
+      // 조인트 마운트
+      [5, 10, '#334155'], [6, 10, '#cbd5e1'], [7, 10, '#334155'],
+      // 크롬 기둥
+      [6, 11, '#e2e8f0'],
+      [6, 12, '#cbd5e1'],
+      [6, 13, '#94a3b8'],
+      [6, 14, '#e2e8f0'],
+      [6, 15, '#cbd5e1'],
+      [6, 16, '#94a3b8'],
+      // 원형 베이스 받침대
+      [5, 17, '#475569'], [6, 17, '#94a3b8'], [7, 17, '#475569'],
+      [4, 18, '#334155'], [5, 18, '#64748b'], [6, 18, '#cbd5e1'], [7, 18, '#64748b'], [8, 18, '#334155']
+    ]
+  },
+
+  // 4. 워십 건반 신디사이저 (Side: 찰스 곁에 놓인 흑백 건반과 스탠드)
+  'side_worship_synth': {
+    slot: 'side',
+    name: '워십 건반 신디사이저',
+    category: '찬양 악기',
+    icon: '🎹',
+    desc: '영혼을 울리는 화음과 감동적인 멜로디를 수놓는 찬양팀 신디사이저',
+    pixels: [
+      // 하늘빛 음표 (♪)
+      [2, 11, '#38bdf8'], [3, 11, '#38bdf8'], [2, 12, '#0284c7'],
+      // 상단 컨트롤 패널
+      [1, 13, '#18181b'], [2, 13, '#27272a'], [3, 13, '#06b6d4'], [4, 13, '#27272a'], [5, 13, '#27272a'], [6, 13, '#ef4444'], [7, 13, '#18181b'],
+      // 흑백 건반 상단
+      [1, 14, '#ffffff'], [2, 14, '#18181b'], [3, 14, '#ffffff'], [4, 14, '#18181b'], [5, 14, '#ffffff'], [6, 14, '#18181b'], [7, 14, '#ffffff'],
+      // 흰 건반 하단
+      [1, 15, '#f8fafc'], [2, 15, '#e2e8f0'], [3, 15, '#f8fafc'], [4, 15, '#e2e8f0'], [5, 15, '#f8fafc'], [6, 15, '#e2e8f0'], [7, 15, '#f8fafc'],
+      // 본체 하단 프레임
+      [1, 16, '#18181b'], [2, 16, '#3f3f46'], [3, 16, '#3f3f46'], [4, 16, '#3f3f46'], [5, 16, '#3f3f46'], [6, 16, '#3f3f46'], [7, 16, '#18181b'],
+      // X자 스탠드 다리
+      [2, 17, '#52525b'], [6, 17, '#52525b'],
+      [1, 18, '#3f3f46'], [3, 18, '#52525b'], [5, 18, '#52525b'], [7, 18, '#3f3f46']
+    ]
+  },
+
+  // 5. 기쁨의 찬양 탬버린 (Hold: 황금 방울 징글과 하늘/코랄 리본)
+  'hold_praise_tambourine': {
+    slot: 'hold',
+    name: '기쁨의 찬양 탬버린',
+    category: '찬양 악기',
+    icon: '🪘',
+    desc: '소고 치며 춤추어 주를 찬양할지어다! 기쁨의 리듬을 더하는 찬양 탬버린',
+    pixels: [
+      // 둥근 원형 프레임 & 방울
+      [16, 9, '#fbbf24'], [17, 9, '#f59e0b'], [18, 9, '#fbbf24'],
+      [15, 10, '#f59e0b'], [16, 10, '#e2e8f0'], [18, 10, '#e2e8f0'], [19, 10, '#f59e0b'],
+      [15, 11, '#d97706'], [19, 11, '#d97706'],
+      [15, 12, '#f59e0b'], [16, 12, '#e2e8f0'], [18, 12, '#e2e8f0'], [19, 12, '#f59e0b'],
+      [16, 13, '#fbbf24'], [17, 13, '#f59e0b'], [18, 13, '#fbbf24'],
+      // 흩날리는 축복 리본
+      [17, 14, '#38bdf8'], [18, 14, '#f43f5e'],
+      [16, 15, '#0284c7'], [18, 15, '#e11d48']
+    ]
+  },
+
+  // 6. 프로 모니터링 헤드폰 (Head: 골드 링 블랙 헤드폰)
+  'head_worship_headphones': {
+    slot: 'head',
+    name: '프로 모니터링 헤드폰',
+    category: '찬양 악기',
+    icon: '🎧',
+    desc: '찬양의 모든 화음과 숨결을 섬세하게 모니터링하는 전문 헤드폰',
+    pixels: [
+      // 헤드밴드
+      [10, 4, '#18181b'], [11, 4, '#27272a'], [12, 4, '#facc15'], [13, 4, '#27272a'], [14, 4, '#18181b'],
+      [9, 5, '#18181b'], [15, 5, '#18181b'],
+      [8, 6, '#3f3f46'], [16, 6, '#3f3f46'],
+      // 좌측 이어컵
+      [5, 7, '#18181b'], [6, 7, '#3f3f46'], [7, 7, '#18181b'],
+      [4, 8, '#18181b'], [5, 8, '#facc15'], [6, 8, '#52525b'], [7, 8, '#27272a'],
+      [4, 9, '#18181b'], [5, 9, '#facc15'], [6, 9, '#3f3f46'], [7, 9, '#27272a'],
+      [5, 10, '#18181b'], [6, 10, '#27272a'], [7, 10, '#18181b'],
+      // 우측 이어컵
+      [17, 7, '#18181b'], [18, 7, '#3f3f46'], [19, 7, '#18181b'],
+      [17, 8, '#27272a'], [18, 8, '#52525b'], [19, 8, '#facc15'], [20, 8, '#18181b'],
+      [17, 9, '#27272a'], [18, 9, '#3f3f46'], [19, 9, '#facc15'], [20, 9, '#18181b'],
+      [17, 10, '#18181b'], [18, 10, '#27272a'], [19, 10, '#18181b']
+    ]
+  },
+
+  // 7. 찬양의 멜로디 음표 아우라 (Back: 찰스 주변을 맴도는 다채로운 음표)
+  'back_melody_aura': {
+    slot: 'back',
+    name: '찬양의 멜로디 음표 아우라',
+    category: '찬양 악기',
+    icon: '🎵',
+    desc: '성도들의 뜨거운 찬양 소리가 천상의 화음으로 피어나는 찬양 음표 아우라',
+    pixels: [
+      // 하늘빛 음표 (♪)
+      [3, 4, '#38bdf8'], [4, 4, '#38bdf8'], [3, 5, '#0284c7'],
+      // 골드 2연음표 (♫)
+      [11, 2, '#facc15'], [12, 2, '#facc15'], [13, 2, '#facc15'],
+      [11, 3, '#f59e0b'], [13, 3, '#f59e0b'],
+      // 로즈핑크 음표
+      [20, 4, '#f43f5e'], [21, 4, '#f43f5e'], [20, 5, '#e11d48'],
+      // 에메랄드 16분 음표
+      [1, 9, '#10b981'], [2, 9, '#34d399'], [1, 10, '#059669'],
+      // 바이올렛 퍼플 음표
+      [21, 10, '#8b5cf6'], [22, 10, '#a78bfa'], [21, 11, '#7c3aed'],
+      // 반짝임 스파클
+      [2, 13, '#a3e635'], [22, 13, '#fb7185']
+    ]
+  },
+
+  // 8. 워십 일렉 기타 (Hold: 날렵한 체리 레드 바디 일렉트릭 기타)
+  'hold_electric_guitar': {
+    slot: 'hold',
+    name: '워십 일렉 기타',
+    category: '찬양 악기',
+    icon: '🎸',
+    desc: '살아계신 주를 힘차게 찬양하는 날렵한 체리 레드 워십 일렉 기타',
+    pixels: [
+      // 헤드
+      [9, 8, '#dc2626'], [10, 8, '#ffffff'],
+      [10, 9, '#18181b'],
+      // 넥 지판
+      [11, 10, '#cbd5e1'], [12, 10, '#94a3b8'],
+      [12, 11, '#cbd5e1'], [13, 11, '#94a3b8'],
+      // 컷어웨이 상단 뿔
+      [14, 11, '#ef4444'],
+      // 바디 & 픽가드
+      [14, 12, '#dc2626'], [15, 12, '#ffffff'], [16, 12, '#ef4444'],
+      [13, 13, '#ef4444'], [14, 13, '#dc2626'], [15, 13, '#ffffff'], [16, 13, '#18181b'], [17, 13, '#ef4444'], [18, 13, '#b91c1c'],
+      [14, 14, '#dc2626'], [15, 14, '#ef4444'], [16, 14, '#ffffff'], [17, 14, '#18181b'], [18, 14, '#ef4444'], [19, 14, '#b91c1c'],
+      [15, 15, '#b91c1c'], [16, 15, '#dc2626'], [17, 15, '#dc2626'], [18, 15, '#b91c1c'], [19, 15, '#7f1d1d'],
+      [16, 16, '#991b1b'], [17, 16, '#991b1b']
+    ]
+  }
+};
+
+// 통합 아이템 픽셀 도우미 함수
+function getAnyItemPixels(id) {
+  if (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && PRAISE_MUSIC_ITEM_PIXELS[id]) {
+    return PRAISE_MUSIC_ITEM_PIXELS[id].pixels;
+  }
+  if (typeof PROTOTYPE_ITEM_PIXELS !== 'undefined' && PROTOTYPE_ITEM_PIXELS[id]) {
+    return PROTOTYPE_ITEM_PIXELS[id].pixels;
+  }
+  return null;
+}
+
+// 통합 아이템 정보 도우미 함수
+function getAnyItemInfo(id) {
+  if (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS[id]) return TALENT_ITEMS[id];
+  if (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && PRAISE_MUSIC_ITEM_PIXELS[id]) return PRAISE_MUSIC_ITEM_PIXELS[id];
+  if (typeof PROTOTYPE_ITEM_PIXELS !== 'undefined' && PROTOTYPE_ITEM_PIXELS[id]) return PROTOTYPE_ITEM_PIXELS[id];
+  return null;
+}
+
+// ==========================================
 // 🧪 Item Test Studio Controller
 // ==========================================
 const ItemStudio = {
@@ -282,12 +503,17 @@ const ItemStudio = {
 
   init() {
     this.initSessionInfo();
-    this.renderCurrentCatalog();
-    this.renderPrototypeCatalog();
+    this.renderAllCatalogs();
     this.initPixelCanvas();
     this.updateCanvas();
     this.bindEvents();
-    console.log('🧪 Charles Item Test Studio Initialized!');
+    console.log('🧪 Charles Item Test Studio Initialized with Praise Instruments!');
+  },
+
+  renderAllCatalogs() {
+    this.renderCurrentCatalog();
+    this.renderPraiseMusicCatalog();
+    this.renderPrototypeCatalog();
   },
 
   initSessionInfo() {
@@ -341,7 +567,34 @@ const ItemStudio = {
     container.innerHTML = html;
   },
 
-  // 2. 신규 프로토타입 카탈로그 렌더링
+  // 2. 찬양집회 스페셜 악기 카탈로그 렌더링
+  renderPraiseMusicCatalog() {
+    const container = document.getElementById('praise-items-container');
+    if (!container) return;
+
+    let html = '';
+    for (const [id, item] of Object.entries(PRAISE_MUSIC_ITEM_PIXELS)) {
+      const isEq = this.isEquipped(id);
+      const iconSvg = this.generateItemSvg(item.pixels);
+
+      html += `
+        <div class="item-test-card ${isEq ? 'equipped' : ''}" onclick="ItemStudio.toggleEquip('${id}')" id="card-${id}">
+          <div class="item-card-top">
+            <span class="item-slot-tag" style="background: #f3e8ff; color: #7c3aed; border: 1px solid #d8b4fe;">찬양: ${item.category}</span>
+            <span class="item-equip-status">${isEq ? '착용중 ✓' : ''}</span>
+          </div>
+          <div class="item-preview-box">
+            ${iconSvg || `<span style="font-size: 26px;">${item.icon || '🎸'}</span>`}
+          </div>
+          <div class="item-title">${item.name}</div>
+          <div class="item-desc">${item.desc || ''}</div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  },
+
+  // 3. 신규 프로토타입 카탈로그 렌더링
   renderPrototypeCatalog() {
     const container = document.getElementById('prototype-items-container');
     if (!container) return;
@@ -354,7 +607,7 @@ const ItemStudio = {
       html += `
         <div class="item-test-card ${isEq ? 'equipped' : ''}" onclick="ItemStudio.toggleEquip('${id}')" id="card-${id}">
           <div class="item-card-top">
-            <span class="item-slot-tag" style="background: #e0f2fe; color: #0369a1;">신규: ${item.category}</span>
+            <span class="item-slot-tag" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">신규: ${item.category}</span>
             <span class="item-equip-status">${isEq ? '착용중 ✓' : ''}</span>
           </div>
           <div class="item-preview-box">
@@ -389,7 +642,7 @@ const ItemStudio = {
 
   // 장착 토글
   toggleEquip(itemId) {
-    const item = (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS[itemId]) || PROTOTYPE_ITEM_PIXELS[itemId];
+    const item = getAnyItemInfo(itemId);
     if (!item) return;
 
     let slot = item.slot;
@@ -411,8 +664,7 @@ const ItemStudio = {
     }
 
     this.updateCanvas();
-    this.renderCurrentCatalog();
-    this.renderPrototypeCatalog();
+    this.renderAllCatalogs();
     this.updateEquippedChips();
     this.updateJsonViewer();
   },
@@ -422,8 +674,7 @@ const ItemStudio = {
     this.equipped = {};
     this.customPixels = [];
     this.updateCanvas();
-    this.renderCurrentCatalog();
-    this.renderPrototypeCatalog();
+    this.renderAllCatalogs();
     this.updateEquippedChips();
     this.updateJsonViewer();
     this.clearPixelCanvas();
@@ -497,11 +748,11 @@ const ItemStudio = {
     const viewBoxMinY = hasBanner ? Math.round(-6.5 * scale) : 0;
     const viewBoxHeight = hasBanner ? Math.round(30.5 * scale) : svgHeight;
 
-    // Layer 0.5: 등 뒤 날개 (Back)
+    // Layer 0.5: 등 뒤 날개 / 멜로디 아우라 (Back)
     let backRects = '';
     const backItem = this.equipped.back;
-    if (backItem && PROTOTYPE_ITEM_PIXELS[backItem]) {
-      backRects += this.renderPixelArray(PROTOTYPE_ITEM_PIXELS[backItem].pixels, scale);
+    if (backItem && getAnyItemPixels(backItem)) {
+      backRects += this.renderPixelArray(getAnyItemPixels(backItem), scale);
     } else if (this.customSlot === 'back' && this.customPixels.length) {
       backRects += this.renderPixelArray(this.customPixels, scale);
     }
@@ -514,22 +765,22 @@ const ItemStudio = {
         grassRects += renderAutumnAccessory('back_maple_carpet', scale);
       } else if (grassItem === 'back_daisy_field' && typeof renderAccessoryDaisyField === 'function') {
         grassRects += renderAccessoryDaisyField(scale);
-      } else if (PROTOTYPE_ITEM_PIXELS[grassItem]) {
-        grassRects += this.renderPixelArray(PROTOTYPE_ITEM_PIXELS[grassItem].pixels, scale);
+      } else if (getAnyItemPixels(grassItem)) {
+        grassRects += this.renderPixelArray(getAnyItemPixels(grassItem), scale);
       }
     }
     if (this.customSlot === 'grass' && this.customPixels.length) {
       grassRects += this.renderPixelArray(this.customPixels, scale);
     }
 
-    // Layer 1.5: Side 소품 (단호박, 눈사람, 선물상자 등)
+    // Layer 1.5: Side 소품 (스탠드 마이크, 신디사이저, 단호박, 눈사람, 선물상자 등)
     let sideRects = '';
     const sideItem = this.equipped.side;
     if (sideItem) {
       if (sideItem === 'side_autumn_pumpkin' && typeof renderAutumnAccessory === 'function') {
         sideRects += renderAutumnAccessory('side_autumn_pumpkin', scale);
-      } else if (PROTOTYPE_ITEM_PIXELS[sideItem]) {
-        sideRects += this.renderPixelArray(PROTOTYPE_ITEM_PIXELS[sideItem].pixels, scale);
+      } else if (getAnyItemPixels(sideItem)) {
+        sideRects += this.renderPixelArray(getAnyItemPixels(sideItem), scale);
       }
     }
     if (this.customSlot === 'side' && this.customPixels.length) {
@@ -552,8 +803,8 @@ const ItemStudio = {
     if (neckItem) {
       if (neckItem === 'neck_acorn_scarf' && typeof renderAutumnAccessory === 'function') {
         neckRects += renderAutumnAccessory('neck_acorn_scarf', scale);
-      } else if (PROTOTYPE_ITEM_PIXELS[neckItem]) {
-        neckRects += this.renderPixelArray(PROTOTYPE_ITEM_PIXELS[neckItem].pixels, scale);
+      } else if (getAnyItemPixels(neckItem)) {
+        neckRects += this.renderPixelArray(getAnyItemPixels(neckItem), scale);
       }
     }
     if (this.customSlot === 'neck' && this.customPixels.length) {
@@ -567,7 +818,7 @@ const ItemStudio = {
       glassesRects += renderAccessoryGlasses(scale, 0);
     }
 
-    // Layer 4: Head 모자/헤어
+    // Layer 4: Head 모자/헤어/헤드폰
     let headRects = '';
     const headItem = this.equipped.head;
     if (headItem) {
@@ -575,15 +826,15 @@ const ItemStudio = {
         headRects += renderAutumnAccessory('head_maple_beret', scale);
       } else if (headItem === 'head_straw_hat' && typeof renderAccessoryStrawHat === 'function') {
         headRects += renderAccessoryStrawHat(scale);
-      } else if (PROTOTYPE_ITEM_PIXELS[headItem]) {
-        headRects += this.renderPixelArray(PROTOTYPE_ITEM_PIXELS[headItem].pixels, scale);
+      } else if (getAnyItemPixels(headItem)) {
+        headRects += this.renderPixelArray(getAnyItemPixels(headItem), scale);
       }
     }
     if (this.customSlot === 'head' && this.customPixels.length) {
       headRects += this.renderPixelArray(this.customPixels, scale);
     }
 
-    // Layer 5: Hold 손 소품 (성경, 지팡이, 핫초코 등)
+    // Layer 5: Hold 손 소품 (마이크, 통기타, 일렉기타, 탬버린, 성경 등)
     let holdRects = '';
     const holdItem = this.equipped.hold;
     if (holdItem) {
@@ -591,8 +842,8 @@ const ItemStudio = {
         holdRects += renderAccessoryBible(scale);
       } else if ((holdItem === 'hold_autumn_lantern' || holdItem === 'hold_apple_basket') && typeof renderAutumnAccessory === 'function') {
         holdRects += renderAutumnAccessory(holdItem, scale);
-      } else if (PROTOTYPE_ITEM_PIXELS[holdItem]) {
-        holdRects += this.renderPixelArray(PROTOTYPE_ITEM_PIXELS[holdItem].pixels, scale);
+      } else if (getAnyItemPixels(holdItem)) {
+        holdRects += this.renderPixelArray(getAnyItemPixels(holdItem), scale);
       }
     }
     if (this.customSlot === 'hold' && this.customPixels.length) {
@@ -651,7 +902,7 @@ const ItemStudio = {
       const itemId = this.equipped[s];
       if (!itemId) continue;
 
-      const itemInfo = (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS[itemId]) || PROTOTYPE_ITEM_PIXELS[itemId];
+      const itemInfo = getAnyItemInfo(itemId);
       const name = itemInfo ? itemInfo.name : itemId;
       const icon = itemInfo ? (itemInfo.icon || '✨') : '🏷️';
 
@@ -892,11 +1143,29 @@ pixels: ${JSON.stringify(this.customPixels)}`;
       };
       this.setStage(5);
       this.setTheme('theme-night');
+    } else if (presetName === 'worship_guitar') {
+      this.equipped = {
+        hold: 'hold_acoustic_guitar',
+        side: 'side_vintage_stand_mic',
+        back: 'back_melody_aura',
+        head: 'head_worship_headphones',
+        banner: 'banner_king_god'
+      };
+      this.setStage(4);
+      this.setTheme('theme-night');
+    } else if (presetName === 'worship_vocal') {
+      this.equipped = {
+        hold: 'hold_worship_mic',
+        side: 'side_worship_synth',
+        back: 'back_melody_aura',
+        banner: 'banner_living_hope'
+      };
+      this.setStage(5);
+      this.setTheme('theme-pasture');
     }
 
     this.updateCanvas();
-    this.renderCurrentCatalog();
-    this.renderPrototypeCatalog();
+    this.renderAllCatalogs();
     this.updateEquippedChips();
     this.updateJsonViewer();
     this.showToast(`'${presetName}' 프리셋을 적용했습니다! ✨`);
