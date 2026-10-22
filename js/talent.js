@@ -365,84 +365,25 @@ const TalentService = {
   },
 
   // ==================== 2. 인벤토리 및 착용 ====================
-  // 🧹 비정상 노출 배너 아이템 회수 (정당한 투표 참여자의 배너는 안전하게 보존)
+  // 🛡️ 찬양집회 응원 배너 안전 보존 관리자 (배너 자동 유실 방지 및 보존)
   cleanupBannerItems() {
-    try {
-      const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
-      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
-
-      // 찬양집회 투표에 참여하여 정당하게 배너를 수령한 성도는 회수 대상에서 제외
-      if (hasVoted) return false;
-
-      const invKey = this.getUserKey('inventory');
-      const eqKey = this.getUserKey('equipped');
-
-      let modified = false;
-
-      // 1) 인벤토리에서 banner_ 아이템 전량 회수
-      const rawInv = localStorage.getItem(invKey);
-      if (rawInv) {
-        const inv = JSON.parse(rawInv);
-        if (Array.isArray(inv)) {
-          const cleanedInv = inv.filter(id => !String(id).startsWith('banner_'));
-          if (cleanedInv.length !== inv.length) {
-            localStorage.setItem(invKey, JSON.stringify(cleanedInv));
-            modified = true;
-            console.log(`🧹 [TalentService] 유저 [${uid}] 인벤토리에서 미투표 배너 아이템 ${inv.length - cleanedInv.length}개 회수 완료.`);
-          }
-        }
-      }
-
-      // 2) 착용 슬롯에서 배너 해제
-      const rawEq = localStorage.getItem(eqKey);
-      if (rawEq) {
-        const eq = JSON.parse(rawEq);
-        if (eq.banner) {
-          eq.banner = null;
-          modified = true;
-        }
-        if (eq.hold && String(eq.hold).startsWith('banner_')) {
-          eq.hold = null;
-          modified = true;
-        }
-        if (eq.head && String(eq.head).startsWith('banner_')) {
-          eq.head = null;
-          modified = true;
-        }
-        if (modified) {
-          localStorage.setItem(eqKey, JSON.stringify(eq));
-          console.log(`🧹 [TalentService] 유저 [${uid}] 미투표 착용 배너 슬롯 해제 완료.`);
-        }
-      }
-
-      // 회수 발생 시 즉시 클라우드에 확정 동기화
-      if (modified && typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
-        StorageService.saveToCloud();
-      }
-      return modified;
-    } catch (e) {
-      console.warn('⚠️ [TalentService] 배너 회수 중 오류:', e);
-      return false;
-    }
+    // 찬양 배너는 찬양집회 정규 이벤트 리워드로 영구 보존됩니다.
+    // 어떠한 경우에도 정당하게 획득한 배너를 자동 회수하거나 삭제하지 않습니다.
+    return false;
   },
 
   getInventory() {
     try {
       const data = localStorage.getItem(this.getUserKey('inventory'));
       const list = data ? JSON.parse(data) : [];
-      const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
-      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
-      if (hasVoted) return Array.isArray(list) ? list : [];
-      return Array.isArray(list) ? list.filter(id => !String(id).startsWith('banner_')) : [];
+      return Array.isArray(list) ? list : [];
     } catch (e) {
       return [];
     }
   },
 
   saveInventory(list) {
-    const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
-    const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
-    const safeList = (hasVoted || !Array.isArray(list)) ? (list || []) : list.filter(id => !String(id).startsWith('banner_'));
+    const safeList = Array.isArray(list) ? list : [];
     localStorage.setItem(this.getUserKey('inventory'), JSON.stringify(safeList));
     localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
     if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
@@ -452,9 +393,6 @@ const TalentService = {
 
   hasItem(itemId) {
     if (!itemId) return false;
-    const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
-    const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
-    if (String(itemId).startsWith('banner_') && !hasVoted) return false;
     return this.getInventory().includes(itemId);
   },
 
@@ -499,13 +437,33 @@ const TalentService = {
         equipped.grass = equipped.back;
       }
 
-      const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
-      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
-
-      // 투표하지 않은 계정의 비정상 착용 배너만 해제
+      // 찬양집회 배너 보존 및 인벤토리에 보유 중인 배너 자동 착용 복구
       let validBanner = null;
-      if (hasVoted && equipped.banner && String(equipped.banner).startsWith('banner_')) {
+      if (equipped.banner && String(equipped.banner).startsWith('banner_')) {
         validBanner = equipped.banner;
+      } else {
+        const inv = this.getInventory();
+        const invBanner = inv.find(id => String(id).startsWith('banner_'));
+        if (invBanner) {
+          validBanner = invBanner;
+          equipped.banner = invBanner;
+          try {
+            localStorage.setItem(this.getUserKey('equipped'), JSON.stringify(equipped));
+          } catch (e) {}
+        }
+      }
+
+      // 배너 보유가 확인되면 로컬 투표 상태도 즉시 자가치유 등록
+      if (validBanner) {
+        const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
+        if (uid && uid !== 'guest' && !localStorage.getItem(`charles_praise_voted_${uid}`)) {
+          try {
+            localStorage.setItem(`charles_praise_voted_${uid}`, JSON.stringify({
+              bannerId: validBanner,
+              votedAt: new Date().toISOString()
+            }));
+          } catch (e) {}
+        }
       }
 
       return {

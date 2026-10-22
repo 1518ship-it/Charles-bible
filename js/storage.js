@@ -551,22 +551,34 @@ const StorageService = {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return false;
 
     try {
-      // 1) 달란트 및 퀘스트 데이터 패키징 (정당한 투표자 배너 보존 & 미투표자 배너 회수)
-      const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`);
+      // 1) 달란트 및 퀘스트 데이터 패키징 (찬양 배너 안전 보존 & 인벤토리 보유 시 자동 착용 복구)
       const rawEquipped = typeof TalentService !== 'undefined' ? TalentService.getEquipped() : JSON.parse(localStorage.getItem(this.getUserKey('equipped')) || '{}');
-      if (!hasVoted) {
-        if (rawEquipped.banner) rawEquipped.banner = null;
-        if (rawEquipped.hold && String(rawEquipped.hold).startsWith('banner_')) rawEquipped.hold = null;
-        if (rawEquipped.head && String(rawEquipped.head).startsWith('banner_')) rawEquipped.head = null;
+      const rawInventory = typeof TalentService !== 'undefined' ? TalentService.getInventory() : JSON.parse(localStorage.getItem(this.getUserKey('inventory')) || '[]');
+
+      // 보유 배너 자동 감지 및 착용 보존
+      const invBanner = Array.isArray(rawInventory) ? rawInventory.find(id => String(id).startsWith('banner_')) : null;
+      if (invBanner && !rawEquipped.banner) {
+        rawEquipped.banner = invBanner;
+      }
+      if (rawEquipped.banner && Array.isArray(rawInventory) && !rawInventory.includes(rawEquipped.banner)) {
+        rawInventory.push(rawEquipped.banner);
       }
 
-      const rawInventory = typeof TalentService !== 'undefined' ? TalentService.getInventory() : JSON.parse(localStorage.getItem(this.getUserKey('inventory')) || '[]');
-      const cleanInventory = (hasVoted || !Array.isArray(rawInventory)) ? (rawInventory || []) : rawInventory.filter(id => !String(id).startsWith('banner_'));
+      // 배너 착용/보유 시 로컬 투표 상태 자가치유 보존
+      const effectiveBanner = rawEquipped.banner || invBanner;
+      if (effectiveBanner && !localStorage.getItem(`charles_praise_voted_${uid}`)) {
+        try {
+          localStorage.setItem(`charles_praise_voted_${uid}`, JSON.stringify({
+            bannerId: effectiveBanner,
+            votedAt: new Date().toISOString()
+          }));
+        } catch (e) {}
+      }
 
       const talentPayload = {
         talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10),
         equipped: rawEquipped,
-        inventory: cleanInventory,
+        inventory: rawInventory || [],
         quest_claims: typeof TalentService !== 'undefined' ? TalentService.getClaimedRecord() : JSON.parse(localStorage.getItem(this.getUserKey('quest_claims')) || '{}'),
         updated_at: localStorage.getItem(this.getUserKey('talents_updated_at')) || new Date().toISOString()
       };
@@ -756,15 +768,12 @@ const StorageService = {
         }
         localStorage.setItem(`charles_user_${uid}_quest_claims`, JSON.stringify(mergedClaims));
 
-        // 8) 인벤토리 합집합 병합 (투표 참여자는 배너 보존, 미투표자는 비정상 배너 제외)
-        const hasVoted = !!localStorage.getItem(`charles_praise_voted_${uid}`) || (data && data.equipped && data.equipped.banner);
+        // 8) 인벤토리 합집합 병합 (찬양 배너 안전 보존)
         const remoteInv = (remoteTalentMeta && Array.isArray(remoteTalentMeta.inventory))
           ? remoteTalentMeta.inventory
           : (Array.isArray(data.inventory) ? data.inventory : []);
-        const cleanRemoteInv = hasVoted ? remoteInv : remoteInv.filter(id => !String(id).startsWith('banner_'));
         const localInv = JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]');
-        const cleanLocalInv = hasVoted ? localInv : localInv.filter(id => !String(id).startsWith('banner_'));
-        const combinedInv = Array.from(new Set([...cleanRemoteInv, ...cleanLocalInv]));
+        const combinedInv = Array.from(new Set([...remoteInv, ...localInv]));
         if (combinedInv.length > remoteInv.length) {
           hasNewerLocalData = true;
         }
@@ -821,22 +830,41 @@ const StorageService = {
           hasNewerLocalData = true;
         }
 
-        // 10) 착용 아이템 (equipped) 동기화 (투표 참여자는 배너 보존)
-        const remoteEq = (remoteTalentMeta && remoteTalentMeta.equipped && typeof remoteTalentMeta.equipped === 'object')
-          ? remoteTalentMeta.equipped
-          : ((data.equipped && typeof data.equipped === 'object') ? data.equipped : null);
-        if (remoteEq) {
-          if (!hasVoted) {
-            if (remoteEq.banner) remoteEq.banner = null;
-            if (remoteEq.hold && String(remoteEq.hold).startsWith('banner_')) remoteEq.hold = null;
-            if (remoteEq.head && String(remoteEq.head).startsWith('banner_')) remoteEq.head = null;
+        // 10) 착용 아이템 (equipped) 동기화 (찬양 배너 무조건 안전 보존 및 자동 장착 복원)
+        let remoteEq = (remoteTalentMeta && remoteTalentMeta.equipped && typeof remoteTalentMeta.equipped === 'object')
+          ? { ...remoteTalentMeta.equipped }
+          : ((data.equipped && typeof data.equipped === 'object') ? { ...data.equipped } : {});
+        let localEq = {};
+        try {
+          localEq = JSON.parse(localStorage.getItem(`charles_user_${uid}_equipped`) || '{}') || {};
+        } catch (e) {}
+
+        // 원격/로컬/인벤토리 중 배너가 있는 곳을 최우선으로 보존
+        const activeBanner = remoteEq.banner || localEq.banner || combinedInv.find(id => String(id).startsWith('banner_')) || null;
+        if (activeBanner) {
+          remoteEq.banner = activeBanner;
+          localEq.banner = activeBanner;
+          if (!combinedInv.includes(activeBanner)) {
+            combinedInv.push(activeBanner);
+            localStorage.setItem(`charles_user_${uid}_inventory`, JSON.stringify(combinedInv));
           }
-          const hasLocalEq = !!localStorage.getItem(`charles_user_${uid}_equipped`);
-          const remoteTime = new Date(remoteTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
-          const localTime = new Date(localTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
-          if (!hasLocalEq || isNaN(localTime) || remoteTime >= localTime) {
-            localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(remoteEq));
+          if (!localStorage.getItem(`charles_praise_voted_${uid}`)) {
+            try {
+              localStorage.setItem(`charles_praise_voted_${uid}`, JSON.stringify({
+                bannerId: activeBanner,
+                votedAt: new Date().toISOString()
+              }));
+            } catch (e) {}
           }
+        }
+
+        const hasLocalEq = !!localStorage.getItem(`charles_user_${uid}_equipped`);
+        const remoteTime = new Date(remoteTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
+        const localTime = new Date(localTalentsUpdatedAt || '1970-01-01T00:00:00.000Z').getTime();
+        if (!hasLocalEq || isNaN(localTime) || remoteTime >= localTime) {
+          localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(remoteEq));
+        } else {
+          localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(localEq));
         }
 
         // 11) 자정 평가 재확인
@@ -957,7 +985,14 @@ const StorageService = {
             talents = data.talents;
           }
           if (data.equipped && typeof data.equipped === 'object' && Object.keys(data.equipped).length > 0) {
-            equipped = data.equipped;
+            const preservedBanner = equipped.banner || data.equipped.banner;
+            equipped = { ...data.equipped };
+            if (preservedBanner) equipped.banner = preservedBanner;
+          }
+          // 인벤토리에 배너가 있으나 착용 배너가 누락된 경우 자동 복구
+          if (data.inventory && Array.isArray(data.inventory) && !equipped.banner) {
+            const bItem = data.inventory.find(id => String(id).startsWith('banner_'));
+            if (bItem) equipped.banner = bItem;
           }
           if (equipped && Object.keys(equipped).length > 0) {
             try {
@@ -1101,7 +1136,19 @@ const StorageService = {
 
               if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.equipped) {
                 if (!row.equipped || Object.keys(equipped).length === 0) {
-                  equipped = row.daily_counts.__talent_data__.equipped;
+                  equipped = { ...row.daily_counts.__talent_data__.equipped };
+                } else if (row.daily_counts.__talent_data__.equipped.banner && !equipped.banner) {
+                  equipped.banner = row.daily_counts.__talent_data__.equipped.banner;
+                }
+              }
+              // daily_counts.__talent_data__ 인벤토리 및 row.inventory에서 배너 보존
+              if (!equipped.banner) {
+                if (row.inventory && Array.isArray(row.inventory)) {
+                  const b = row.inventory.find(id => String(id).startsWith('banner_'));
+                  if (b) equipped.banner = b;
+                } else if (row.daily_counts.__talent_data__ && Array.isArray(row.daily_counts.__talent_data__.inventory)) {
+                  const b = row.daily_counts.__talent_data__.inventory.find(id => String(id).startsWith('banner_'));
+                  if (b) equipped.banner = b;
                 }
               }
               if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.talents !== undefined) {

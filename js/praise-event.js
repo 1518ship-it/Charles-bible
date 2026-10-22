@@ -148,7 +148,62 @@ const PraiseEventApp = {
           localStorage.setItem(`charles_praise_voted_${uid}`, JSON.stringify(this.userVote));
         }
       } catch (err) {
-        // 테이블 미생성 또는 오프라인 시 로컬 상태 유지
+        // 테이블 미생성 또는 오프라인 시 로컬/스토리지 상태 유지
+      }
+    }
+
+    // C. user_reading_state 및 인벤토리/착용 상태로부터 투표 내역 자동 복원 (기기 변경/캐시 삭제 대응)
+    if (!this.userVote) {
+      let foundBannerId = null;
+      // 1) 로컬 스토리지 내 장비/인벤토리
+      try {
+        const localEq = JSON.parse(localStorage.getItem(`charles_user_${uid}_equipped`) || '{}');
+        if (localEq && localEq.banner && String(localEq.banner).startsWith('banner_')) {
+          foundBannerId = localEq.banner;
+        }
+        if (!foundBannerId) {
+          const localInv = JSON.parse(localStorage.getItem(`charles_user_${uid}_inventory`) || '[]');
+          foundBannerId = localInv.find(id => String(id).startsWith('banner_'));
+        }
+      } catch (e) {}
+
+      // 2) Supabase user_reading_state
+      if (!foundBannerId && typeof supabaseClient !== 'undefined' && supabaseClient) {
+        try {
+          const { data } = await supabaseClient
+            .from('user_reading_state')
+            .select('equipped, inventory, daily_counts')
+            .eq('user_id', uid)
+            .maybeSingle();
+
+          if (data) {
+            if (data.equipped && data.equipped.banner && String(data.equipped.banner).startsWith('banner_')) {
+              foundBannerId = data.equipped.banner;
+            } else if (data.inventory && Array.isArray(data.inventory)) {
+              foundBannerId = data.inventory.find(id => String(id).startsWith('banner_'));
+            } else if (data.daily_counts && data.daily_counts.__talent_data__) {
+              const td = data.daily_counts.__talent_data__;
+              if (td.equipped && td.equipped.banner) foundBannerId = td.equipped.banner;
+              else if (td.inventory && Array.isArray(td.inventory)) foundBannerId = td.inventory.find(id => String(id).startsWith('banner_'));
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (foundBannerId) {
+        const matchedSong = PRAISE_SONGS.find(s => s.bannerId === foundBannerId);
+        if (matchedSong) {
+          this.userVote = {
+            songId: matchedSong.id,
+            songTitle: matchedSong.title,
+            bannerId: matchedSong.bannerId,
+            votedAt: new Date().toISOString()
+          };
+          try {
+            localStorage.setItem(`charles_praise_voted_${uid}`, JSON.stringify(this.userVote));
+          } catch (e) {}
+          console.log(`✨ [PraiseEvent] 유저 [${uid}] 상태로부터 투표 내역(${matchedSong.title}) 복원 완료`);
+        }
       }
     }
   },
@@ -162,10 +217,41 @@ const PraiseEventApp = {
           .from('praise_event_votes')
           .select('song_id');
 
-        if (!error && Array.isArray(data)) {
+        if (!error && Array.isArray(data) && data.length > 0) {
           votes = data;
         }
       } catch (e) {}
+
+      // praise_event_votes 테이블이 비어있거나 미생성된 경우, user_reading_state에서 실제 지급된 배너 전체 집계
+      if (votes.length === 0) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('user_reading_state')
+            .select('equipped, inventory, daily_counts');
+
+          if (!error && Array.isArray(data)) {
+            data.forEach(row => {
+              let bId = null;
+              if (row.equipped && row.equipped.banner && String(row.equipped.banner).startsWith('banner_')) {
+                bId = row.equipped.banner;
+              } else if (row.inventory && Array.isArray(row.inventory)) {
+                bId = row.inventory.find(id => String(id).startsWith('banner_'));
+              } else if (row.daily_counts && row.daily_counts.__talent_data__) {
+                const td = row.daily_counts.__talent_data__;
+                if (td.equipped && td.equipped.banner) bId = td.equipped.banner;
+                else if (td.inventory && Array.isArray(td.inventory)) bId = td.inventory.find(id => String(id).startsWith('banner_'));
+              }
+
+              if (bId) {
+                const song = PRAISE_SONGS.find(s => s.bannerId === bId);
+                if (song) {
+                  votes.push({ song_id: song.id });
+                }
+              }
+            });
+          }
+        } catch (e) {}
+      }
     }
 
     // 원격 데이터가 없을 때, 현재 유저의 투표 포함 시뮬레이션

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
-  APP_VERSION: 'v8.8',
+  APP_VERSION: 'v8.9',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
   searchKeyword: '',
@@ -41,11 +41,6 @@ const App = {
     this.bindEvents();
     this.applySavedTheme();
 
-    // 🧹 비정상 노출 배너 아이템 전량 긴급 회수 및 스토리지 정화
-    if (typeof TalentService !== 'undefined' && TalentService.cleanupBannerItems) {
-      TalentService.cleanupBannerItems();
-    }
-
     this.renderAll();
     this.updateUnreadNotificationDot();
 
@@ -53,9 +48,6 @@ const App = {
     if (AuthService.isAuthenticated()) {
       try {
         await StorageService.syncFromCloud();
-        if (typeof TalentService !== 'undefined' && TalentService.cleanupBannerItems) {
-          TalentService.cleanupBannerItems();
-        }
         this.renderAll();
         console.log('☁️ [초기화] Supabase로부터 최신 통독 진행도 및 오늘 읽은 장수가 동기화되었습니다.');
       } catch (err) {
@@ -1320,8 +1312,8 @@ const App = {
         `;
       }).join('');
     } else {
-      // 내 옷장: 보유한 일반 아이템만 노출 (배너 아이템 노출 차단)
-      const ownedItems = allItems.filter(item => TalentService.hasItem(item.id) && item.slot !== 'banner' && !String(item.id).startsWith('banner_'));
+      // 내 옷장: 보유한 모든 일반 아이템 및 찬양 배너 노출
+      const ownedItems = allItems.filter(item => TalentService.hasItem(item.id));
 
       if (ownedItems.length === 0) {
         grid.innerHTML = `
