@@ -1472,6 +1472,19 @@ function getAccessoryIconSvg(itemId) {
 }
 
 /**
+ * 범용 픽셀 배열 SVG rect 렌더러
+ */
+function renderPixelArrayGeneric(pixels, scale) {
+  if (!pixels || !Array.isArray(pixels)) return '';
+  let res = '';
+  for (let i = 0; i < pixels.length; i++) {
+    const p = pixels[i];
+    res += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${scale}" height="${scale}" fill="${p[2]}" />`;
+  }
+  return res;
+}
+
+/**
  * 24x24 통일 규격 찰스 메인 픽셀 그리드 렌더러
  * (배너 착용 시 상단 공간을 자동으로 확장하여 높은 배너를 완벽하게 포용)
  */
@@ -1494,7 +1507,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   const viewBoxMinY = Math.round(-topPaddingGrid * scale);
   const viewBoxHeight = Math.round((canvasHeight + topPaddingGrid + bottomPaddingGrid) * scale);
 
-  // Layer 1: Back / Floor 악세사리 (바닥 잔디/낙엽)
+  // Layer 1: Back / Floor 악세사리 (바닥 잔디/낙엽/눈밭/천사날개/멜로디아우라)
   let backRects = '';
   if (equipped) {
     if (equipped.grass === 'back_maple_carpet' || equipped.back === 'back_maple_carpet' || equipped.back_maple_carpet) {
@@ -1502,12 +1515,20 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
     } else if (equipped.grass === 'back_daisy_field' || equipped.back === 'back_daisy_field' || equipped.back_daisy_field) {
       backRects += renderAccessoryDaisyField(scale);
     }
+    const backItem = equipped.back || equipped.grass;
+    if (backItem && typeof getAnyItemPixels === 'function' && getAnyItemPixels(backItem)) {
+      backRects += renderPixelArrayGeneric(getAnyItemPixels(backItem), scale);
+    }
   }
 
-  // Layer 1.5: Side 소품 (탐스러운 가을 단호박 - 찰스 왼쪽 앞바닥)
+  // Layer 1.5: Side 소품 (스탠드 마이크, 신디사이저, 단호박, 눈사람, 선물상자 등)
   let sideRects = '';
-  if (equipped && (equipped.side === 'side_autumn_pumpkin' || equipped.hold === 'side_autumn_pumpkin' || equipped.side_autumn_pumpkin)) {
-    sideRects += renderAutumnAccessory('side_autumn_pumpkin', scale);
+  if (equipped) {
+    if (equipped.side === 'side_autumn_pumpkin' || equipped.hold === 'side_autumn_pumpkin' || equipped.side_autumn_pumpkin) {
+      sideRects += renderAutumnAccessory('side_autumn_pumpkin', scale);
+    } else if (equipped.side && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.side)) {
+      sideRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.side), scale);
+    }
   }
 
   // Layer 2: 찰스 본체 (공식 신규 1~5단계 정밀 픽셀 데이터)
@@ -1527,10 +1548,14 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
     }
   }
 
-  // Layer 2.5: Neck 악세사리 (도토리 니트 목도리 - 찰스 목/가슴 둘레)
+  // Layer 2.5: Neck 악세사리 (도토리 니트 목도리, 체크 목도리 등)
   let neckRects = '';
-  if (equipped && (equipped.neck === 'neck_acorn_scarf' || equipped.neck_acorn_scarf)) {
-    neckRects += renderAutumnAccessory('neck_acorn_scarf', scale);
+  if (equipped) {
+    if (equipped.neck === 'neck_acorn_scarf' || equipped.neck_acorn_scarf) {
+      neckRects += renderAutumnAccessory('neck_acorn_scarf', scale);
+    } else if (equipped.neck && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.neck)) {
+      neckRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.neck), scale);
+    }
   }
 
   // Layer 3: Glasses 악세사리 (둥근 범생이 안경)
@@ -1539,17 +1564,19 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
     glassesRects += renderAccessoryGlasses(scale, 0);
   }
 
-  // Layer 4: Head 악세사리 (머리 부위 - 귀여운 밀짚모자 또는 단풍잎 베레모)
+  // Layer 4: Head 악세사리 (밀짚모자, 단풍베레모, 헤드폰, 황금면류관, 산타모자, 귀도리)
   let headRects = '';
   if (equipped) {
     if (equipped.head === 'head_maple_beret' || equipped.head_maple_beret) {
       headRects += renderAutumnAccessory('head_maple_beret', scale);
     } else if (equipped.head === 'head_straw_hat' || equipped.head_straw_hat) {
       headRects += renderAccessoryStrawHat(scale);
+    } else if (equipped.head && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.head)) {
+      headRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.head), scale);
     }
   }
 
-  // Layer 5: Hold 악세사리 (소품 - 작은 성경책 / 가을밤 랜턴 / 꿀사과 바구니)
+  // Layer 5: Hold 악세사리 (가로 통기타, 일렉기타, 마이크, 탬버린, 성경책, 랜턴, 바구니)
   let holdRects = '';
   if (equipped) {
     if (equipped.hold === 'hold_autumn_lantern' || equipped.hold_autumn_lantern) {
@@ -1558,6 +1585,8 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
       holdRects += renderAutumnAccessory('hold_apple_basket', scale);
     } else if (equipped.hold === 'hold_bible' || equipped.body === 'hold_bible' || equipped.hold_bible) {
       holdRects += renderAccessoryBible(scale);
+    } else if (equipped.hold && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.hold)) {
+      holdRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.hold), scale);
     }
   }
 
@@ -1572,8 +1601,8 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
          class="charles-svg ${animClass} ${hasBanner ? 'has-charles-banner' : ''}" 
          style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 150px; display: block; margin: 0 auto;">
       <g class="layer-back">${backRects}</g>
-      <g class="layer-side">${sideRects}</g>
       <g class="layer-body">${bodyRects}</g>
+      <g class="layer-side">${sideRects}</g>
       <g class="layer-neck">${neckRects}</g>
       <g class="layer-glasses">${glassesRects}</g>
       <g class="layer-head">${headRects}</g>
