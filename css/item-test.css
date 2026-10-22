@@ -149,7 +149,20 @@ body.studio-body {
   gap: 16px;
   position: sticky;
   top: 76px;
-  height: fit-content;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.studio-viewport-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.studio-viewport-panel::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 999px;
 }
 
 .studio-card {
@@ -178,19 +191,21 @@ body.studio-body {
   color: #111827;
 }
 
-/* 찰스 디스플레이 캔버스 */
+/* 찰스 디스플레이 캔버스 (상단 아이템/배너가 넉넉히 들어오도록 높이 및 패딩 확장) */
 .charles-canvas-stage {
   position: relative;
   width: 100%;
-  min-height: 290px;
-  border-radius: 10px;
+  min-height: 380px;
+  padding: 36px 20px 28px;
+  border-radius: 12px;
   border: 2px dashed #d1d5db;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   transition: background 0.25s ease;
   user-select: none;
+  box-sizing: border-box;
 }
 
 /* 배경 프리셋 테마 */
@@ -244,6 +259,7 @@ body.studio-body {
   align-items: center;
   justify-content: center;
   transition: transform 0.15s ease;
+  width: 100%;
 }
 
 .charles-avatar-box svg {
@@ -252,22 +268,23 @@ body.studio-body {
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08));
 }
 
-/* 마우스 좌표 오버레이 HUD */
+/* 마우스 좌표 오버레이 HUD (상단 배너/아이템 가림 방지를 위해 하단으로 배치) */
 .canvas-hud-overlay {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(17, 24, 39, 0.75);
+  bottom: 8px;
+  left: 10px;
+  background: rgba(17, 24, 39, 0.85);
   color: #f3f4f6;
   font-size: 11px;
   font-family: 'D2Coding', Consolas, monospace;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   pointer-events: none;
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   gap: 8px;
+  z-index: 10;
 }
 
 /* 픽셀 격자선 (Grid Lines) */
@@ -551,18 +568,22 @@ body.studio-body {
 
 .item-preview-box {
   width: 100%;
-  height: 64px;
+  height: 74px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f9fafb;
   border-radius: 6px;
   margin-bottom: 8px;
+  overflow: visible;
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .item-preview-box svg {
-  max-width: 48px;
-  max-height: 48px;
+  max-width: 64px;
+  max-height: 56px;
+  overflow: visible;
 }
 
 .item-title {

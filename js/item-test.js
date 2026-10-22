@@ -631,13 +631,13 @@ const ItemStudio = {
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
     }
-    const pad = 1;
+    const pad = 1.5;
     const vb = `${(minX - pad) * scale} ${(minY - pad) * scale} ${(maxX - minX + pad * 2 + 1) * scale} ${(maxY - minY + pad * 2 + 1) * scale}`;
     let rects = '';
     for (const [x, y, color] of pixels) {
       rects += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="${color}" />`;
     }
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" shape-rendering="crispEdges" style="width: 48px; height: 48px;">${rects}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" shape-rendering="crispEdges" style="width: auto; height: 50px; max-width: 64px; max-height: 50px; display: block; margin: 0 auto;">${rects}</svg>`;
   },
 
   // 장착 토글
@@ -735,18 +735,27 @@ const ItemStudio = {
     const slotEl = document.getElementById('charles-avatar-slot');
     if (!slotEl) return;
 
-    // 1. 배너 착용 여부 감지
+    // 1. 배너 및 상단 장식 착용 여부에 따른 동적 뷰포트 헤드룸(상단 여백) 계산
     const hasBanner = !!(this.equipped && this.equipped.banner);
     const bannerId = this.equipped ? this.equipped.banner : null;
+    const hasMelody = this.equipped && this.equipped.back === 'back_melody_aura';
 
     const scale = this.scale;
     const canvasWidth = 24;
     const canvasHeight = 24;
-    const svgWidth = canvasWidth * scale;
-    const svgHeight = canvasHeight * scale;
 
-    const viewBoxMinY = hasBanner ? Math.round(-6.5 * scale) : 0;
-    const viewBoxHeight = hasBanner ? Math.round(30.5 * scale) : svgHeight;
+    // 상단 돌출 아이템(배너: -6.0, 멜로디: -3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
+    let topPaddingGrid = 4.0; // 기본 헤드룸: 왕관(y:0), 모자, 귀도리가 위로 닿지 않고 40px 여유 확보
+    if (hasBanner) {
+      topPaddingGrid = 9.0; // 배너 착용 시: -9.0까지 상단 확장 (배너가 -6.0에 위치하므로 상단 30px 완전 여유)
+    } else if (hasMelody) {
+      topPaddingGrid = 6.0; // 멜로디 음표 착용 시 여유 확보
+    }
+
+    const bottomPaddingGrid = 2.0; // 바닥 잔디/그림자 여유 공간
+    const svgWidth = canvasWidth * scale;
+    const viewBoxMinY = Math.round(-topPaddingGrid * scale);
+    const viewBoxHeight = Math.round((canvasHeight + topPaddingGrid + bottomPaddingGrid) * scale);
 
     // Layer 0.5: 등 뒤 날개 / 멜로디 아우라 (Back)
     let backRects = '';

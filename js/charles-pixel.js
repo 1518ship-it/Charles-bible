@@ -1485,9 +1485,14 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   const svgWidth = canvasWidth * scale;
   const svgHeight = canvasHeight * scale;
 
-  // 배너가 머리 위로 올라가므로, 배너 착용 시 viewBox를 y: -6.5 * scale 부터 시작하여 30.5 * scale 높이로 자동 확장
-  const viewBoxMinY = hasBanner ? Math.round(-6.5 * scale) : 0;
-  const viewBoxHeight = hasBanner ? Math.round(30.5 * scale) : svgHeight;
+  // 머리 위 배너, 모자, 왕관, 악세사리가 위쪽으로 잘리지 않도록 넉넉한 상단 헤드룸(상단 여백) 동적 확보
+  let topPaddingGrid = 3.5; // 기본 상단 여백 (모자, 왕관 y:0, 귀도리 등 상단 천장 닿음 방지)
+  if (hasBanner) {
+    topPaddingGrid = 8.5; // 배너 착용 시 상단 여백 대폭 확장 (배너가 -6.0에 위치하므로 2.5 그리드 완전 여유)
+  }
+  const bottomPaddingGrid = 1.5; // 하단 바닥 잔디/그림자 여유 공간
+  const viewBoxMinY = Math.round(-topPaddingGrid * scale);
+  const viewBoxHeight = Math.round((canvasHeight + topPaddingGrid + bottomPaddingGrid) * scale);
 
   // Layer 1: Back / Floor 악세사리 (바닥 잔디/낙엽)
   let backRects = '';

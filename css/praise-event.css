@@ -198,12 +198,12 @@ body {
   background: radial-gradient(circle at 50% 60%, rgba(250, 204, 21, 0.18) 0%, rgba(24, 24, 27, 0.9) 65%);
   border: 1.5px solid rgba(250, 204, 21, 0.35);
   border-radius: 16px;
-  padding: 16px 14px;
+  padding: 24px 14px 16px 14px;
   text-align: center;
   margin-bottom: 20px;
   position: relative;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .stage-light-glow {
@@ -218,13 +218,15 @@ body {
 }
 
 .stage-avatar-container {
-  width: 145px;
-  height: 155px;
+  width: 100%;
+  max-width: 180px;
+  min-height: 185px;
   margin: 0 auto 10px auto;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: cheer-bounce 2.6s ease-in-out infinite;
+  overflow: visible;
 }
 
 @keyframes cheer-bounce {
