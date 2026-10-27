@@ -25,7 +25,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=8.9">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=9.0">
 </head>
 <body>
 
@@ -180,6 +180,16 @@
 
         <!-- 검색창 -->
         <input type="text" id="bible-search-input" class="bible-search-input" placeholder="🔍 성경 검색 (예: 창세기, 마태, 시편)...">
+
+        <!-- 내 말씀 노트 & 하이라이터 진입 배너 -->
+        <button id="btn-open-notes-hub" class="bible-notes-banner-btn" type="button" onclick="App.openNotesHubModal()">
+          <span class="banner-icon">📝</span>
+          <div class="banner-text">
+            <div class="banner-title">내 말씀 노트 & 하이라이터</div>
+            <div class="banner-sub" id="bible-notes-summary-text">은혜받은 말씀을 기록해보세요 🌿</div>
+          </div>
+          <span class="banner-arrow">➔</span>
+        </button>
 
         <!-- 성경 권 목록 -->
         <div id="bible-books-list">
@@ -503,6 +513,7 @@
         </div>
 
         <div style="display: flex; gap: 4px;">
+          <button id="reader-btn-notes" class="reader-nav-arrow" title="내 말씀 노트 & 하이라이터" type="button" onclick="App.openNotesHubModal()">📝</button>
           <button id="reader-btn-font-down" class="reader-nav-arrow" title="글자 작게">A-</button>
           <button id="reader-btn-font-up" class="reader-nav-arrow" title="글자 크게">A+</button>
         </div>
@@ -518,6 +529,38 @@
         <button id="reader-btn-complete-next" class="btn-complete-chapter" style="width: 100%;">
           ✓ 다 읽고 다음 장으로 ➔
         </button>
+      </div>
+
+      <!-- 플로팅 말씀 액션 툴바 (형광펜 5종 + 지우개 + 묵상노트 + 복사 + 닫기) -->
+      <div id="verse-action-toolbar" class="verse-action-toolbar" style="display: none;">
+        <div class="verse-toolbar-content">
+          <div class="verse-toolbar-ref" id="verse-toolbar-ref">마태복음 1:1</div>
+          
+          <div class="verse-toolbar-colors">
+            <button type="button" class="color-btn color-yellow" data-color="yellow" title="옐로우 (따스한 햇살)"></button>
+            <button type="button" class="color-btn color-green" data-color="green" title="그린 (생명의 말씀)"></button>
+            <button type="button" class="color-btn color-blue" data-color="blue" title="블루 (평안과 위로)"></button>
+            <button type="button" class="color-btn color-pink" data-color="pink" title="핑크 (사랑과 축복)"></button>
+            <button type="button" class="color-btn color-purple" data-color="purple" title="퍼플 (진리와 지혜)"></button>
+            <button type="button" class="color-btn color-erase" data-action="erase" title="형광펜 지우기">✕</button>
+          </div>
+
+          <div class="verse-toolbar-divider"></div>
+
+          <div class="verse-toolbar-actions">
+            <button type="button" class="verse-tool-btn" id="btn-verse-tool-note" title="묵상 노트 작성">
+              <span class="tool-icon">📝</span>
+              <span class="tool-label">노트</span>
+            </button>
+            <button type="button" class="verse-tool-btn" id="btn-verse-tool-copy" title="구절 복사">
+              <span class="tool-icon">📋</span>
+              <span class="tool-label">복사</span>
+            </button>
+            <button type="button" class="verse-tool-btn" id="btn-verse-tool-close" title="선택 닫기">
+              <span class="tool-icon">✕</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1777,20 +1820,124 @@
       </div>
     </div>
 
+    <!-- ==================== 말씀 묵상 노트 작성/편집 모달 ==================== -->
+    <div id="bible-note-modal" class="modal-overlay" style="display: none; z-index: 10005;">
+      <div class="modal-sheet bible-note-sheet">
+        <div class="modal-header">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 6px;">
+            <span>📝</span>
+            <span>말씀 묵상 노트</span>
+          </div>
+          <button id="btn-close-note-modal" class="btn-icon-close" type="button" aria-label="닫기" title="닫기" onclick="App.closeVerseNoteModal()">
+            <svg class="pixel-icon" viewBox="0 0 8 8" width="10" height="10" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body bible-note-body">
+          <!-- 말씀 인용 상자 -->
+          <div class="verse-quote-box">
+            <div class="verse-quote-ref" id="note-modal-verse-ref">요한복음 3장 16절</div>
+            <div class="verse-quote-text" id="note-modal-verse-text">말씀 본문이 여기에 표시됩니다.</div>
+          </div>
+
+          <!-- 색상 선택 팔레트 -->
+          <div class="note-color-select-wrap">
+            <span class="note-color-label">형광펜 색상:</span>
+            <div class="note-color-options" id="note-modal-color-options">
+              <button type="button" class="color-pill color-yellow active" data-color="yellow">골드</button>
+              <button type="button" class="color-pill color-green" data-color="green">에덴</button>
+              <button type="button" class="color-pill color-blue" data-color="blue">은혜</button>
+              <button type="button" class="color-pill color-pink" data-color="pink">사랑</button>
+              <button type="button" class="color-pill color-purple" data-color="purple">진리</button>
+            </div>
+          </div>
+
+          <!-- 묵상 메모 입력창 -->
+          <div class="note-input-wrap">
+            <label for="note-modal-textarea" class="note-input-label">✍️ 은혜의 묵상 / 기도 기록</label>
+            <textarea id="note-modal-textarea" class="note-textarea" rows="4" placeholder="이 말씀을 묵상하며 마음에 닿은 은혜나 기도를 자유롭게 기록해보세요..."></textarea>
+          </div>
+
+          <!-- 액션 버튼 -->
+          <div class="note-modal-actions">
+            <button type="button" id="btn-delete-note" class="btn-note-delete" onclick="App.handleDeleteVerseNote()">🗑️ 삭제</button>
+            <button type="button" id="btn-save-note" class="btn-note-save" onclick="App.handleSaveVerseNote()">💾 저장하기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 내 말씀 노트 & 하이라이터 모음 허브 모달 ==================== -->
+    <div id="bible-notes-hub-modal" class="modal-overlay" style="display: none; z-index: 10004;">
+      <div class="modal-sheet notes-hub-sheet">
+        <div class="modal-header">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 6px;">
+            <span>📖</span>
+            <span>내 말씀 노트 & 하이라이터</span>
+          </div>
+          <button class="btn-icon-close" type="button" aria-label="닫기" title="닫기" onclick="App.closeNotesHubModal()">
+            <svg class="pixel-icon" viewBox="0 0 8 8" width="10" height="10" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="0" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="2" width="2" height="2" fill="currentColor" />
+              <rect x="2" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+              <rect x="0" y="6" width="2" height="2" fill="currentColor" />
+              <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body notes-hub-body">
+          <!-- 검색창 -->
+          <div class="notes-hub-search-wrap">
+            <input type="text" id="notes-hub-search" class="notes-hub-search-input" placeholder="🔍 구절 본문, 묵상 메모, 성경 검색..." oninput="App.renderNotesHubList()">
+          </div>
+
+          <!-- 필터 탭 -->
+          <div class="notes-hub-filters" id="notes-hub-filters">
+            <button type="button" class="hub-filter-chip active" data-filter="all" onclick="App.setNotesHubFilter('all')">전체</button>
+            <button type="button" class="hub-filter-chip" data-filter="notes" onclick="App.setNotesHubFilter('notes')">📝 노트만</button>
+            <button type="button" class="hub-filter-chip chip-yellow" data-filter="yellow" onclick="App.setNotesHubFilter('yellow')">🟡</button>
+            <button type="button" class="hub-filter-chip chip-green" data-filter="green" onclick="App.setNotesHubFilter('green')">🟢</button>
+            <button type="button" class="hub-filter-chip chip-blue" data-filter="blue" onclick="App.setNotesHubFilter('blue')">🔵</button>
+            <button type="button" class="hub-filter-chip chip-pink" data-filter="pink" onclick="App.setNotesHubFilter('pink')">🌸</button>
+            <button type="button" class="hub-filter-chip chip-purple" data-filter="purple" onclick="App.setNotesHubFilter('purple')">🟣</button>
+          </div>
+
+          <!-- 하이라이트 & 노트 카드 목록 -->
+          <div id="notes-hub-list" class="notes-hub-list">
+            <!-- 동적 렌더링 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Supabase SDK & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
 
-  <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
-  <script src="data/bible-nt-bundle.js?v=8.9"></script>
-  <script src="js/bible-data.js?v=8.9"></script>
-  <script src="js/charles-pixel.js?v=9.1"></script>
-  <script src="js/auth.js?v=8.9"></script>
-  <script src="js/storage.js?v=8.9"></script>
-  <script src="js/talent.js?v=8.9"></script>
-  <script src="js/app.js?v=8.9"></script>
+  <!-- 스크립트 로드 순서: 성경 번들 -> 데이터 -> 하이라이트/노트 -> 그래픽 -> 인증 -> 스토리지 -> 달란트/퀘스트 -> 앱 제어 -->
+  <script src="data/bible-nt-bundle.js?v=9.0"></script>
+  <script src="js/bible-data.js?v=9.0"></script>
+  <script src="js/bible-notes.js?v=9.0"></script>
+  <script src="js/charles-pixel.js?v=9.2"></script>
+  <script src="js/auth.js?v=9.0"></script>
+  <script src="js/storage.js?v=9.0"></script>
+  <script src="js/talent.js?v=9.0"></script>
+  <script src="js/app.js?v=9.0"></script>
 
 </body>
 </html>

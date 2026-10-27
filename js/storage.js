@@ -880,6 +880,11 @@ const StorageService = {
           window.dispatchEvent(new CustomEvent('charles-cloud-synced', { detail: { userId: uid } }));
         }
 
+        // 14) 말씀 하이라이트 & 묵상 노트 클라우드 동기화 연동
+        if (typeof BibleNotesService !== 'undefined' && BibleNotesService.syncFromCloud) {
+          BibleNotesService.syncFromCloud(uid);
+        }
+
         return true;
       }
     } catch (err) {

@@ -29,12 +29,20 @@ const App = {
   pastureEditingOrderList: [],
   currentFriendDetailId: null,
 
+  // 말씀 하이라이트 & 묵상 노트 상태
+  selectedVerse: null,
+  notesHubFilter: 'all',
+  editingNoteTarget: null,
+
   async init() {
     console.log(`🐑 Charles Bible App Version: ${this.APP_VERSION}`);
     this.selectedDateStr = StorageService.getTodayDateStr();
     if (typeof StorageService !== 'undefined') {
       this.activePastureGroup = StorageService.getPastureActiveGroup();
       this.pastureGroupByCell = StorageService.getPastureGroupByCell();
+    }
+    if (typeof BibleNotesService !== 'undefined') {
+      BibleNotesService.init();
     }
     this.initAuth();
     this.loadSavedFontSize();
@@ -43,6 +51,7 @@ const App = {
 
     this.renderAll();
     this.updateUnreadNotificationDot();
+    this.updateBibleNotesSummary();
 
     // ☁️ 이미 로그인된 사용자의 경우 Supabase에서 최신 통독 진행도 및 오늘 읽은 장수 실시간 동기화
     if (AuthService.isAuthenticated()) {
@@ -881,6 +890,64 @@ const App = {
         this.checkReaderScrollBottom();
       });
     }
+
+    // ==================== 말씀 액션 플로팅 툴바 이벤트 바인딩 ====================
+    const toolbar = document.getElementById('verse-action-toolbar');
+    if (toolbar) {
+      toolbar.querySelectorAll('.color-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const color = btn.dataset.color;
+          const action = btn.dataset.action;
+          if (action === 'erase') {
+            this.eraseHighlight();
+          } else if (color) {
+            this.applyHighlightColor(color);
+          }
+        });
+      });
+
+      const noteBtn = document.getElementById('btn-verse-tool-note');
+      if (noteBtn) {
+        noteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (this.selectedVerse) {
+            this.openVerseNoteModal(
+              this.selectedVerse.bookId,
+              this.selectedVerse.chapter,
+              this.selectedVerse.verse
+            );
+          }
+        });
+      }
+
+      const copyBtn = document.getElementById('btn-verse-tool-copy');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.copySelectedVerse();
+        });
+      }
+
+      const closeBtn = document.getElementById('btn-verse-tool-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.hideVerseToolbar();
+        });
+      }
+    }
+
+    // 묵상 노트 모달 색상 팔레트 클릭 이벤트
+    const noteModalColorWrap = document.getElementById('note-modal-color-options');
+    if (noteModalColorWrap) {
+      noteModalColorWrap.querySelectorAll('.color-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          noteModalColorWrap.querySelectorAll('.color-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+      });
+    }
   },
 
   triggerCharlesPoke() {
@@ -932,6 +999,7 @@ const App = {
     this.renderStats();
     this.renderProfile();
     this.renderSettings();
+    this.updateBibleNotesSummary();
   },
 
   // ==================== 홈 화면 렌더링 (화면 중앙 대형 찰스 & Charles is____ & 오늘 말씀 게이지) ====================
@@ -2701,6 +2769,7 @@ const App = {
     this.currentReadingBookId = bookId;
     this.currentReadingChapter = Number(chapter);
     this.hasAutoMarkedThisSession = false; // 새로운 장 열람 시 자동완독 플래그 초기화
+    this.hideVerseToolbar();
 
     // 리더 뷰 열기
     readerView.classList.add('active');
@@ -2712,12 +2781,26 @@ const App = {
 
     try {
       const data = await BibleTextService.getChapterVerses(bookId, chapter);
+      const highlights = typeof BibleNotesService !== 'undefined'
+        ? BibleNotesService.getHighlightsForChapter(bookId, chapter)
+        : {};
       
       let html = '';
       data.verses.forEach(v => {
+        const hl = highlights[v.verse];
+        const hasHl = hl && hl.color && hl.color !== 'none';
+        const colorClass = hasHl ? `highlighted highlight-${hl.color}` : '';
+        const hasNote = hl && hl.note && hl.note.trim().length > 0;
+        const noteBadge = hasNote
+          ? `<button class="verse-note-badge" type="button" title="묵상 노트 보기" onclick="event.stopPropagation(); App.openVerseNoteModal('${bookId}', ${chapter}, ${v.verse})">📝</button>`
+          : '';
+
         html += `
-          <div class="verse-item">
-            <span class="verse-num">${v.verse}</span>
+          <div class="verse-item ${colorClass}" data-verse="${v.verse}" onclick="App.handleVerseClick('${bookId}', ${chapter}, ${v.verse}, this)">
+            <div class="verse-num">
+              <span>${v.verse}</span>
+              ${noteBadge}
+            </div>
             <span class="verse-text">${v.text}</span>
           </div>
         `;
@@ -2734,6 +2817,7 @@ const App = {
   },
 
   closeReader() {
+    this.hideVerseToolbar();
     const readerView = document.getElementById('bible-reader-view');
     if (readerView) {
       readerView.classList.remove('active');
@@ -3822,6 +3906,452 @@ const App = {
     setTimeout(() => {
       toast.remove();
     }, 1500);
+  },
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  },
+
+  // ==================== 말씀 하이라이터 & 묵상 노트 제어 ====================
+  updateBibleNotesSummary() {
+    const summaryEl = document.getElementById('bible-notes-summary-text');
+    if (!summaryEl) return;
+    if (typeof BibleNotesService !== 'undefined') {
+      const counts = BibleNotesService.getSummaryCounts();
+      if (counts.total === 0) {
+        summaryEl.textContent = '은혜받은 말씀을 기록해보세요 🌿';
+      } else {
+        summaryEl.textContent = `묵상 노트 ${counts.notes}개 · 하이라이트 ${counts.highlights}개`;
+      }
+    }
+  },
+
+  handleVerseClick(bookId, chapter, verse, element) {
+    const ch = Number(chapter);
+    const v = Number(verse);
+
+    if (this.selectedVerse && this.selectedVerse.verse === v && this.selectedVerse.chapter === ch && this.selectedVerse.bookId === bookId) {
+      // 이미 선택된 구절을 다시 탭하면 선택 해제
+      this.hideVerseToolbar();
+      return;
+    }
+
+    if (this.selectedVerse && this.selectedVerse.element) {
+      this.selectedVerse.element.classList.remove('selected');
+    }
+
+    element.classList.add('selected');
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    const bookName = book ? book.name : bookId;
+    const verseText = element.querySelector('.verse-text')?.textContent || '';
+
+    this.selectedVerse = {
+      bookId,
+      chapter: ch,
+      verse: v,
+      bookName,
+      verseText,
+      element
+    };
+
+    // 툴바 표시
+    const toolbar = document.getElementById('verse-action-toolbar');
+    const refEl = document.getElementById('verse-toolbar-ref');
+    if (toolbar && refEl) {
+      refEl.textContent = `${bookName} ${ch}:${v}`;
+      toolbar.style.display = 'block';
+    }
+  },
+
+  hideVerseToolbar() {
+    if (this.selectedVerse && this.selectedVerse.element) {
+      this.selectedVerse.element.classList.remove('selected');
+    }
+    this.selectedVerse = null;
+    const toolbar = document.getElementById('verse-action-toolbar');
+    if (toolbar) {
+      toolbar.style.display = 'none';
+    }
+  },
+
+  async applyHighlightColor(color) {
+    if (!this.selectedVerse) return;
+    const { bookId, chapter, verse, verseText, bookName, element } = this.selectedVerse;
+
+    if (typeof BibleNotesService !== 'undefined') {
+      await BibleNotesService.setHighlight(bookId, chapter, verse, color, verseText, bookName);
+    }
+
+    // DOM 업데이트
+    if (element) {
+      element.classList.remove(
+        'highlight-yellow', 'highlight-green', 'highlight-blue', 'highlight-pink', 'highlight-purple'
+      );
+      element.classList.add('highlighted', `highlight-${color}`);
+    }
+
+    if (typeof RetroAudio !== 'undefined') RetroAudio.click();
+    this.showToast(`✨ ${verse}절에 형광펜을 남겼어요!`);
+    this.updateBibleNotesSummary();
+  },
+
+  async eraseHighlight() {
+    if (!this.selectedVerse) return;
+    const { bookId, chapter, verse, element } = this.selectedVerse;
+
+    let res = null;
+    if (typeof BibleNotesService !== 'undefined') {
+      res = await BibleNotesService.removeHighlight(bookId, chapter, verse);
+    }
+
+    // DOM 업데이트
+    if (element) {
+      element.classList.remove(
+        'highlighted', 'highlight-yellow', 'highlight-green', 'highlight-blue', 'highlight-pink', 'highlight-purple'
+      );
+      // 만약 묵상 노트도 삭제되었다면(res === null), 뱃지 제거
+      if (!res) {
+        const badge = element.querySelector('.verse-note-badge');
+        if (badge) badge.remove();
+      }
+    }
+
+    if (typeof RetroAudio !== 'undefined') RetroAudio.click();
+    this.showToast('하이라이트를 지웠어요.');
+    this.updateBibleNotesSummary();
+  },
+
+  copySelectedVerse() {
+    if (!this.selectedVerse) return;
+    const { chapter, verse, verseText, bookName } = this.selectedVerse;
+    const copyString = `[${bookName} ${chapter}:${verse}] ${verseText}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(copyString).then(() => {
+        if (typeof RetroAudio !== 'undefined') RetroAudio.click();
+        this.showToast('말씀 구절이 복사되었습니다 📋');
+      }).catch(() => {
+        this.fallbackCopyText(copyString);
+      });
+    } else {
+      this.fallbackCopyText(copyString);
+    }
+  },
+
+  fallbackCopyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (typeof RetroAudio !== 'undefined') RetroAudio.click();
+      this.showToast('말씀 구절이 복사되었습니다 📋');
+    } catch (e) {
+      this.showToast('복사에 실패했습니다.');
+    }
+    document.body.removeChild(ta);
+  },
+
+  // ==================== 묵상 노트 작성/편집 모달 ====================
+  openVerseNoteModal(bookId, chapter, verse, encodedVerseText = '') {
+    const ch = Number(chapter);
+    const v = Number(verse);
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    const bookName = book ? book.name : bookId;
+
+    let verseText = '';
+    if (encodedVerseText) {
+      try { verseText = decodeURIComponent(encodedVerseText); } catch (e) { verseText = encodedVerseText; }
+    }
+    if (!verseText && this.selectedVerse && this.selectedVerse.verse === v) {
+      verseText = this.selectedVerse.verseText;
+    }
+    if (!verseText && typeof BibleNotesService !== 'undefined') {
+      const hl = BibleNotesService.getHighlight(bookId, ch, v);
+      if (hl && hl.verse_text) verseText = hl.verse_text;
+    }
+
+    // 기존 데이터 확인
+    let existingNote = '';
+    let currentColor = 'yellow';
+    if (typeof BibleNotesService !== 'undefined') {
+      const hl = BibleNotesService.getHighlight(bookId, ch, v);
+      if (hl) {
+        if (hl.note) existingNote = hl.note;
+        if (hl.color && hl.color !== 'none') currentColor = hl.color;
+      }
+    }
+
+    this.editingNoteTarget = {
+      bookId,
+      chapter: ch,
+      verse: v,
+      bookName,
+      verseText,
+      color: currentColor,
+      note: existingNote
+    };
+
+    // 모달 DOM 채우기
+    const modal = document.getElementById('bible-note-modal');
+    const refEl = document.getElementById('note-modal-verse-ref');
+    const textEl = document.getElementById('note-modal-verse-text');
+    const textarea = document.getElementById('note-modal-textarea');
+    const deleteBtn = document.getElementById('btn-delete-note');
+
+    if (refEl) refEl.textContent = `${bookName} ${ch}장 ${v}절`;
+    if (textEl) textEl.textContent = verseText || '(구절 본문)';
+    if (textarea) textarea.value = existingNote;
+    if (deleteBtn) {
+      deleteBtn.style.display = existingNote ? 'block' : 'none';
+    }
+
+    // 색상 옵션 활성화
+    const colorPills = document.querySelectorAll('#note-modal-color-options .color-pill');
+    colorPills.forEach(pill => {
+      pill.classList.toggle('active', pill.dataset.color === currentColor);
+    });
+
+    if (modal) modal.style.display = 'flex';
+  },
+
+  closeVerseNoteModal() {
+    const modal = document.getElementById('bible-note-modal');
+    if (modal) modal.style.display = 'none';
+    this.editingNoteTarget = null;
+  },
+
+  async handleSaveVerseNote() {
+    if (!this.editingNoteTarget) return;
+    const { bookId, chapter, verse, bookName, verseText } = this.editingNoteTarget;
+    const textarea = document.getElementById('note-modal-textarea');
+    const noteText = textarea ? textarea.value.trim() : '';
+
+    const activePill = document.querySelector('#note-modal-color-options .color-pill.active');
+    const color = activePill ? activePill.dataset.color : (this.editingNoteTarget.color || 'yellow');
+
+    if (typeof BibleNotesService !== 'undefined') {
+      await BibleNotesService.saveNote(bookId, chapter, verse, noteText, verseText, bookName, color);
+    }
+
+    // 리더 화면이 현재 열려 있다면 해당 절 DOM 갱신
+    const container = document.getElementById('reader-verses-container');
+    if (container && this.currentReadingBookId === bookId && this.currentReadingChapter === chapter) {
+      const verseEl = container.querySelector(`[data-verse="${verse}"]`);
+      if (verseEl) {
+        verseEl.classList.remove('highlight-yellow', 'highlight-green', 'highlight-blue', 'highlight-pink', 'highlight-purple');
+        verseEl.classList.add('highlighted', `highlight-${color}`);
+
+        let badge = verseEl.querySelector('.verse-note-badge');
+        if (noteText) {
+          if (!badge) {
+            badge = document.createElement('button');
+            badge.className = 'verse-note-badge';
+            badge.type = 'button';
+            badge.title = '묵상 노트 보기';
+            badge.textContent = '📝';
+            badge.onclick = (e) => {
+              e.stopPropagation();
+              App.openVerseNoteModal(bookId, chapter, verse);
+            };
+            const numWrap = verseEl.querySelector('.verse-num');
+            if (numWrap) numWrap.appendChild(badge);
+          }
+        } else if (badge) {
+          badge.remove();
+        }
+      }
+    }
+
+    this.closeVerseNoteModal();
+    if (typeof RetroAudio !== 'undefined') RetroAudio.success();
+    this.showToast('📝 말씀 묵상 노트를 저장했어요!');
+    this.updateBibleNotesSummary();
+
+    // 만약 허브 모달이 열려 있다면 목록 리렌더링
+    const hubModal = document.getElementById('bible-notes-hub-modal');
+    if (hubModal && hubModal.style.display !== 'none') {
+      this.renderNotesHubList();
+    }
+  },
+
+  async handleDeleteVerseNote() {
+    if (!this.editingNoteTarget) return;
+    if (!confirm('이 말씀 묵상 노트를 삭제하시겠습니까?')) return;
+
+    const { bookId, chapter, verse } = this.editingNoteTarget;
+
+    if (typeof BibleNotesService !== 'undefined') {
+      await BibleNotesService.deleteNote(bookId, chapter, verse);
+    }
+
+    // 리더 화면 내 뱃지 제거
+    const container = document.getElementById('reader-verses-container');
+    if (container && this.currentReadingBookId === bookId && this.currentReadingChapter === chapter) {
+      const verseEl = container.querySelector(`[data-verse="${verse}"]`);
+      if (verseEl) {
+        const badge = verseEl.querySelector('.verse-note-badge');
+        if (badge) badge.remove();
+      }
+    }
+
+    this.closeVerseNoteModal();
+    this.showToast('묵상 노트를 삭제했습니다.');
+    this.updateBibleNotesSummary();
+
+    const hubModal = document.getElementById('bible-notes-hub-modal');
+    if (hubModal && hubModal.style.display !== 'none') {
+      this.renderNotesHubList();
+    }
+  },
+
+  // ==================== 내 말씀 노트 & 하이라이터 모음 허브 ====================
+  openNotesHubModal() {
+    const modal = document.getElementById('bible-notes-hub-modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    this.renderNotesHubList();
+  },
+
+  closeNotesHubModal() {
+    const modal = document.getElementById('bible-notes-hub-modal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  setNotesHubFilter(filter) {
+    this.notesHubFilter = filter;
+    const chips = document.querySelectorAll('#notes-hub-filters .hub-filter-chip');
+    chips.forEach(c => {
+      c.classList.toggle('active', c.dataset.filter === filter);
+    });
+    this.renderNotesHubList();
+  },
+
+  renderNotesHubList() {
+    const listEl = document.getElementById('notes-hub-list');
+    if (!listEl) return;
+
+    if (typeof BibleNotesService === 'undefined') {
+      listEl.innerHTML = `<div class="notes-hub-empty">서비스를 불러오는 중입니다...</div>`;
+      return;
+    }
+
+    const searchInput = document.getElementById('notes-hub-search');
+    const keyword = searchInput ? searchInput.value.trim() : '';
+    const filter = this.notesHubFilter || 'all';
+
+    const color = (filter === 'all' || filter === 'notes') ? 'all' : filter;
+    const onlyNotes = (filter === 'notes');
+
+    const items = BibleNotesService.getAllHighlights({
+      color,
+      onlyNotes,
+      keyword
+    });
+
+    if (items.length === 0) {
+      listEl.innerHTML = `
+        <div class="notes-hub-empty">
+          <div class="notes-hub-empty-icon">🐑📖</div>
+          <div class="notes-hub-empty-title">기록된 말씀 노트가 없습니다</div>
+          <div class="notes-hub-empty-desc">
+            성경 본문에서 은혜받은 구절을 터치하여<br>
+            형광펜을 칠하거나 묵상 노트를 남겨보세요!
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      const colorClass = `color-${item.color || 'none'}`;
+      const colorNameMap = {
+        yellow: '🟡 골드',
+        green: '🟢 에덴',
+        blue: '🔵 은혜',
+        pink: '🌸 사랑',
+        purple: '🟣 진리',
+        none: '⚪ 메모'
+      };
+      const colorLabel = colorNameMap[item.color] || '형광펜';
+
+      const memoHtml = item.note && item.note.trim().length > 0
+        ? `<div class="note-hub-card-memo"><span>📝</span> <span>${this.escapeHtml(item.note)}</span></div>`
+        : '';
+
+      const dateStr = item.updated_at ? item.updated_at.split('T')[0] : '';
+
+      html += `
+        <div class="note-hub-card ${colorClass}">
+          <div class="note-hub-card-header">
+            <div class="note-hub-card-ref">
+              <span>${item.book_name} ${item.chapter}장 ${item.verse}절</span>
+              <span style="font-size: 11px; font-weight: 600; opacity: 0.8;">[${colorLabel}]</span>
+            </div>
+            <div class="note-hub-card-date">${dateStr}</div>
+          </div>
+
+          <div class="note-hub-card-verse">"${this.escapeHtml(item.verse_text)}"</div>
+
+          ${memoHtml}
+
+          <div class="note-hub-card-actions">
+            <button type="button" class="btn-hub-action primary" onclick="App.goToVerse('${item.book_id}', ${item.chapter}, ${item.verse})">
+              📖 말씀으로 이동
+            </button>
+            <button type="button" class="btn-hub-action" onclick="App.openVerseNoteModal('${item.book_id}', ${item.chapter}, ${item.verse}, \`${encodeURIComponent(item.verse_text)}\`)">
+              ✏️ 메모
+            </button>
+            <button type="button" class="btn-hub-action danger" onclick="App.deleteHighlightFromHub('${item.book_id}', ${item.chapter}, ${item.verse})" title="삭제">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  },
+
+  async deleteHighlightFromHub(bookId, chapter, verse) {
+    if (!confirm('이 말씀 하이라이트와 노트를 삭제하시겠습니까?')) return;
+    if (typeof BibleNotesService !== 'undefined') {
+      await BibleNotesService.removeHighlight(bookId, chapter, verse);
+      await BibleNotesService.deleteNote(bookId, chapter, verse);
+    }
+    this.showToast('삭제되었습니다.');
+    this.updateBibleNotesSummary();
+    this.renderNotesHubList();
+  },
+
+  async goToVerse(bookId, chapter, verse) {
+    this.closeNotesHubModal();
+    await this.openReader(bookId, chapter);
+
+    // 구절로 부드럽게 스크롤 & 플래시 강조
+    setTimeout(() => {
+      const container = document.getElementById('reader-verses-container');
+      if (container) {
+        const verseEl = container.querySelector(`[data-verse="${verse}"]`);
+        if (verseEl) {
+          verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          verseEl.classList.add('verse-flash');
+          setTimeout(() => {
+            verseEl.classList.remove('verse-flash');
+          }, 1800);
+        }
+      }
+    }, 200);
   }
 };
 

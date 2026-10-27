@@ -1487,13 +1487,99 @@ body {
 }
 
 .verse-item {
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   line-height: 1.85;
   font-size: var(--reader-font-size, 16px);
   display: flex;
   align-items: flex-start;
   gap: 8px;
   color: var(--text-color);
+  padding: 4px 6px;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  user-select: text;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.1s ease;
+  position: relative;
+}
+
+.verse-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="dark"] .verse-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.verse-item.selected {
+  outline: 1.5px dashed var(--accent-color, #111);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .verse-item.selected {
+  outline-color: #f2f2f7;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* 형광펜 하이라이트 색상 (5종) */
+.verse-item.highlight-yellow {
+  background-color: rgba(255, 235, 59, 0.38);
+  border-left-color: #FBC02D;
+}
+.verse-item.highlight-green {
+  background-color: rgba(129, 199, 132, 0.35);
+  border-left-color: #4CAF50;
+}
+.verse-item.highlight-blue {
+  background-color: rgba(129, 212, 250, 0.35);
+  border-left-color: #03A9F4;
+}
+.verse-item.highlight-pink {
+  background-color: rgba(244, 143, 177, 0.35);
+  border-left-color: #E91E63;
+}
+.verse-item.highlight-purple {
+  background-color: rgba(206, 147, 216, 0.35);
+  border-left-color: #9C27B0;
+}
+
+[data-theme="dark"] .verse-item.highlight-yellow {
+  background-color: rgba(255, 214, 0, 0.22);
+  border-left-color: #FFD600;
+}
+[data-theme="dark"] .verse-item.highlight-green {
+  background-color: rgba(0, 230, 118, 0.20);
+  border-left-color: #00E676;
+}
+[data-theme="dark"] .verse-item.highlight-blue {
+  background-color: rgba(41, 121, 255, 0.22);
+  border-left-color: #2979FF;
+}
+[data-theme="dark"] .verse-item.highlight-pink {
+  background-color: rgba(255, 64, 129, 0.22);
+  border-left-color: #FF4081;
+}
+[data-theme="dark"] .verse-item.highlight-purple {
+  background-color: rgba(224, 64, 251, 0.22);
+  border-left-color: #E040FB;
+}
+
+/* 구절 깜빡임 효과 (검색/허브에서 해당 구절로 이동 시) */
+.verse-item.verse-flash {
+  animation: verseFlashAnim 1.6s ease-out forwards;
+}
+
+@keyframes verseFlashAnim {
+  0% {
+    background-color: rgba(255, 214, 0, 0.65);
+    transform: scale(1.02);
+  }
+  50% {
+    background-color: rgba(255, 214, 0, 0.35);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .verse-num {
@@ -1504,6 +1590,33 @@ body {
   padding-top: 3px;
   flex-shrink: 0;
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.verse-note-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  margin-top: 2px;
+  padding: 1px 2px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s;
+  border: none;
+  line-height: 1;
+}
+
+[data-theme="dark"] .verse-note-badge {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.verse-note-badge:hover {
+  transform: scale(1.25);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .verse-text {
@@ -5609,6 +5722,608 @@ body {
   margin-top: 10px;
 }
 
+/* ==============================================================================
+   Charles' Bible - 말씀 하이라이터 & 묵상 노트 스타일 (Notes & Highlighter System)
+   ============================================================================== */
 
+/* 1. 성경 탭 내 상단 진입 배너 */
+.bible-notes-banner-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
 
+.bible-notes-banner-btn:hover {
+  transform: translateY(-1px);
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.12);
+}
 
+.bible-notes-banner-btn:active {
+  transform: translateY(0);
+}
+
+.bible-notes-banner-btn .banner-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bible-notes-banner-btn .banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bible-notes-banner-btn .banner-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+}
+
+.bible-notes-banner-btn .banner-sub {
+  font-size: 11px;
+  color: var(--text-muted, #71717a);
+  font-weight: 500;
+}
+
+.bible-notes-banner-btn .banner-arrow {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted, #a1a1aa);
+  transition: transform 0.15s;
+}
+
+.bible-notes-banner-btn:hover .banner-arrow {
+  transform: translateX(2px);
+  color: var(--text-color);
+}
+
+/* 2. 플로팅 말씀 액션 툴바 (Floating Verse Toolbar) */
+.verse-action-toolbar {
+  position: absolute;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 440px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border-color, #e4e4e7);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 8px 12px;
+  z-index: 60;
+  box-sizing: border-box;
+  animation: toolbarSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-theme="dark"] .verse-action-toolbar {
+  background: rgba(28, 28, 30, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="gameboy"] .verse-action-toolbar {
+  background: #9bbc0f;
+  border-color: #0f380f;
+}
+
+@keyframes toolbarSlideUp {
+  from {
+    transform: translate(-50%, 14px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+.verse-toolbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.verse-toolbar-ref {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-color, #18181b);
+  white-space: nowrap;
+  padding-right: 4px;
+}
+
+.verse-toolbar-colors {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.color-btn:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.color-btn:active {
+  transform: scale(0.95);
+}
+
+.color-btn.color-yellow { background-color: #ffd600; }
+.color-btn.color-green  { background-color: #4caf50; }
+.color-btn.color-blue   { background-color: #29b6f6; }
+.color-btn.color-pink   { background-color: #ec407a; }
+.color-btn.color-purple { background-color: #ab47bc; }
+
+.color-btn.color-erase {
+  background-color: var(--card-bg, #f4f4f5);
+  color: var(--text-muted, #71717a);
+  border-color: var(--border-color, #d4d4d8);
+}
+
+.verse-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color, #e4e4e7);
+  margin: 0 2px;
+}
+
+.verse-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.verse-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.verse-tool-btn:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  border-color: var(--border-color, #e4e4e7);
+}
+
+[data-theme="dark"] .verse-tool-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.verse-tool-btn .tool-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* 3. 말씀 묵상 메모 작성/편집 모달 */
+.bible-note-sheet {
+  max-width: 480px;
+  width: 92%;
+}
+
+.bible-note-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.verse-quote-box {
+  background: rgba(0, 0, 0, 0.03);
+  border-left: 3px solid #f59e0b;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+[data-theme="dark"] .verse-quote-box {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.verse-quote-ref {
+  font-size: 12px;
+  font-weight: 800;
+  color: #d97706;
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .verse-quote-ref {
+  color: #fbbf24;
+}
+
+.verse-quote-text {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-color, #27272a);
+  font-style: italic;
+  word-break: keep-all;
+}
+
+.note-color-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.note-color-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted, #71717a);
+}
+
+.note-color-options {
+  display: flex;
+  gap: 6px;
+}
+
+.color-pill {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s;
+}
+
+.color-pill:hover {
+  transform: scale(1.05);
+}
+
+.color-pill.active {
+  border-color: var(--text-color, #18181b);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.color-pill.color-yellow { background-color: rgba(255, 235, 59, 0.45); color: #854d0e; }
+.color-pill.color-green  { background-color: rgba(129, 199, 132, 0.45); color: #166534; }
+.color-pill.color-blue   { background-color: rgba(129, 212, 250, 0.45); color: #075985; }
+.color-pill.color-pink   { background-color: rgba(244, 143, 177, 0.45); color: #9d174d; }
+.color-pill.color-purple { background-color: rgba(206, 147, 216, 0.45); color: #6b21a8; }
+
+.note-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.note-input-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+}
+
+.note-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  font-family: inherit;
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+  color: var(--text-color, #18181b);
+  resize: vertical;
+  min-height: 90px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.note-textarea:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.note-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-note-delete {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.btn-note-delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.btn-note-save {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-note-save:hover {
+  background: #059669;
+}
+
+.btn-note-save:active {
+  transform: scale(0.99);
+}
+
+/* 4. 내 말씀 노트 & 하이라이터 모음 허브 모달 */
+.notes-hub-sheet {
+  max-width: 540px;
+  width: 95%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-hub-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.notes-hub-search-wrap {
+  width: 100%;
+}
+
+.notes-hub-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+  color: var(--text-color, #18181b);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.notes-hub-search-input:focus {
+  border-color: #3b82f6;
+}
+
+.notes-hub-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.notes-hub-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.hub-filter-chip {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 14px;
+  background: var(--card-bg, #f4f4f5);
+  border: 1px solid var(--border-color, #e4e4e7);
+  color: var(--text-muted, #71717a);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.hub-filter-chip:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.hub-filter-chip.active {
+  background: var(--text-color, #18181b);
+  color: var(--bg-color, #ffffff);
+  border-color: var(--text-color, #18181b);
+}
+
+.hub-filter-chip.chip-yellow { background: rgba(255, 235, 59, 0.25); }
+.hub-filter-chip.chip-green  { background: rgba(129, 199, 132, 0.25); }
+.hub-filter-chip.chip-blue   { background: rgba(129, 212, 250, 0.25); }
+.hub-filter-chip.chip-pink   { background: rgba(244, 143, 177, 0.25); }
+.hub-filter-chip.chip-purple { background: rgba(206, 147, 216, 0.25); }
+
+.notes-hub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: calc(85vh - 200px);
+  padding-right: 4px;
+  padding-bottom: 8px;
+}
+
+.note-hub-card {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  border-left: 4px solid #f59e0b;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.note-hub-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.note-hub-card.color-yellow { border-left-color: #ffd600; }
+.note-hub-card.color-green  { border-left-color: #4caf50; }
+.note-hub-card.color-blue   { border-left-color: #29b6f6; }
+.note-hub-card.color-pink   { border-left-color: #ec407a; }
+.note-hub-card.color-purple { border-left-color: #ab47bc; }
+.note-hub-card.color-none   { border-left-color: var(--border-color, #d4d4d8); }
+
+.note-hub-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.note-hub-card-ref {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-color, #18181b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-hub-card-date {
+  font-size: 11px;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.note-hub-card-verse {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-color, #3f3f46);
+  word-break: keep-all;
+}
+
+.note-hub-card-memo {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-color, #18181b);
+  word-break: keep-all;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+[data-theme="dark"] .note-hub-card-memo {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.note-hub-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.btn-hub-action {
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e4e4e7);
+  background: transparent;
+  color: var(--text-color, #18181b);
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+
+.btn-hub-action:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--text-color);
+}
+
+.btn-hub-action.primary {
+  background: var(--text-color, #18181b);
+  color: var(--bg-color, #ffffff);
+  border-color: var(--text-color, #18181b);
+}
+
+.btn-hub-action.primary:hover {
+  opacity: 0.9;
+}
+
+.btn-hub-action.danger {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-hub-action.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.notes-hub-empty {
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--text-muted, #71717a);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-hub-empty-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.notes-hub-empty-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-color, #18181b);
+}
+
+.notes-hub-empty-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
