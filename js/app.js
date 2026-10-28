@@ -1444,7 +1444,7 @@ const App = {
       this.showToast(`✨ ${item.name} 착용 미리보기!`);
     }
 
-    RetroAudio.click();
+    if (typeof RetroAudio !== 'undefined') RetroAudio.click();
 
     // 찰스 바운스 애니메이션 트리거
     const previewSlot = document.getElementById('shop-preview-avatar');
@@ -1461,7 +1461,7 @@ const App = {
     if (typeof TalentService === 'undefined') return;
     this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
     this.showToast('원래 착용 모습으로 되돌렸습니다.');
-    RetroAudio.click();
+    if (typeof RetroAudio !== 'undefined') RetroAudio.click();
     this.renderTalentShop(this.currentShopTab || 'store');
   },
 
@@ -1475,11 +1475,11 @@ const App = {
     const res = TalentService.buyItem(itemId);
     if (!res.success) {
       this.showToast(res.error || '구매할 수 없습니다.');
-      RetroAudio.error();
+      if (typeof RetroAudio !== 'undefined') RetroAudio.error();
       return;
     }
 
-    RetroAudio.success();
+    if (typeof RetroAudio !== 'undefined') RetroAudio.success();
     this.showToast(`🎉 '${res.item.name}' 구매 및 착용 완료!`);
     if (!this.shopPreviewEquipped) {
       this.shopPreviewEquipped = {};
@@ -1505,7 +1505,7 @@ const App = {
     }
 
     this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
-    RetroAudio.click();
+    if (typeof RetroAudio !== 'undefined') RetroAudio.click();
     this.renderTalentShop(this.currentShopTab || 'closet');
     this.renderHome();
   },
@@ -3904,7 +3904,10 @@ const App = {
     const toast = document.createElement('div');
     toast.className = 'celebrate-toast';
     toast.textContent = message;
-    document.getElementById('app-container').appendChild(toast);
+    const container = document.getElementById('app-container') || document.body;
+    if (container) {
+      container.appendChild(toast);
+    }
 
     setTimeout(() => {
       toast.remove();
