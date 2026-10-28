@@ -1822,9 +1822,9 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   // Layer 1: Back / Floor 악세사리 (바닥 잔디/낙엽/눈밭/천사날개/멜로디아우라)
   let backRects = '';
   if (equipped) {
-    if (equipped.grass === 'back_maple_carpet' || equipped.back === 'back_maple_carpet' || equipped.back_maple_carpet) {
+    if (equipped.grass === 'back_maple_carpet' || equipped.back === 'back_maple_carpet' || (equipped.grass === undefined && equipped.back === undefined && equipped.back_maple_carpet)) {
       backRects += renderAutumnAccessory('back_maple_carpet', scale);
-    } else if (equipped.grass === 'back_daisy_field' || equipped.back === 'back_daisy_field' || equipped.back_daisy_field) {
+    } else if (equipped.grass === 'back_daisy_field' || equipped.back === 'back_daisy_field' || (equipped.grass === undefined && equipped.back === undefined && equipped.back_daisy_field)) {
       backRects += renderAccessoryDaisyField(scale);
     } else {
       const backItem = equipped.back || equipped.grass;
@@ -1837,7 +1837,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   // Layer 1.5: Side 소품 (스탠드 마이크, 신디사이저, 단호박, 눈사람, 선물상자 등)
   let sideRects = '';
   if (equipped) {
-    if (equipped.side === 'side_autumn_pumpkin' || equipped.hold === 'side_autumn_pumpkin' || equipped.side_autumn_pumpkin) {
+    if (equipped.side === 'side_autumn_pumpkin' || (equipped.side === undefined && (equipped.hold === 'side_autumn_pumpkin' || equipped.side_autumn_pumpkin))) {
       sideRects += renderAutumnAccessory('side_autumn_pumpkin', scale);
     } else if (equipped.side && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.side)) {
       sideRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.side), scale);
@@ -1864,7 +1864,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   // Layer 2.5: Neck 악세사리 (도토리 니트 목도리, 체크 목도리 등)
   let neckRects = '';
   if (equipped) {
-    if (equipped.neck === 'neck_acorn_scarf' || equipped.neck_acorn_scarf) {
+    if (equipped.neck === 'neck_acorn_scarf' || (equipped.neck === undefined && equipped.neck_acorn_scarf)) {
       neckRects += renderAutumnAccessory('neck_acorn_scarf', scale);
     } else if (equipped.neck && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.neck)) {
       neckRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.neck), scale);
@@ -1873,16 +1873,20 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
 
   // Layer 3: Glasses 악세사리 (둥근 범생이 안경)
   let glassesRects = '';
-  if (equipped && (equipped.glasses === 'head_glasses' || equipped.head === 'head_glasses' || equipped.body === 'head_glasses' || equipped.head_glasses)) {
-    glassesRects += renderAccessoryGlasses(scale, 0);
+  if (equipped) {
+    if (equipped.glasses === 'head_glasses' || (equipped.glasses === undefined && (equipped.head === 'head_glasses' || equipped.body === 'head_glasses' || equipped.head_glasses))) {
+      glassesRects += renderAccessoryGlasses(scale, 0);
+    } else if (equipped.glasses && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.glasses)) {
+      glassesRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.glasses), scale);
+    }
   }
 
   // Layer 4: Head 악세사리 (밀짚모자, 단풍베레모, 헤드폰, 황금면류관, 산타모자, 귀도리)
   let headRects = '';
   if (equipped) {
-    if (equipped.head === 'head_maple_beret' || equipped.head_maple_beret) {
+    if (equipped.head === 'head_maple_beret' || (equipped.head === undefined && equipped.head_maple_beret)) {
       headRects += renderAutumnAccessory('head_maple_beret', scale);
-    } else if (equipped.head === 'head_straw_hat' || equipped.head_straw_hat) {
+    } else if (equipped.head === 'head_straw_hat' || (equipped.head === undefined && equipped.head_straw_hat)) {
       headRects += renderAccessoryStrawHat(scale);
     } else if (equipped.head && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.head)) {
       headRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.head), scale);
@@ -1892,11 +1896,11 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   // Layer 5: Hold 악세사리 (가로 통기타, 일렉기타, 마이크, 탬버린, 성경책, 랜턴, 바구니)
   let holdRects = '';
   if (equipped) {
-    if (equipped.hold === 'hold_autumn_lantern' || equipped.hold_autumn_lantern) {
+    if (equipped.hold === 'hold_autumn_lantern' || (equipped.hold === undefined && equipped.hold_autumn_lantern)) {
       holdRects += renderAutumnAccessory('hold_autumn_lantern', scale);
-    } else if (equipped.hold === 'hold_apple_basket' || equipped.hold_apple_basket) {
+    } else if (equipped.hold === 'hold_apple_basket' || (equipped.hold === undefined && equipped.hold_apple_basket)) {
       holdRects += renderAutumnAccessory('hold_apple_basket', scale);
-    } else if (equipped.hold === 'hold_bible' || equipped.body === 'hold_bible' || equipped.hold_bible) {
+    } else if (equipped.hold === 'hold_bible' || (equipped.hold === undefined && (equipped.body === 'hold_bible' || equipped.hold_bible))) {
       holdRects += renderAccessoryBible(scale);
     } else if (equipped.hold && typeof getAnyItemPixels === 'function' && getAnyItemPixels(equipped.hold)) {
       holdRects += renderPixelArrayGeneric(getAnyItemPixels(equipped.hold), scale);
