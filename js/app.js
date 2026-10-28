@@ -1330,7 +1330,7 @@ const App = {
     const previewTag = document.getElementById('shop-preview-tag');
     if (previewTag) {
       const realEquipped = TalentService.getEquipped() || {};
-      const slots = ['head', 'glasses', 'hold', 'grass'];
+      const slots = ['head', 'glasses', 'neck', 'hold', 'side', 'grass', 'back', 'banner'];
       const isCustomPreview = slots.some(slot => (this.shopPreviewEquipped[slot] || null) !== (realEquipped[slot] || null));
       if (isCustomPreview) {
         previewTag.innerHTML = `<span>✨ 착용 미리보기 중</span> <button type="button" class="btn-preview-reset" onclick="App.resetShopPreview()">원래대로 ↺</button>`;
@@ -1435,10 +1435,12 @@ const App = {
     if (isTryingOn) {
       this.shopPreviewEquipped[item.slot] = null;
       if (item.slot === 'grass') this.shopPreviewEquipped.back = null;
+      if (item.slot === 'back') this.shopPreviewEquipped.grass = null;
       this.showToast(`${item.name} 착용을 해제했습니다.`);
     } else {
       this.shopPreviewEquipped[item.slot] = itemId;
       if (item.slot === 'grass') this.shopPreviewEquipped.back = itemId;
+      if (item.slot === 'back') this.shopPreviewEquipped.grass = itemId;
       this.showToast(`✨ ${item.name} 착용 미리보기!`);
     }
 
@@ -1484,6 +1486,7 @@ const App = {
     }
     this.shopPreviewEquipped[res.item.slot] = res.item.id;
     if (res.item.slot === 'grass') this.shopPreviewEquipped.back = res.item.id;
+    if (res.item.slot === 'back') this.shopPreviewEquipped.grass = res.item.id;
     this.renderTalentShop(this.currentShopTab || 'store');
     this.renderHome();
   },

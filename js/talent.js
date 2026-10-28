@@ -97,6 +97,80 @@ const TALENT_ITEMS = {
     desc: '찰스 발밑에 곱게 깔린 황금빛 가을 낙엽 카펫'
   },
 
+  // 🎸 청년부 찬양집회 스페셜 악기 & 소품 공식 컬렉션 (8종)
+  'hold_worship_mic': {
+    id: 'hold_worship_mic',
+    slot: 'hold',
+    category: '소품',
+    name: '워십 보컬 마이크',
+    price: 8,
+    icon: '🎤',
+    desc: '찰스가 오른손에 야무지게 쥐고 주를 향한 감사의 찬양을 드리는 보컬 마이크'
+  },
+  'side_vintage_stand_mic': {
+    id: 'side_vintage_stand_mic',
+    slot: 'side',
+    category: '소품',
+    name: '은빛 스탠드 마이크',
+    price: 9,
+    icon: '🎙️',
+    desc: '찰스 앞에 세워져 은혜로운 찬양을 이끄는 프로페셔널 빈티지 스탠드 마이크'
+  },
+  'hold_praise_tambourine': {
+    id: 'hold_praise_tambourine',
+    slot: 'hold',
+    category: '소품',
+    name: '기쁨의 찬양 탬버린',
+    price: 9,
+    icon: '🪘',
+    desc: '소고 치며 춤추어 주를 찬양할지어다! 기쁨의 리듬을 더하는 찬양 탬버린'
+  },
+  'side_worship_synth': {
+    id: 'side_worship_synth',
+    slot: 'side',
+    category: '소품',
+    name: '워십 건반 신디사이저',
+    price: 12,
+    icon: '🎹',
+    desc: '찰스 곁에 놓여 영혼을 울리는 화음과 감동적인 멜로디를 수놓는 찬양 신디사이저'
+  },
+  'hold_acoustic_guitar': {
+    id: 'hold_acoustic_guitar',
+    slot: 'hold',
+    category: '소품',
+    name: '어쿠스틱 찬양 통기타',
+    price: 12,
+    icon: '🎸',
+    desc: '가슴과 배 아래로 포근히 안고 주님의 선하심을 노래하는 따스한 허니우드 통기타'
+  },
+  'hold_electric_guitar': {
+    id: 'hold_electric_guitar',
+    slot: 'hold',
+    category: '소품',
+    name: '워십 일렉 기타',
+    price: 12,
+    icon: '🎸',
+    desc: '살아계신 주를 힘차게 찬양하는 날렵하고 귀여운 캔디 레드 워십 일렉 기타'
+  },
+  'head_worship_headphones': {
+    id: 'head_worship_headphones',
+    slot: 'head',
+    category: '머리',
+    name: '프로 모니터링 헤드폰',
+    price: 10,
+    icon: '🎧',
+    desc: '찰스의 머리와 귀를 넉넉하고 편안하게 감싸주며 찬양의 화음을 모니터링하는 전문 헤드폰'
+  },
+  'back_melody_aura': {
+    id: 'back_melody_aura',
+    slot: 'back',
+    category: '이펙트',
+    name: '찬양의 멜로디 음표 아우라',
+    price: 20,
+    icon: '🎵',
+    desc: '성도들의 뜨거운 찬양 소리가 천상의 화음으로 넓게 울려 퍼지는 다채로운 찬양 음표 아우라'
+  },
+
   // 🎶 찬양집회 스페셜 컬렉션 머리 위 배너 13종 (특별 이벤트 전용 - 상점 비노출)
   'banner_living_hope': {
     id: 'banner_living_hope',
@@ -495,6 +569,7 @@ const TalentService = {
     const equipped = this.getEquipped();
     equipped[item.slot] = itemId;
     if (item.slot === 'grass') equipped.back = itemId;
+    if (item.slot === 'back') equipped.grass = itemId;
     this.saveEquipped(equipped);
     return true;
   },
@@ -504,6 +579,7 @@ const TalentService = {
     if (equipped[slot]) {
       equipped[slot] = null;
       if (slot === 'grass') equipped.back = null;
+      if (slot === 'back') equipped.grass = null;
       this.saveEquipped(equipped);
       return true;
     }
@@ -516,7 +592,9 @@ const TalentService = {
     const equipped = this.getEquipped();
     return equipped[item.slot] === itemId ||
       (itemId === 'head_glasses' && (equipped.glasses === itemId || equipped.head === itemId)) ||
-      (itemId === 'back_daisy_field' && (equipped.grass === itemId || equipped.back === itemId));
+      (itemId === 'back_daisy_field' && (equipped.grass === itemId || equipped.back === itemId)) ||
+      (item.slot === 'back' && (equipped.back === itemId || equipped.grass === itemId)) ||
+      (item.slot === 'grass' && (equipped.grass === itemId || equipped.back === itemId));
   },
 
   // ==================== 3. 퀘스트 수령 내역 관리 ====================
