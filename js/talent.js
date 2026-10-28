@@ -507,33 +507,26 @@ const TalentService = {
         equipped.glasses = 'head_glasses';
         equipped.head = null;
       }
+      if (equipped.hold && String(equipped.hold).startsWith('banner_')) {
+        if (!equipped.banner) equipped.banner = equipped.hold;
+        equipped.hold = null;
+      }
       if (equipped.back && !equipped.grass) {
         equipped.grass = equipped.back;
       }
 
-      // 찬양집회 배너 보존 및 인벤토리에 보유 중인 배너 자동 착용 복구
-      let validBanner = null;
-      if (equipped.banner && String(equipped.banner).startsWith('banner_')) {
-        validBanner = equipped.banner;
-      } else {
-        const inv = this.getInventory();
-        const invBanner = inv.find(id => String(id).startsWith('banner_'));
-        if (invBanner) {
-          validBanner = invBanner;
-          equipped.banner = invBanner;
-          try {
-            localStorage.setItem(this.getUserKey('equipped'), JSON.stringify(equipped));
-          } catch (e) {}
-        }
-      }
+      // 찬양집회 배너는 착용 중일 때만 유지 (해제된 경우 강제 재착용하지 않음)
+      const validBanner = (equipped.banner && String(equipped.banner).startsWith('banner_')) ? equipped.banner : null;
 
-      // 배너 보유가 확인되면 로컬 투표 상태도 즉시 자가치유 등록
-      if (validBanner) {
+      // 인벤토리에 배너가 보유되어 있다면 로컬 투표 상태 안전 자가치유 보존
+      const inv = this.getInventory();
+      const ownedBanner = inv.find(id => String(id).startsWith('banner_'));
+      if (ownedBanner) {
         const uid = (typeof StorageService !== 'undefined') ? StorageService.getCurrentUserId() : 'guest';
         if (uid && uid !== 'guest' && !localStorage.getItem(`charles_praise_voted_${uid}`)) {
           try {
             localStorage.setItem(`charles_praise_voted_${uid}`, JSON.stringify({
-              bannerId: validBanner,
+              bannerId: ownedBanner,
               votedAt: new Date().toISOString()
             }));
           } catch (e) {}
@@ -556,10 +549,12 @@ const TalentService = {
   },
 
   saveEquipped(equipped) {
-    localStorage.setItem(this.getUserKey('equipped'), JSON.stringify(equipped || {}));
+    const cleanEquipped = { ...(equipped || {}) };
+    localStorage.setItem(this.getUserKey('equipped'), JSON.stringify(cleanEquipped));
     localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
-    if (typeof StorageService !== 'undefined' && StorageService.scheduleCloudSync) {
-      StorageService.scheduleCloudSync();
+    // 착용 상태 변경 즉시 클라우드에 확정 동기화 (기기 간 즉시 반영 & 롤백 방지)
+    if (typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
+      StorageService.saveToCloud();
     }
   },
 
@@ -570,16 +565,95 @@ const TalentService = {
     equipped[item.slot] = itemId;
     if (item.slot === 'grass') equipped.back = itemId;
     if (item.slot === 'back') equipped.grass = itemId;
+    if (item.slot === 'glasses' && equipped.head === 'head_glasses') {
+      equipped.head = null;
+    }
     this.saveEquipped(equipped);
     return true;
   },
 
+  // 특정 아이템 ID를 모든 슬롯 및 레거시 키에서 완벽하게 해제
+  unequipItem(itemId) {
+    if (!itemId) return false;
+    const item = TALENT_ITEMS[itemId];
+    const equipped = this.getEquipped();
+    let changed = false;
+
+    // 1. 모든 표준 슬롯 순회 검사 및 해제
+    const allSlots = ['head', 'glasses', 'neck', 'hold', 'side', 'banner', 'grass', 'back'];
+    for (const slot of allSlots) {
+      if (equipped[slot] === itemId) {
+        equipped[slot] = null;
+        changed = true;
+      }
+    }
+
+    // 2. 특수 양방향 매핑 슬롯 해제
+    if (item && item.slot) {
+      if (equipped[item.slot] === itemId) {
+        equipped[item.slot] = null;
+        changed = true;
+      }
+      if (item.slot === 'grass' || item.slot === 'back') {
+        if (equipped.grass === itemId) { equipped.grass = null; changed = true; }
+        if (equipped.back === itemId) { equipped.back = null; changed = true; }
+      }
+      if (item.slot === 'glasses') {
+        if (equipped.glasses === itemId) { equipped.glasses = null; changed = true; }
+        if (equipped.head === itemId) { equipped.head = null; changed = true; }
+      }
+      if (item.slot === 'banner') {
+        if (equipped.banner === itemId) { equipped.banner = null; changed = true; }
+        if (equipped.hold === itemId) { equipped.hold = null; changed = true; }
+      }
+    }
+
+    // 3. 레거시 boolean 또는 body 키 정화
+    if (equipped[itemId] !== undefined) {
+      delete equipped[itemId];
+      changed = true;
+    }
+    if (equipped.body === itemId) {
+      delete equipped.body;
+      changed = true;
+    }
+
+    if (changed) {
+      this.saveEquipped(equipped);
+      return true;
+    }
+    return false;
+  },
+
   unequipSlot(slot) {
     const equipped = this.getEquipped();
+    let changed = false;
+
     if (equipped[slot]) {
       equipped[slot] = null;
-      if (slot === 'grass') equipped.back = null;
-      if (slot === 'back') equipped.grass = null;
+      changed = true;
+    }
+    if (slot === 'grass' || slot === 'back') {
+      if (equipped.grass) { equipped.grass = null; changed = true; }
+      if (equipped.back) { equipped.back = null; changed = true; }
+    }
+    if (slot === 'glasses' && equipped.head === 'head_glasses') {
+      equipped.head = null;
+      changed = true;
+    }
+    if (slot === 'head' && equipped.glasses === 'head_glasses') {
+      equipped.glasses = null;
+      changed = true;
+    }
+    if (slot === 'banner') {
+      if (equipped.banner) { equipped.banner = null; changed = true; }
+      if (equipped.hold && String(equipped.hold).startsWith('banner_')) {
+        equipped.hold = null;
+        changed = true;
+      }
+    }
+
+    if (changed) {
       this.saveEquipped(equipped);
       return true;
     }
@@ -587,14 +661,19 @@ const TalentService = {
   },
 
   isEquipped(itemId) {
+    if (!itemId) return false;
+    const equipped = this.getEquipped();
+    for (const key of Object.keys(equipped)) {
+      if (equipped[key] === itemId) return true;
+    }
     const item = TALENT_ITEMS[itemId];
     if (!item) return false;
-    const equipped = this.getEquipped();
     return equipped[item.slot] === itemId ||
       (itemId === 'head_glasses' && (equipped.glasses === itemId || equipped.head === itemId)) ||
       (itemId === 'back_daisy_field' && (equipped.grass === itemId || equipped.back === itemId)) ||
       (item.slot === 'back' && (equipped.back === itemId || equipped.grass === itemId)) ||
-      (item.slot === 'grass' && (equipped.grass === itemId || equipped.back === itemId));
+      (item.slot === 'grass' && (equipped.grass === itemId || equipped.back === itemId)) ||
+      (item.slot === 'banner' && (equipped.banner === itemId || equipped.hold === itemId));
   },
 
   // ==================== 3. 퀘스트 수령 내역 관리 ====================

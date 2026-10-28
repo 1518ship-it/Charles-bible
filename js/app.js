@@ -1431,16 +1431,30 @@ const App = {
       this.shopPreviewEquipped = { ...(TalentService.getEquipped() || {}) };
     }
 
-    const isTryingOn = this.shopPreviewEquipped[item.slot] === itemId;
+    const isTryingOn = this.shopPreviewEquipped[item.slot] === itemId ||
+      (item.slot === 'banner' && this.shopPreviewEquipped.banner === itemId) ||
+      (item.slot === 'glasses' && (this.shopPreviewEquipped.glasses === itemId || this.shopPreviewEquipped.head === itemId)) ||
+      (item.slot === 'grass' && (this.shopPreviewEquipped.grass === itemId || this.shopPreviewEquipped.back === itemId)) ||
+      (item.slot === 'back' && (this.shopPreviewEquipped.back === itemId || this.shopPreviewEquipped.grass === itemId));
+
     if (isTryingOn) {
       this.shopPreviewEquipped[item.slot] = null;
       if (item.slot === 'grass') this.shopPreviewEquipped.back = null;
       if (item.slot === 'back') this.shopPreviewEquipped.grass = null;
+      if (item.slot === 'glasses') {
+        this.shopPreviewEquipped.glasses = null;
+        if (this.shopPreviewEquipped.head === itemId) this.shopPreviewEquipped.head = null;
+      }
+      if (item.slot === 'banner') {
+        this.shopPreviewEquipped.banner = null;
+        if (this.shopPreviewEquipped.hold === itemId) this.shopPreviewEquipped.hold = null;
+      }
       this.showToast(`${item.name} 착용을 해제했습니다.`);
     } else {
       this.shopPreviewEquipped[item.slot] = itemId;
       if (item.slot === 'grass') this.shopPreviewEquipped.back = itemId;
       if (item.slot === 'back') this.shopPreviewEquipped.grass = itemId;
+      if (item.slot === 'glasses' && this.shopPreviewEquipped.head === itemId) this.shopPreviewEquipped.head = null;
       this.showToast(`✨ ${item.name} 착용 미리보기!`);
     }
 
@@ -1497,7 +1511,11 @@ const App = {
     if (!item) return;
 
     if (TalentService.isEquipped(itemId)) {
-      TalentService.unequipSlot(item.slot);
+      if (typeof TalentService.unequipItem === 'function') {
+        TalentService.unequipItem(itemId);
+      } else {
+        TalentService.unequipSlot(item.slot);
+      }
       this.showToast(`${item.name} 착용을 해제했습니다.`);
     } else {
       TalentService.equipItem(itemId);
