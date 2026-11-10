@@ -6338,3 +6338,48 @@ body {
   line-height: 1.6;
   white-space: pre-line;
 }
+
+/* ==================== 알림 모달 헤더 액션 버튼 (휴대폰 알림 켜기 / 전체 삭제) ==================== */
+.btn-notif-header-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 9px;
+  font-family: var(--main-font);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--color-badge-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-notif-header-pill:active {
+  transform: scale(0.95);
+}
+
+.btn-notif-header-pill.active {
+  background: rgba(46, 204, 113, 0.14);
+  border-color: rgba(46, 204, 113, 0.45);
+  color: #1E8449;
+}
+
+[data-theme="dark"] .btn-notif-header-pill.active {
+  color: #58D68D;
+  background: rgba(46, 204, 113, 0.2);
+}
+
+.btn-notif-header-pill.danger {
+  color: #E74C3C;
+  border-color: rgba(231, 76, 60, 0.35);
+  background: rgba(231, 76, 60, 0.08);
+}
+
+.btn-notif-header-pill.danger:hover {
+  background: rgba(231, 76, 60, 0.15);
+}
+

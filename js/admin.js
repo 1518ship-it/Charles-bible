@@ -174,7 +174,7 @@ const AdminApp = {
       });
     }
 
-    // 4) SQL 쿼리 복사 버튼
+    // 4) SQL 쿼리 복사 버튼 & Edge Function 코드 복사 버튼
     const copySqlBtn = document.getElementById('btn-copy-sql');
     if (copySqlBtn) {
       copySqlBtn.addEventListener('click', () => {
@@ -183,6 +183,22 @@ const AdminApp = {
           navigator.clipboard.writeText(sqlBox.innerText).then(() => {
             RetroAudio.success();
             this.showToast('📋 SQL 쿼리가 클립보드에 복사되었습니다!', 'success');
+          }).catch(err => {
+            console.error('클립보드 복사 실패:', err);
+            alert('복사에 실패했습니다. 텍스트를 직접 드래그하여 복사해 주세요.');
+          });
+        }
+      });
+    }
+
+    const copyEdgeFnBtn = document.getElementById('btn-copy-edge-fn');
+    if (copyEdgeFnBtn) {
+      copyEdgeFnBtn.addEventListener('click', () => {
+        const fnBox = document.getElementById('admin-edge-fn-box');
+        if (fnBox) {
+          navigator.clipboard.writeText(fnBox.innerText).then(() => {
+            RetroAudio.success();
+            this.showToast('📋 Edge Function (send-push) 코드가 복사되었습니다!', 'success');
           }).catch(err => {
             console.error('클립보드 복사 실패:', err);
             alert('복사에 실패했습니다. 텍스트를 직접 드래그하여 복사해 주세요.');
@@ -967,7 +983,7 @@ const AdminApp = {
       formMsg.addEventListener('submit', (e) => this.handleSendAdminMessage(e));
     }
 
-    // 3) 발송 내역 새로고침 버튼
+    // 3) 발송 내역 새로고침 버튼 & 전체 삭제 버튼
     const refreshMsgBtn = document.getElementById('btn-refresh-messages');
     if (refreshMsgBtn) {
       refreshMsgBtn.addEventListener('click', () => {
@@ -976,10 +992,50 @@ const AdminApp = {
       });
     }
 
+    const deleteAllMsgBtn = document.getElementById('btn-delete-all-messages');
+    if (deleteAllMsgBtn) {
+      deleteAllMsgBtn.addEventListener('click', () => {
+        RetroAudio.click();
+        this.handleDeleteAllMessages();
+      });
+    }
+
     // 4) 빠른 1:1 쪽지 모달 발송 버튼
     const sendDirectBtn = document.getElementById('btn-send-direct-message');
     if (sendDirectBtn) {
       sendDirectBtn.addEventListener('click', () => this.handleSendDirectMessage());
+    }
+  },
+
+  // 유저 간 풀 보내기/응원 알림인지 판별 (관리자 로그에서 제외하기 위함)
+  isCheerOrUserLogMessage(msg) {
+    if (!msg) return false;
+    const title = String(msg.title || '');
+    const content = String(msg.content || '');
+    if (
+      title.startsWith('띵동~') ||
+      title.includes('응원과 함께 풀을 보냈어요') ||
+      content.includes('싱싱한 풀 🌿과 따뜻한 사랑의 응원')
+    ) {
+      return true;
+    }
+    return false;
+  },
+
+  // 2단계: 백그라운드 Web Push 발송 호출 (Supabase Edge Function: send-push)
+  async triggerWebPushForAdminMessage({ target_type, target_user_id, title, content }) {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.functions) return;
+    try {
+      await supabaseClient.functions.invoke('send-push', {
+        body: {
+          target_type: target_type || 'ALL',
+          target_user_id: target_user_id || null,
+          title: title || '찰스 바이블 📢',
+          body: content || '새로운 메세지가 도착했어요!'
+        }
+      });
+    } catch (e) {
+      // Edge Function 미등록 시에도 에러 없이 조용히 통과 (1단계 실시간 알림은 정상 작동)
     }
   },
 
@@ -1093,6 +1149,14 @@ const AdminApp = {
         }
       }
 
+      // 2단계 백그라운드 Web Push 발송 트리거
+      this.triggerWebPushForAdminMessage({
+        target_type: targetType,
+        target_user_id: targetUserId,
+        title: title,
+        content: content
+      });
+
       // 로컬 스토리지에도 최근 발송 내역 백업
       this.saveLocalSentMessage({
         id: 'local_' + Date.now(),
@@ -1167,6 +1231,14 @@ const AdminApp = {
         }
       }
 
+      // 2단계 백그라운드 Web Push 발송 트리거
+      this.triggerWebPushForAdminMessage({
+        target_type: 'USER',
+        target_user_id: uid,
+        title: title,
+        content: content
+      });
+
       this.saveLocalSentMessage({
         id: 'local_' + Date.now(),
         target_type: 'USER',
@@ -1195,13 +1267,14 @@ const AdminApp = {
   // 로컬 백업 저장
   saveLocalSentMessage(msg) {
     try {
+      if (this.isCheerOrUserLogMessage(msg)) return;
       const saved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
       saved.unshift(msg);
       localStorage.setItem('charles_admin_sent_messages', JSON.stringify(saved.slice(0, 50)));
     } catch (e) {}
   },
 
-  // 최근 발송된 메시지 목록 조회 및 렌더링
+  // 최근 발송된 메시지 목록 조회 및 렌더링 (관리자 전체 공지 및 어린양의 메세지만 표시)
   async loadSentMessages() {
     const listEl = document.getElementById('admin-sent-messages-list');
     const countEl = document.getElementById('count-sent-messages');
@@ -1218,10 +1291,11 @@ const AdminApp = {
           .from('admin_messages')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(100);
 
         if (!error && Array.isArray(data)) {
-          messages = data;
+          // 유저 간 풀 보내기/응원 로그는 관리자 발송 내역에서 완전히 제외!
+          messages = data.filter(m => !this.isCheerOrUserLogMessage(m));
           isCloudLoaded = true;
         } else if (error) {
           console.warn('Supabase admin_messages 조회 실패:', error);
@@ -1231,22 +1305,22 @@ const AdminApp = {
       }
     }
 
-    if (!isCloudLoaded || messages.length === 0) {
+    if (!isCloudLoaded) {
       try {
         const localSaved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
-        if (messages.length === 0) {
-          messages = localSaved;
-        }
+        messages = localSaved.filter(m => !this.isCheerOrUserLogMessage(m));
       } catch (e) {}
     }
+
+    this.currentAdminSentMessages = messages;
 
     if (countEl) countEl.textContent = messages.length;
 
     if (messages.length === 0) {
       listEl.innerHTML = `
         <div style="text-align: center; color: #888; padding: 24px; font-size: 13px; background: #FFF; border: 1px dashed #DDD; border-radius: 6px;">
-          아직 발송된 공지사항 또는 1:1 메시지가 없습니다.<br>
-          <span style="font-size: 11px; color: #AAA;">(위 폼에서 메시지를 작성해 발송해 보세요!)</span>
+          아직 발송된 관리자 공지사항 또는 어린양의 메세지가 없습니다.<br>
+          <span style="font-size: 11px; color: #AAA;">(성도 간 풀 보내기 알림은 성도 개인에게만 기록되며 이곳에는 남지 않습니다.)</span>
         </div>
       `;
       return;
@@ -1308,7 +1382,7 @@ const AdminApp = {
     });
   },
 
-  // 발송된 메시지 삭제 처리
+  // 발송된 메시지 단건 삭제 처리
   async handleDeleteMessage(msgId) {
     if (!confirm('정말 이 메시지를 삭제하시겠습니까?\n\n삭제 시 성도 앱에서도 즉시 제거됩니다.')) {
       return;
@@ -1338,6 +1412,39 @@ const AdminApp = {
       console.error('메시지 삭제 실패:', err);
       RetroAudio.error();
       alert('메시지 삭제 중 오류가 발생했습니다: ' + (err.message || err));
+    }
+  },
+
+  // 발송된 메시지 내역 전체 삭제 처리
+  async handleDeleteAllMessages() {
+    const msgs = this.currentAdminSentMessages || [];
+    if (!confirm('최근 발송된 모든 공지사항 및 어린양의 메세지 내역을 전체 삭제하시겠습니까?\n\n삭제 시 성도 앱의 공지 보관함에서도 제거됩니다.')) {
+      return;
+    }
+
+    try {
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        // 클라우드의 admin_messages 전체 정리
+        const { error } = await supabaseClient
+          .from('admin_messages')
+          .delete()
+          .not('id', 'is', null);
+
+        if (error) throw error;
+      }
+
+      try {
+        localStorage.removeItem('charles_admin_sent_messages');
+      } catch (e) {}
+
+      this.currentAdminSentMessages = [];
+      RetroAudio.success();
+      this.showToast('🗑️ 모든 메시지 발송 내역이 전체 삭제되었습니다.', 'info');
+      this.loadSentMessages();
+    } catch (err) {
+      console.error('메시지 전체 삭제 실패:', err);
+      RetroAudio.error();
+      alert('메시지 전체 삭제 중 오류가 발생했습니다: ' + (err.message || err));
     }
   },
 

@@ -1,9 +1,9 @@
 {
   "name": "Charles",
   "short_name": "Charles",
-  "id": "charles-bible-v8.9",
+  "id": "charles-bible-v9.7",
   "description": "Charles - 말씀양 찰스와 함께하는 성경 읽기",
-  "start_url": "./index.html?v=8.9",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
-  APP_VERSION: 'v8.9',
+  APP_VERSION: 'v9.7',
+  VAPID_PUBLIC_KEY: 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
   searchKeyword: '',
@@ -64,6 +65,9 @@ const App = {
       }
     }
 
+    // 🔔 모바일 웹앱(PWA) 서비스 워커 및 푸시 알림 초기화
+    this.initServiceWorkerAndPush();
+
     // 📢 운영자 전체 공지 및 1:1 쪽지 조회 & 알림 뱃지 업데이트 (30초 폴링 + 리얼타임 감지)
     this.fetchCloudAdminMessages();
     this.setupRealtimeMessages();
@@ -74,6 +78,7 @@ const App = {
     // 사용자가 창에 다시 집중했을 때 즉시 최신 메시지 갱신 및 자정 경과 상태(스트릭, 게이지, 찰스) 리렌더링
     const handleReactivation = () => {
       this.fetchCloudAdminMessages();
+      this.updatePushPermButtonUI();
       this.renderAll();
     };
     window.addEventListener('focus', handleReactivation);
@@ -91,6 +96,18 @@ const App = {
     }
     if (itemTestLinkBtn) {
       itemTestLinkBtn.style.display = isAdmin ? 'block' : 'none';
+    }
+
+    // 푸시 알림 클릭으로 진입한 경우 (?openMessages=1) 즉시 소식 및 알림 모달 오픈
+    if (urlParams.get('openMessages') === '1' && AuthService.isAuthenticated()) {
+      setTimeout(() => {
+        const msgOverlay = document.getElementById('message-modal-overlay');
+        if (msgOverlay) {
+          msgOverlay.style.display = 'flex';
+          this.updatePushPermButtonUI();
+          this.renderNotifications();
+        }
+      }, 400);
     }
   },
 
@@ -272,6 +289,7 @@ const App = {
 
             this.renderAll();
             this.fetchCloudAdminMessages();
+            this.syncPushSubscriptionIfGranted();
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}!`);
           } else {
@@ -377,6 +395,7 @@ const App = {
             }
 
             this.renderAll();
+            this.syncPushSubscriptionIfGranted();
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
           } else {
@@ -440,6 +459,7 @@ const App = {
     if (msgBtn && msgOverlay) {
       msgBtn.addEventListener('click', () => {
         msgOverlay.style.display = 'flex';
+        this.updatePushPermButtonUI();
         this.fetchCloudAdminMessages();
         this.renderNotifications();
       });
@@ -503,7 +523,7 @@ const App = {
     if (inappPushClickArea) {
       inappPushClickArea.addEventListener('click', () => {
         if (this.latestInAppMsgId) {
-          this.openMessageDetail(this.latestInAppMsgId);
+          this.openMessageDetail(this.latestInAppMsgId, !!this.latestInAppMsgIsSystem);
         } else {
           const msgOverlay = document.getElementById('message-modal-overlay');
           if (msgOverlay) {
@@ -2207,7 +2227,7 @@ const App = {
       this.spawnCheerEffect();
     }
 
-    // 2) Supabase admin_messages 테이블에 쪽지(USER 타입) 발송
+    // 2) Supabase admin_messages 테이블에 임시 전달 신호 발송 (수신자가 받는 즉시 로컬로 흡수 후 DB에서 자동 삭제됨)
     if (typeof supabaseClient !== 'undefined' && supabaseClient && targetUserId) {
       try {
         const { error } = await supabaseClient
@@ -2227,17 +2247,14 @@ const App = {
       } catch (err) {
         console.warn('Supabase 응원 메시지 전송 예외:', err);
       }
-    }
 
-    // 3) 동일 브라우저/로컬 테스트를 위한 폴백 알림 (로컬 스토리지)
-    if (currentUser && targetUserId && String(currentUser.id).toLowerCase() === String(targetUserId).toLowerCase()) {
-      this.addNotification({
-        id: 'cheer_' + Date.now(),
-        icon: '🌿',
+      // 3) 웹앱이 꺼져 있는 상대방 휴대전화 알림창도 깨우기 위한 백그라운드 Web Push 발송
+      this.triggerWebPush({
+        target_type: 'USER',
+        target_user_id: String(targetUserId),
         title: cheerTitle,
-        text: cheerContent,
-        time: '방금 전',
-        read: false
+        body: cheerContent,
+        url: './index.html?openMessages=1'
       });
     }
   },
@@ -3305,6 +3322,268 @@ const App = {
   hasInitializedMsgFetch: false,
   _realtimeSubscribed: false,
 
+  // ==================== 모바일 웹앱(PWA) 서비스 워커 & 휴대전화 푸시 알림 ====================
+  async initServiceWorkerAndPush() {
+    this.updatePushPermButtonUI();
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js');
+      console.log('🔔 [ServiceWorker] 등록 완료:', reg.scope);
+
+      // 서비스 워커에서 알림 클릭 시 메세지함 모달 즉시 오픈
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'OPEN_MESSAGES_MODAL') {
+          const msgOverlay = document.getElementById('message-modal-overlay');
+          if (msgOverlay) {
+            msgOverlay.style.display = 'flex';
+            this.updatePushPermButtonUI();
+            this.fetchCloudAdminMessages();
+            this.renderNotifications();
+          }
+        }
+      });
+
+      // 이미 알림 권한이 허용된 상태라면 자동으로 푸시 구독키 최신화
+      this.syncPushSubscriptionIfGranted();
+    } catch (err) {
+      console.warn('ServiceWorker 등록 건너뜀:', err);
+    }
+  },
+
+  urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  },
+
+  updatePushPermButtonUI() {
+    const btn = document.getElementById('btn-toggle-push-perm');
+    if (!btn) return;
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        btn.textContent = '🔔 알림 켜짐 ✓';
+        btn.classList.add('active');
+      } else if (Notification.permission === 'denied') {
+        btn.textContent = '🔕 알림 차단됨';
+        btn.classList.remove('active');
+      } else {
+        btn.textContent = '🔔 알림 켜기';
+        btn.classList.remove('active');
+      }
+    } else {
+      btn.textContent = '🔔 알림 켜기';
+      btn.classList.remove('active');
+    }
+  },
+
+  async requestPushNotificationPermission() {
+    RetroAudio.click();
+
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      alert(
+        '📱 현재 브라우저 창에서는 휴대전화 알림을 바로 켤 수 없습니다.\n\n' +
+        '• 아이폰(Safari): 하단 [공유] 버튼 ➔ [홈 화면에 추가]로 설치한 웹앱에서 실행해 주세요 (iOS 16.4 이상).\n' +
+        '• 안드로이드: Chrome 브라우저 또는 [홈 화면에 추가]한 웹앱에서 이용해 주세요.'
+      );
+      return;
+    }
+
+    if (Notification.permission === 'granted') {
+      await this.subscribeUserToPush();
+      this.updatePushPermButtonUI();
+      this.showSystemNotification(
+        '찰스 바이블 알림 켜짐 🔔',
+        '휴대전화 알림이 정상 작동 중입니다! 친구의 응원이나 공지가 오면 알려드려요 🐑🌿',
+        'charles-push-check'
+      );
+      this.showToast('🔔 휴대전화 알림이 이미 켜져 있습니다!');
+      return;
+    }
+
+    if (Notification.permission === 'denied') {
+      alert(
+        '🔕 브라우저에서 알림 권한이 차단되어 있습니다.\n\n' +
+        '휴대전화 [설정 ➔ 애플리케이션/웹앱 ➔ 알림] 또는 브라우저 주소창 왼쪽 자물쇠 아이콘에서 [알림 권한]을 [허용]으로 변경해 주세요.'
+      );
+      this.updatePushPermButtonUI();
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      this.updatePushPermButtonUI();
+
+      if (permission === 'granted') {
+        await this.subscribeUserToPush();
+        this.showSystemNotification(
+          '찰스 바이블 알림 설정 완료 🔔',
+          '이제 친구의 풀 응원이나 소식이 도착하면 휴대전화 알림창으로 알려드려요! 🐑🌿',
+          'charles-push-welcome'
+        );
+        this.showToast('🔔 휴대전화 알림이 켜졌습니다!');
+      } else {
+        this.showToast('알림 권한이 허용되지 않았습니다.');
+      }
+    } catch (err) {
+      console.warn('알림 권한 요청 오류:', err);
+      this.showToast('알림 권한 요청 중 오류가 발생했습니다.');
+    }
+  },
+
+  async syncPushSubscriptionIfGranted() {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      await this.subscribeUserToPush();
+    }
+  },
+
+  async subscribeUserToPush() {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+    const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    if (!currentUser || !currentUser.id) return null;
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+
+      if (!sub && this.VAPID_PUBLIC_KEY) {
+        const appServerKey = this.urlBase64ToUint8Array(this.VAPID_PUBLIC_KEY);
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: appServerKey
+        });
+      }
+
+      if (sub && typeof supabaseClient !== 'undefined' && supabaseClient) {
+        const subJson = sub.toJSON();
+        const endpoint = subJson.endpoint;
+        const p256dh = (subJson.keys && subJson.keys.p256dh) || '';
+        const auth = (subJson.keys && subJson.keys.auth) || '';
+
+        if (endpoint && p256dh && auth) {
+          const { error } = await supabaseClient
+            .from('user_push_subscriptions')
+            .upsert([{
+              user_id: String(currentUser.id),
+              endpoint: endpoint,
+              p256dh: p256dh,
+              auth: auth,
+              user_agent: navigator.userAgent || '',
+              updated_at: new Date().toISOString()
+            }], { onConflict: 'endpoint' });
+
+          if (error) {
+            console.warn('푸시 구독키 DB 저장 건너뜀 (테이블 미생성 시 무시):', error.message);
+          } else {
+            console.log('🔔 [WebPush] 기기 푸시 구독키가 클라우드에 등록되었습니다.');
+          }
+        }
+      }
+      return sub;
+    } catch (err) {
+      console.warn('PushManager 구독 건너뜀:', err);
+      return null;
+    }
+  },
+
+  async triggerWebPush(payload) {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.functions) return;
+    try {
+      await supabaseClient.functions.invoke('send-push', {
+        body: payload
+      });
+    } catch (err) {
+      // Edge Function 미배포 상태에서도 기본 앱 동작에 영향이 없도록 조용히 처리
+      console.warn('백그라운드 Web Push 호출 건너뜀:', err);
+    }
+  },
+
+  showSystemNotification(title, body, tag = 'charles-bible-notif') {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+      return;
+    }
+    const notifTitle = title || '찰스 바이블 🌿';
+    const notifOptions = {
+      body: body || '새 응원 메세지가 도착했습니다!',
+      icon: 'favicon.png',
+      badge: 'favicon.png',
+      tag: tag,
+      renotify: true,
+      vibrate: [200, 100, 200],
+      data: { url: './index.html?openMessages=1' }
+    };
+
+    try {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((reg) => {
+          if (reg && reg.showNotification) {
+            reg.showNotification(notifTitle, notifOptions).catch(() => {
+              try { new Notification(notifTitle, notifOptions); } catch (e) {}
+            });
+          } else {
+            try { new Notification(notifTitle, notifOptions); } catch (e) {}
+          }
+        }).catch(() => {
+          try { new Notification(notifTitle, notifOptions); } catch (e) {}
+        });
+      } else {
+        new Notification(notifTitle, notifOptions);
+      }
+    } catch (e) {}
+  },
+
+  // 유저 간 풀/응원 메시지인지 판별 (관리자 로그에는 남기지 않고 수신 유저 로컬에만 기록)
+  isCheerMessage(msg) {
+    if (!msg) return false;
+    const title = String(msg.title || '').trim();
+    const content = String(msg.content || '').trim();
+    if (title.startsWith('띵동~') || title.includes('응원과 함께 풀을 보냈어요')) {
+      return true;
+    }
+    if (msg.target_type === 'USER' && content.includes('찰스를 위한 싱싱한 풀') && content.includes('응원을 보냈어요')) {
+      return true;
+    }
+    return false;
+  },
+
+  // 클라우드에서 도착한 응원 메시지를 수신 유저의 개인 로컬 알림함으로 즉시 흡수
+  absorbCheerMessageToLocal(m) {
+    if (!m || !m.id) return false;
+    const notifs = this.getNotifications();
+    const localId = 'cheer_' + String(m.id);
+    if (notifs.some(n => String(n.id) === localId)) {
+      return false; // 이미 흡수된 응원 메시지
+    }
+
+    const dateStr = m.created_at ? new Date(m.created_at).toLocaleString('ko-KR', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : '방금 전';
+
+    const newNotif = {
+      id: localId,
+      icon: '🌿',
+      isCheer: true,
+      sender: m.sender_name || '양떼목장 친구',
+      title: m.title || '띵동~ 응원과 함께 풀을 보냈어요!',
+      text: m.content || '',
+      time: dateStr,
+      read: false
+    };
+
+    notifs.unshift(newNotif);
+    this.saveNotificationsList(notifs);
+    return newNotif;
+  },
+
   // Supabase Realtime 구독: 상대방이 응원을 보내거나 새 공지가 등록되면 실시간 수신!
   setupRealtimeMessages() {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
@@ -3332,23 +3611,25 @@ const App = {
     }
   },
 
-  // 상단 적극적 인앱 알림 배너 팝업 & 효과
+  // 상단 적극적 인앱 알림 배너 팝업 & 휴대전화 시스템 알림 호출
   triggerInAppNotification(msg) {
     if (!msg) return;
     const banner = document.getElementById('inapp-push-banner');
     if (!banner) return;
 
     this.latestInAppMsgId = msg.id;
+    this.latestInAppMsgIsSystem = !!msg.isSystem;
 
     const titleEl = document.getElementById('inapp-push-title');
     const descEl = document.getElementById('inapp-push-desc');
     const iconEl = banner.querySelector('.inapp-push-icon-box');
 
-    const isCheer = (msg.title && (msg.title.includes('응원') || msg.title.includes('띵동~') || msg.title.includes('풀')));
+    const isCheer = msg.isCheer || this.isCheerMessage(msg);
     if (iconEl) iconEl.textContent = isCheer ? '🌿' : (msg.target_type === 'USER' ? '💌' : '📢');
     if (titleEl) titleEl.textContent = msg.title || '새 알림이 도착했어요!';
     if (descEl) {
-      const summary = (msg.content || '').split('\n')[0].slice(0, 38);
+      const rawBody = msg.content || msg.text || '';
+      const summary = rawBody.split('\n')[0].slice(0, 38);
       descEl.textContent = summary || '터치하여 메세지를 확인해보세요.';
     }
 
@@ -3362,15 +3643,12 @@ const App = {
       msgBtn.classList.add('envelope-wobble');
     }
 
-    // 브라우저 Web Notification 푸시 알림 (사용자 허용 시)
-    try {
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('찰스 바이블 🌿', {
-          body: msg.title || '새 응원 메세지가 도착했습니다!',
-          icon: 'favicon.png'
-        });
-      }
-    } catch (e) {}
+    // 휴대전화 상태표시줄 시스템 알림 호출 (Service Worker showNotification 우선)
+    this.showSystemNotification(
+      '찰스 바이블 🌿',
+      msg.title || '새 응원 메세지가 도착했습니다!',
+      'charles-msg-' + (msg.id || Date.now())
+    );
 
     // 7초 후 자동 닫기
     if (this.inAppBannerTimer) clearTimeout(this.inAppBannerTimer);
@@ -3444,7 +3722,8 @@ const App = {
     }
   },
 
-  // Supabase admin_messages 테이블에서 공지사항 및 1:1 쪽지 가져오기
+  // Supabase admin_messages 테이블에서 공지사항 및 어린양의 메세지 가져오기
+  // (풀/응원 메시지는 수신 즉시 유저 로컬 알림으로 흡수하고 DB에서 삭제하여 관리자 로그에 남지 않게 처리)
   async fetchCloudAdminMessages() {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) {
       return;
@@ -3463,35 +3742,81 @@ const App = {
 
       const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(30);
+        .limit(40);
 
       if (!error && Array.isArray(data)) {
+        const cheerRows = [];
+        const adminRows = [];
+
+        data.forEach(m => {
+          if (this.isCheerMessage(m)) {
+            cheerRows.push(m);
+          } else {
+            adminRows.push(m);
+          }
+        });
+
+        // 1) 내게 도착한 풀/응원 메시지는 유저 로컬 알림으로 흡수 후 Supabase DB에서 즉시 삭제!
+        let newlyAbsorbedCheer = null;
+        if (user && user.id && cheerRows.length > 0) {
+          const myCheers = cheerRows.filter(m => String(m.target_user_id).toLowerCase() === String(user.id).toLowerCase());
+          const consumedIds = [];
+
+          // 오래된 순서대로 unshift하여 최신 응원이 맨 위에 오도록 처리
+          for (let i = myCheers.length - 1; i >= 0; i--) {
+            const cMsg = myCheers[i];
+            const absorbed = this.absorbCheerMessageToLocal(cMsg);
+            if (absorbed) {
+              newlyAbsorbedCheer = { ...absorbed, isSystem: true, content: absorbed.text };
+            }
+            if (cMsg.id !== undefined && cMsg.id !== null) {
+              consumedIds.push(cMsg.id);
+            }
+          }
+
+          if (consumedIds.length > 0) {
+            supabaseClient
+              .from('admin_messages')
+              .delete()
+              .in('id', consumedIds)
+              .then(({ error: delErr }) => {
+                if (delErr) {
+                  console.warn('응원 메시지 임시 행 정리 경고:', delErr);
+                } else {
+                  console.log(`🌿 [응원 메시지 유저 로컬 흡수 및 DB 정리 완료] (${consumedIds.length}건)`);
+                }
+              });
+          }
+        }
+
+        // 2) 관리자 전체 공지 & 어린양의 메세지 처리
         const prevMsgs = this.cloudAdminMessages || [];
         const prevIds = new Set(prevMsgs.map(m => String(m.id)));
         const readIds = this.getReadAdminMsgIds();
         const deletedIds = this.getDeletedAdminMsgIds();
 
-        // 새로 도착한 미열람 쪽지/공지 감지 시 적극적으로 인앱 알림 배너 팝업!
-        if (this.hasInitializedMsgFetch) {
-          const newUnread = data.filter(m => !prevIds.has(String(m.id)) && !readIds.includes(String(m.id)) && !deletedIds.includes(String(m.id)));
+        if (newlyAbsorbedCheer) {
+          this.triggerInAppNotification(newlyAbsorbedCheer);
+        } else if (this.hasInitializedMsgFetch) {
+          const newUnread = adminRows.filter(m => !prevIds.has(String(m.id)) && !readIds.includes(String(m.id)) && !deletedIds.includes(String(m.id)));
           if (newUnread.length > 0) {
             this.triggerInAppNotification(newUnread[0]);
           }
         } else {
-          this.hasInitializedMsgFetch = true;
-          // 최초 로드 시에도 15분 이내에 온 미열람 응원 쪽지가 있다면 배너 팝업
-          const recentUnreadCheer = data.find(m => {
+          const recentUnread = adminRows.find(m => {
             if (readIds.includes(String(m.id)) || deletedIds.includes(String(m.id))) return false;
             const diffMs = Date.now() - new Date(m.created_at).getTime();
             return diffMs < 15 * 60 * 1000;
           });
-          if (recentUnreadCheer) {
-            setTimeout(() => this.triggerInAppNotification(recentUnreadCheer), 800);
+          if (recentUnread) {
+            setTimeout(() => this.triggerInAppNotification(recentUnread), 800);
           }
         }
 
-        this.cloudAdminMessages = data;
+        this.hasInitializedMsgFetch = true;
+        this.cloudAdminMessages = adminRows;
         this.updateUnreadNotificationDot();
+
         // 모달이 열려있는 상태라면 바로 렌더링 갱신
         const msgOverlay = document.getElementById('message-modal-overlay');
         if (msgOverlay && msgOverlay.style.display === 'flex') {
@@ -3564,15 +3889,18 @@ const App = {
     this.showToast('메세지가 삭제되었습니다.');
   },
 
-  // 기본 시스템 알림 삭제
+  // 기본 시스템 알림 및 응원 알림 개별 삭제
   deleteNotification(id) {
     if (!confirm('이 알림을 삭제하시겠습니까?')) {
       return;
     }
 
     const notifs = this.getNotifications();
-    const updated = notifs.filter(n => n.id !== id);
-    localStorage.setItem('charles_notifications', JSON.stringify(updated));
+    const updated = notifs.filter(n => String(n.id) !== String(id));
+    this.saveNotificationsList(updated);
+    if (updated.length === 0) {
+      localStorage.setItem(this.getNotifClearedKey(), 'true');
+    }
 
     // 상세 모달이 열려있다면 닫고 목록으로 복귀
     const detailOverlay = document.getElementById('message-detail-modal-overlay');
@@ -3583,6 +3911,46 @@ const App = {
     this.renderNotifications();
     this.updateUnreadNotificationDot();
     this.showToast('알림이 삭제되었습니다.');
+  },
+
+  // 받은 메세지 및 알림 전체 삭제
+  deleteAllMessages() {
+    RetroAudio.click();
+    const notifs = this.getNotifications();
+    const deletedIds = this.getDeletedAdminMsgIds();
+    const activeAdminMsgs = (this.cloudAdminMessages || []).filter(m => !deletedIds.includes(String(m.id)));
+
+    if (notifs.length === 0 && activeAdminMsgs.length === 0) {
+      this.showToast('삭제할 메세지가 없습니다.');
+      return;
+    }
+
+    if (!confirm('받은 모든 메세지와 응원 알림을 전체 삭제하시겠습니까?')) {
+      return;
+    }
+
+    // 1) 로컬 알림(응원 및 시스템 알림) 전체 비우기 & 초기화 플래그 기록
+    this.saveNotificationsList([]);
+    localStorage.setItem(this.getNotifClearedKey(), 'true');
+
+    // 2) 클라우드 공지/어린양 메세지 전체 삭제 목록에 등록
+    activeAdminMsgs.forEach(m => {
+      const strId = String(m.id);
+      if (!deletedIds.includes(strId)) {
+        deletedIds.push(strId);
+      }
+    });
+    localStorage.setItem('charles_deleted_admin_msg_ids', JSON.stringify(deletedIds));
+
+    // 상세 모달이 열려있다면 닫기
+    const detailOverlay = document.getElementById('message-detail-modal-overlay');
+    if (detailOverlay && detailOverlay.style.display === 'flex') {
+      this.closeMessageDetail(true);
+    }
+
+    this.renderNotifications();
+    this.updateUnreadNotificationDot();
+    this.showToast('🗑️ 모든 메세지가 삭제되었습니다.');
   },
 
   // 현재 열려있는 상세 보기 창의 메시지 삭제
@@ -3607,17 +3975,18 @@ const App = {
 
     if (isSystem) {
       const notifs = this.getNotifications();
-      const item = notifs.find(n => n.id === id);
+      const item = notifs.find(n => String(n.id) === String(id));
       if (!item) return;
       this.markNotifRead(id);
+      const isCheer = item.isCheer || this.isCheerMessage(item);
       msgData = {
         id: item.id,
         isSystem: true,
         title: item.title || '시스템 알림',
-        badge: '🔔 시스템 알림',
-        badgeClass: 'badge-all',
+        badge: isCheer ? '🌿 사랑의 응원과 양 풀 도착!' : '🔔 시스템 알림',
+        badgeClass: isCheer ? 'badge-cheer' : 'badge-all',
         time: item.time || '오늘',
-        sender: '양떼목장 찰스',
+        sender: item.sender || (isCheer ? '양떼목장 친구' : '양떼목장 찰스'),
         content: item.text || ''
       };
     } else {
@@ -3626,7 +3995,7 @@ const App = {
       if (!item) return;
       this.markAdminMsgRead(id);
       const isUserMsg = item.target_type === 'USER';
-      const isCheer = (item.title && (item.title.includes('응원') || item.title.includes('띵동~') || item.title.includes('풀')));
+      const isCheer = this.isCheerMessage(item);
 
       let badge = isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지';
       let badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
@@ -3699,6 +4068,28 @@ const App = {
     }
   },
 
+  getNotifStorageKey() {
+    const user = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    if (user && user.id) {
+      return `charles_user_${user.id}_notifications`;
+    }
+    return 'charles_notifications';
+  },
+
+  getNotifClearedKey() {
+    const user = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    if (user && user.id) {
+      return `charles_user_${user.id}_notifs_cleared`;
+    }
+    return 'charles_notifs_cleared';
+  },
+
+  saveNotificationsList(list) {
+    const key = this.getNotifStorageKey();
+    localStorage.setItem(key, JSON.stringify(list));
+    localStorage.setItem('charles_notifications', JSON.stringify(list));
+  },
+
   getNotifications() {
     const defaultNotifs = [
       {
@@ -3727,29 +4118,34 @@ const App = {
       }
     ];
 
-    const saved = localStorage.getItem('charles_notifications');
+    const key = this.getNotifStorageKey();
+    const isCleared = localStorage.getItem(this.getNotifClearedKey()) === 'true';
+    const saved = localStorage.getItem(key) || (!isCleared ? localStorage.getItem('charles_notifications') : null);
+
     if (!saved) {
-      localStorage.setItem('charles_notifications', JSON.stringify(defaultNotifs));
+      if (isCleared) return [];
+      this.saveNotificationsList(defaultNotifs);
       return defaultNotifs;
     }
     try {
       let parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return isCleared ? [] : defaultNotifs;
       // 예시 친구(다윗, 에스더 등) 언급 알림 완전 제거
       parsed = parsed.filter(n => n && n.text && !n.text.includes('다윗') && !n.text.includes('에스더') && !n.text.includes('친구로 추가'));
-      if (parsed.length === 0) {
+      if (parsed.length === 0 && !isCleared) {
         parsed = defaultNotifs;
       }
-      localStorage.setItem('charles_notifications', JSON.stringify(parsed));
+      this.saveNotificationsList(parsed);
       return parsed;
     } catch (e) {
-      return defaultNotifs;
+      return isCleared ? [] : defaultNotifs;
     }
   },
 
   addNotification(notif) {
     const notifs = this.getNotifications();
     notifs.unshift(notif);
-    localStorage.setItem('charles_notifications', JSON.stringify(notifs));
+    this.saveNotificationsList(notifs);
     this.updateUnreadNotificationDot();
   },
 
@@ -3757,7 +4153,7 @@ const App = {
     const dot = document.getElementById('msg-unread-dot') || document.querySelector('.msg-unread-dot');
     const msgBtn = document.getElementById('btn-open-messages');
 
-    // 1) 기본 시스템 알림 중 안 읽은 것
+    // 1) 기본 시스템 알림 및 응원 알림 중 안 읽은 것
     const notifs = this.getNotifications();
     const unreadSysCount = notifs.filter(n => !n.read).length;
 
@@ -3811,7 +4207,7 @@ const App = {
       adminMsgs.forEach(m => {
         const isRead = readIds.includes(String(m.id));
         const isUserMsg = m.target_type === 'USER';
-        const isCheer = (m.title && (m.title.includes('응원') || m.title.includes('띵동~') || m.title.includes('풀')));
+        const isCheer = this.isCheerMessage(m);
 
         let badgeClass = isUserMsg ? 'badge-user' : 'badge-all';
         let badgeText = isUserMsg ? '💌 어린양의 메세지' : '📢 전체 공지';
@@ -3866,13 +4262,20 @@ const App = {
       });
     }
 
-    // 2. 기본 시스템 알림
+    // 2. 유저 전용 알림 (친구들의 풀/응원 알림 & 기본 시스템 알림)
     if (notifs.length > 0) {
-      html += notifs.map(n => `
-        <div class="notif-item notif-admin-item ${n.read ? 'read' : 'unread'}" onclick="App.openMessageDetail('${n.id}', true)">
+      html += notifs.map(n => {
+        const isCheer = n.isCheer || this.isCheerMessage(n);
+        const badgeClass = isCheer ? 'badge-cheer' : 'badge-all';
+        const badgeText = isCheer ? '🌿 사랑의 응원' : '🔔 시스템 알림';
+        const senderText = n.sender || (isCheer ? '양떼목장 친구' : '양떼목장 찰스');
+        const cardClass = isCheer ? 'notif-type-user' : '';
+
+        return `
+        <div class="notif-item notif-admin-item ${cardClass} ${n.read ? 'read' : 'unread'}" onclick="App.openMessageDetail('${n.id}', true)">
           <div class="notif-content" style="width: 100%;">
             <div class="notif-admin-header-row">
-              <span class="notif-badge badge-all">🔔 시스템 알림</span>
+              <span class="notif-badge ${badgeClass}">${badgeText}</span>
               <div class="notif-header-meta">
                 <span class="notif-time">${n.time}</span>
                 <span class="msg-unread-status" style="font-size: 11px; ${!n.read ? 'font-weight: 700; color: #E74C3C;' : 'color: #888;'}">
@@ -3881,11 +4284,11 @@ const App = {
               </div>
             </div>
             <div class="notif-admin-title-row">
-              <div class="notif-admin-title">${n.title || n.text.slice(0, 24)}</div>
+              <div class="notif-admin-title">${n.title || (n.text || '').slice(0, 24)}</div>
             </div>
             <div class="notif-admin-footer-row">
               <div class="notif-sender-info">
-                보낸이: <strong>양떼목장 찰스</strong>
+                보낸이: <strong>${senderText}</strong>
               </div>
               <div class="notif-card-actions">
                 <button type="button" class="btn-notif-quick-read" title="말씀 읽으러 가기" onclick="event.stopPropagation(); App.goToReadBible('${n.id}', true);">
@@ -3901,7 +4304,8 @@ const App = {
             </div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     listEl.innerHTML = html;
@@ -3909,8 +4313,8 @@ const App = {
 
   markNotifRead(id) {
     const notifs = this.getNotifications();
-    const updated = notifs.map(n => n.id === id ? { ...n, read: true } : n);
-    localStorage.setItem('charles_notifications', JSON.stringify(updated));
+    const updated = notifs.map(n => String(n.id) === String(id) ? { ...n, read: true } : n);
+    this.saveNotificationsList(updated);
     this.renderNotifications();
     this.updateUnreadNotificationDot();
   },

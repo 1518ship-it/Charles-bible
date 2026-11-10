@@ -352,15 +352,25 @@
           </div>
         </form>
 
-        <!-- 최근 발송 내역 -->
+        <!-- 최근 발송 내역 (운영자 전체 공지 & 어린양의 메세지만 표시) -->
         <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div style="font-weight: 700; font-size: 14px; color: #333;">
-              📋 최근 발송된 메시지 및 공지 내역 (<span id="count-sent-messages">0</span>건)
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div style="font-weight: 700; font-size: 14px; color: #333;">
+                📋 최근 발송된 공지 및 어린양의 메세지 내역 (<span id="count-sent-messages">0</span>건)
+              </div>
+              <div style="font-size: 11px; color: #777; margin-top: 2px;">
+                * 성도 간 풀 보내기/응원 알림은 이곳에 기록되지 않고 받는 성도에게만 기록됩니다.
+              </div>
             </div>
-            <button type="button" id="btn-refresh-messages" class="admin-btn admin-btn-sm" style="font-size: 12px;">
-              🔄 내역 새로고침
-            </button>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" id="btn-refresh-messages" class="admin-btn admin-btn-sm" style="font-size: 12px;">
+                🔄 내역 새로고침
+              </button>
+              <button type="button" id="btn-delete-all-messages" class="admin-btn admin-btn-sm admin-btn-danger" style="font-size: 12px;">
+                🗑️ 내역 전체 삭제
+              </button>
+            </div>
           </div>
           <div id="admin-sent-messages-list">
             <div style="text-align: center; color: #888; padding: 20px; font-size: 13px;">발송 내역을 불러오는 중...</div>
@@ -368,13 +378,13 @@
         </div>
       </div>
 
-      <!-- 4. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & admin_messages) -->
+      <!-- 4. Supabase DB 연동 설정 안내 (user_today_summary 뷰 & admin_messages & user_push_subscriptions) -->
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>☁️</span> Supabase 오늘 통독 & 달란트 요약 테이블(VIEW) 및 메시지 테이블 생성 SQL
+          <span>☁️</span> Supabase 요약 테이블(VIEW) · 메시지 · 휴대폰 Web Push 구독 테이블 SQL
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 10px;">
-          Supabase 페이지의 <strong>[Table Editor]</strong>에서 유저별 오늘 읽은 장수, 달란트, 연속 접속일을 별도 테이블로 바로 보거나 공지/쪽지 기능을 활성화하려면 아래 SQL을 Supabase <strong>[SQL Editor]</strong>에서 1회 실행해 주세요.
+          Supabase 페이지의 <strong>[SQL Editor]</strong>에서 아래 쿼리를 복사해 1회 실행하면 요약 뷰, 공지/쪽지 테이블, 그리고 <strong>휴대폰 백그라운드 푸시 구독 테이블(user_push_subscriptions)</strong>이 모두 생성됩니다.
         </p>
         <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 컬럼 안전 추가
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
@@ -513,13 +523,151 @@ ON public.admin_messages FOR DELETE USING (id IS NOT NULL);
 
 GRANT ALL ON public.admin_messages TO anon, authenticated, service_role;
 
--- 5. [Linter 보안 경고 일괄 해결] 미사용 레거시 함수 정리
+-- 5. [모바일 웹앱(PWA) 백그라운드 Web Push 구독 저장 테이블 생성 & RLS 설정]
+CREATE TABLE IF NOT EXISTS public.user_push_subscriptions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id text NOT NULL,
+  endpoint text NOT NULL UNIQUE,
+  subscription jsonb NOT NULL,
+  user_agent text NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_push_subs_user_id ON public.user_push_subscriptions (user_id);
+
+ALTER TABLE public.user_push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_push_subs_select_policy" ON public.user_push_subscriptions;
+DROP POLICY IF EXISTS "user_push_subs_insert_policy" ON public.user_push_subscriptions;
+DROP POLICY IF EXISTS "user_push_subs_update_policy" ON public.user_push_subscriptions;
+DROP POLICY IF EXISTS "user_push_subs_delete_policy" ON public.user_push_subscriptions;
+
+CREATE POLICY "user_push_subs_select_policy"
+ON public.user_push_subscriptions FOR SELECT USING (true);
+
+CREATE POLICY "user_push_subs_insert_policy"
+ON public.user_push_subscriptions FOR INSERT
+WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
+
+CREATE POLICY "user_push_subs_update_policy"
+ON public.user_push_subscriptions FOR UPDATE
+USING (user_id IS NOT NULL AND length(user_id) > 0)
+WITH CHECK (user_id IS NOT NULL AND length(user_id) > 0);
+
+CREATE POLICY "user_push_subs_delete_policy"
+ON public.user_push_subscriptions FOR DELETE
+USING (id IS NOT NULL);
+
+GRANT ALL ON public.user_push_subscriptions TO anon, authenticated, service_role;
+
+-- 6. [Linter 보안 경고 일괄 해결] 미사용 레거시 함수 정리
 DROP FUNCTION IF EXISTS public.verify_signup_code(text);
 DROP FUNCTION IF EXISTS public.verify_admin_code(text);
 DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
-        <button id="btn-copy-sql" class="admin-btn admin-btn-primary" style="font-size: 12px;">
-          📋 SQL 쿼리 복사하기
-        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
+          <button id="btn-copy-sql" class="admin-btn admin-btn-primary" style="font-size: 12px;">
+            📋 SQL 쿼리 복사하기
+          </button>
+        </div>
+
+        <div style="border-top: 1px dashed #CCC; padding-top: 16px; margin-top: 8px;">
+          <div style="font-weight: 700; font-size: 14px; color: #111; margin-bottom: 6px;">
+            📲 2단계: 앱이 완전히 꺼져 있어도 울리는 Web Push (Supabase Edge Function) 등록 코드
+          </div>
+          <p style="font-size: 12px; color: var(--admin-muted); line-height: 1.5; margin-bottom: 10px;">
+            1) Supabase 대시보드 좌측 메뉴 <strong>[Edge Functions]</strong> 클릭 ➔ <strong>[Deploy a new function]</strong> ➔ <strong>[Via Editor]</strong> 선택<br>
+            2) Function 이름에 <code>send-push</code> 입력 후, 아래 코드를 복사해 붙여넣고 <strong>[Deploy]</strong>를 누르면 앱이 꺼진 휴대폰에도 푸시가 발송됩니다! (무료 플랜 지원)
+          </p>
+          <pre id="admin-edge-fn-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 11px; max-height: 220px; overflow-y: auto; overflow-x: auto; line-height: 1.45; font-family: monospace; margin-bottom: 10px;">import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import webpush from 'npm:web-push@3.6.7';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
+};
+
+const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') || 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU';
+const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || '9PRlzr0oB2CQxcB695nkXHmLW_mDfuCelhPKnx29N10';
+const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:admin@charlesbible.app';
+
+webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+  try {
+    const body = await req.json();
+    const targetType = body.target_type || 'USER';
+    const targetUserId = body.target_user_id ? String(body.target_user_id).trim() : null;
+    const senderUserId = body.sender_user_id ? String(body.sender_user_id).trim() : null;
+    const title = body.title || '찰스 바이블 🌿';
+    const messageBody = body.body || body.content || '새로운 소식이 도착했어요!';
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let query = supabase.from('user_push_subscriptions').select('*');
+    if (targetType === 'USER' && targetUserId) {
+      query = query.eq('user_id', targetUserId);
+    }
+
+    const { data: subs, error } = await query;
+    if (error) throw error;
+    if (!subs || subs.length === 0) {
+      return new Response(JSON.stringify({ success: true, sent: 0 }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const payloadStr = JSON.stringify({
+      title,
+      body: messageBody,
+      icon: './icon-192.png',
+      badge: './favicon-32x32.png',
+      tag: 'charles-push-' + Date.now(),
+      url: './index.html?openMessages=1'
+    });
+
+    let sentCount = 0;
+    const expiredIds: string[] = [];
+
+    await Promise.all(
+      subs.map(async (row: any) => {
+        if (targetType === 'ALL' && senderUserId && row.user_id === senderUserId) return;
+        const subObj = row.subscription;
+        if (!subObj || !subObj.endpoint) return;
+        try {
+          await webpush.sendNotification(subObj, payloadStr);
+          sentCount++;
+        } catch (pushErr: any) {
+          if (pushErr && (pushErr.statusCode === 404 || pushErr.statusCode === 410)) {
+            expiredIds.push(row.id);
+          }
+        }
+      })
+    );
+
+    if (expiredIds.length > 0) {
+      await supabase.from('user_push_subscriptions').delete().in('id', expiredIds);
+    }
+
+    return new Response(JSON.stringify({ success: true, sent: sentCount }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ success: false, error: err?.message || String(err) }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+});</pre>
+          <button id="btn-copy-edge-fn" type="button" class="admin-btn admin-btn-primary" style="font-size: 12px;">
+            📋 Edge Function (send-push) 코드 복사하기
+          </button>
+        </div>
       </div>
 
     </div>
