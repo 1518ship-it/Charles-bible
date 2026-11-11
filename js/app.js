@@ -89,6 +89,7 @@ const App = {
     const handleReactivation = () => {
       this.fetchCloudAdminMessages();
       this.updatePushPermButtonUI();
+      this.syncPushSubscriptionIfGranted();
       this.renderAll();
     };
     window.addEventListener('focus', handleReactivation);
