@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
-  APP_VERSION: 'v10.0',
+  APP_VERSION: 'v10.1',
   VAPID_PUBLIC_KEY: 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
