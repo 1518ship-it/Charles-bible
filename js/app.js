@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
-  APP_VERSION: 'v9.8',
+  APP_VERSION: 'v10.0',
   VAPID_PUBLIC_KEY: 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
@@ -70,6 +70,13 @@ const App = {
 
     // 🔔 모바일 웹앱(PWA) 서비스 워커 및 푸시 알림 초기화
     this.initServiceWorkerAndPush();
+
+    // 🔔 로그인된 사용자에게 푸시 알람 동의 안내 팝업 표시 (미동의 & 다시보지않기 미체크 시)
+    if (AuthService.isAuthenticated()) {
+      setTimeout(() => {
+        this.checkAndShowPushPromptModal();
+      }, 600);
+    }
 
     // 📢 운영자 전체 공지 및 1:1 쪽지 조회 & 알림 뱃지 업데이트 (30초 폴링 + 리얼타임 감지)
     this.fetchCloudAdminMessages();
@@ -293,6 +300,9 @@ const App = {
             this.renderAll();
             this.fetchCloudAdminMessages();
             this.syncPushSubscriptionIfGranted();
+            setTimeout(() => {
+              this.checkAndShowPushPromptModal();
+            }, 500);
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}!`);
           } else {
@@ -399,6 +409,9 @@ const App = {
 
             this.renderAll();
             this.syncPushSubscriptionIfGranted();
+            setTimeout(() => {
+              this.checkAndShowPushPromptModal();
+            }, 500);
             const callName = AuthService.getUserCallName(result.user);
             this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
           } else {
@@ -3444,6 +3457,73 @@ const App = {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       await this.subscribeUserToPush();
     }
+  },
+
+  // ==================== 🔔 앱 진입 시 푸시 알람 동의 안내 팝업 제어 ====================
+  getPushPromptHideKey() {
+    const user = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
+    const uid = (user && user.id) ? user.id : 'guest';
+    return `charles_user_${uid}_hide_push_prompt`;
+  },
+
+  shouldShowPushPromptModal() {
+    if (typeof AuthService === 'undefined' || !AuthService.isAuthenticated()) return false;
+
+    // '다시 보지 않기' 체크 여부 확인 (유저별 + 기기 공통 키 모두 확인)
+    const userKey = this.getPushPromptHideKey();
+    if (localStorage.getItem(userKey) === 'true' || localStorage.getItem('charles_hide_push_prompt') === 'true') {
+      return false;
+    }
+
+    // 이미 브라우저/웹앱에서 알림 권한이 허용된 상태라면 팝업 불필요
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      return false;
+    }
+
+    return true;
+  },
+
+  checkAndShowPushPromptModal() {
+    if (!this.shouldShowPushPromptModal()) return;
+    const modal = document.getElementById('push-permission-prompt-modal');
+    if (!modal) return;
+
+    const chk = document.getElementById('chk-push-prompt-hide');
+    if (chk) chk.checked = false;
+
+    modal.style.display = 'flex';
+
+    if (!modal.dataset.backdropBound) {
+      modal.dataset.backdropBound = 'true';
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          this.closePushPromptModal();
+        }
+      });
+    }
+  },
+
+  savePushPromptHidePreferenceIfChecked() {
+    const chk = document.getElementById('chk-push-prompt-hide');
+    if (chk && chk.checked) {
+      localStorage.setItem(this.getPushPromptHideKey(), 'true');
+      localStorage.setItem('charles_hide_push_prompt', 'true');
+    }
+  },
+
+  async confirmPushPromptModal() {
+    this.savePushPromptHidePreferenceIfChecked();
+    const modal = document.getElementById('push-permission-prompt-modal');
+    if (modal) modal.style.display = 'none';
+
+    await this.requestPushNotificationPermission();
+  },
+
+  closePushPromptModal() {
+    RetroAudio.click();
+    this.savePushPromptHidePreferenceIfChecked();
+    const modal = document.getElementById('push-permission-prompt-modal');
+    if (modal) modal.style.display = 'none';
   },
 
   async subscribeUserToPush() {

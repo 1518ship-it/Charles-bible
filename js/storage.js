@@ -19,7 +19,7 @@ const StorageService = {
         const u = JSON.parse(uStr);
         if (u && u.id) return String(u.id).trim();
       }
-    } catch (e) {}
+    } catch (e) { }
     return 'guest';
   },
 
@@ -340,7 +340,7 @@ const StorageService = {
       });
       if (history.length > 500) history.pop();
       localStorage.setItem(key, JSON.stringify(history));
-    } catch (e) {}
+    } catch (e) { }
   },
 
   getHistory() {
@@ -436,7 +436,7 @@ const StorageService = {
     const key = this.getUserKey('streak');
     try {
       localStorage.setItem(key, JSON.stringify(streak));
-    } catch (e) {}
+    } catch (e) { }
     return streak;
   },
 
@@ -447,7 +447,7 @@ const StorageService = {
     const key = this.getUserKey('streak');
     try {
       localStorage.setItem(key, JSON.stringify(streak));
-    } catch (e) {}
+    } catch (e) { }
     return streak;
   },
 
@@ -569,7 +569,7 @@ const StorageService = {
             bannerId: effectiveBanner,
             votedAt: new Date().toISOString()
           }));
-        } catch (e) {}
+        } catch (e) { }
       }
 
       const talentPayload = {
@@ -672,7 +672,7 @@ const StorageService = {
         const localProgress = this.getProgress();
         const remoteProgress = (data.read_progress && typeof data.read_progress === 'object') ? data.read_progress : {};
         const mergedProgress = { ...remoteProgress, ...localProgress };
-        
+
         if (Object.keys(mergedProgress).length > Object.keys(remoteProgress).length) {
           hasNewerLocalData = true;
         }
@@ -834,7 +834,7 @@ const StorageService = {
         let localEq = {};
         try {
           localEq = JSON.parse(localStorage.getItem(`charles_user_${uid}_equipped`) || '{}') || {};
-        } catch (e) {}
+        } catch (e) { }
 
         // 찬양집회 투표 상태 자가치유 (인벤토리에 배너가 있으면 투표 상태 보존하되, 착용/탈착 상태는 사용자 선택 존중)
         const ownedBanner = combinedInv.find(id => String(id).startsWith('banner_'));
@@ -844,7 +844,7 @@ const StorageService = {
               bannerId: ownedBanner,
               votedAt: new Date().toISOString()
             }));
-          } catch (e) {}
+          } catch (e) { }
         }
 
         const hasLocalEq = !!localStorage.getItem(`charles_user_${uid}_equipped`);
@@ -980,7 +980,7 @@ const StorageService = {
         const parsed = JSON.parse(eq);
         if (parsed && typeof parsed === 'object') equipped = parsed;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // 3) Supabase user_reading_state 테이블에서 최신 원격 조회
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
@@ -1031,11 +1031,11 @@ const StorageService = {
           if (equipped && Object.keys(equipped).length > 0) {
             try {
               localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
-            } catch (e) {}
+            } catch (e) { }
           }
           try {
             localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
-          } catch (e) {}
+          } catch (e) { }
         }
       } catch (err) {
         console.warn('Supabase getUserState warning:', err);
@@ -1124,7 +1124,7 @@ const StorageService = {
           const parsed = JSON.parse(eq);
           if (parsed && typeof parsed === 'object') equipped = parsed;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr);
       stateMap[uid] = {
@@ -1228,7 +1228,7 @@ const StorageService = {
                   localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
                 }
                 localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
-              } catch (e) {}
+              } catch (e) { }
             }
 
             const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr, row.last_read_date);

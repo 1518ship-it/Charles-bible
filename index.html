@@ -25,7 +25,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Pretendard & Minimal Theme -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=9.7">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=10.0">
 </head>
 <body>
 
@@ -1931,6 +1931,52 @@
       </div>
     </div>
 
+    <!-- ==================== 🔔 찰스 앱 푸시 알람 동의 안내 팝업 모달 ==================== -->
+    <div id="push-permission-prompt-modal" class="modal-overlay" style="display: none; z-index: 10010;">
+      <div class="modal-sheet push-prompt-sheet">
+        <button class="btn-icon-close push-prompt-close-x" type="button" aria-label="닫기" title="닫기" onclick="App.closePushPromptModal()">
+          <svg class="pixel-icon" viewBox="0 0 8 8" width="10" height="10" shape-rendering="crispEdges">
+            <rect x="0" y="0" width="2" height="2" fill="currentColor" />
+            <rect x="6" y="0" width="2" height="2" fill="currentColor" />
+            <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+            <rect x="4" y="2" width="2" height="2" fill="currentColor" />
+            <rect x="2" y="4" width="2" height="2" fill="currentColor" />
+            <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+            <rect x="0" y="6" width="2" height="2" fill="currentColor" />
+            <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+          </svg>
+        </button>
+
+        <div class="push-prompt-icon-badge" aria-hidden="true">
+          <span class="push-prompt-bell">🔔</span>
+          <span class="push-prompt-sheep">🐑</span>
+        </div>
+
+        <h3 class="push-prompt-title">이제 찰스 앱에서<br>알람을 받을 수 있어요!</h3>
+
+        <p class="push-prompt-desc">
+          친구들이 보내주는 싱싱한 <strong>풀 응원 🌿</strong>과<br>
+          따뜻한 소식을 휴대전화 알림창으로 바로 받아보세요!
+        </p>
+
+        <div class="push-prompt-actions">
+          <button type="button" id="btn-push-prompt-confirm" class="btn-push-prompt-confirm" onclick="App.confirmPushPromptModal()">
+            🔔 확인 (알람 켜기)
+          </button>
+          <button type="button" class="btn-push-prompt-later" onclick="App.closePushPromptModal()">
+            닫기
+          </button>
+        </div>
+
+        <div class="push-prompt-footer">
+          <label class="push-prompt-dont-show" for="chk-push-prompt-hide">
+            <input type="checkbox" id="chk-push-prompt-hide">
+            <span>다시 보지 않기</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Supabase SDK & Config -->
@@ -1942,10 +1988,10 @@
   <script src="js/bible-data.js?v=9.0"></script>
   <script src="js/bible-notes.js?v=9.0"></script>
   <script src="js/charles-pixel.js?v=9.6"></script>
-  <script src="js/auth.js?v=9.8"></script>
-  <script src="js/storage.js?v=9.8"></script>
-  <script src="js/talent.js?v=9.8"></script>
-  <script src="js/app.js?v=9.8"></script>
+  <script src="js/auth.js?v=10.0"></script>
+  <script src="js/storage.js?v=10.0"></script>
+  <script src="js/talent.js?v=10.0"></script>
+  <script src="js/app.js?v=10.0"></script>
 
 </body>
 </html>
