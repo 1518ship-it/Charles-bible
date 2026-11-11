@@ -15,8 +15,10 @@ const AdminApp = {
   isAdminUnlocked: false,
   allUsers: [],
   stateMap: {},
+  pushSubMap: {},
   searchKeyword: '',
   selectedCell: 'ALL',
+  selectedPushFilter: 'ALL',
   sortBy: 'todayRead',
 
   // 📊 사용자 주간 현황 상태
@@ -156,6 +158,14 @@ const AdminApp = {
     if (cellFilter) {
       cellFilter.addEventListener('change', (e) => {
         this.selectedCell = e.target.value;
+        this.renderFilteredTable();
+      });
+    }
+
+    const pushFilter = document.getElementById('admin-filter-push');
+    if (pushFilter) {
+      pushFilter.addEventListener('change', (e) => {
+        this.selectedPushFilter = e.target.value;
         this.renderFilteredTable();
       });
     }
@@ -502,6 +512,9 @@ const AdminApp = {
     const userIds = users.map(u => u.id);
     this.stateMap = await StorageService.getAllUsersStates(userIds);
 
+    // 🔔 성도별 휴대전화 알람(Web Push) 동의 현황 조회
+    await this.fetchPushSubscriptions();
+
     // 셀 필터 드롭다운 옵션 갱신
     this.populateCellFilterOptions();
 
@@ -524,6 +537,54 @@ const AdminApp = {
 
     // 최근 발송 메시지 내역 불러오기
     this.loadSentMessages();
+  },
+
+  async fetchPushSubscriptions() {
+    const map = {};
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_push_subscriptions')
+          .select('user_id, endpoint, updated_at')
+          .order('updated_at', { ascending: false });
+
+        if (!error && Array.isArray(data)) {
+          data.forEach(row => {
+            const uid = row.user_id ? String(row.user_id).trim() : '';
+            if (!uid) return;
+            if (!map[uid]) {
+              map[uid] = {
+                agreed: true,
+                count: 1,
+                updatedAt: row.updated_at || null
+              };
+            } else {
+              map[uid].count += 1;
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('푸시 알람 동의 내역 조회 건너뜀:', err);
+      }
+    }
+    this.pushSubMap = map;
+  },
+
+  renderPushStatusBadge(uid) {
+    const info = this.pushSubMap && this.pushSubMap[uid];
+    if (info && info.agreed) {
+      const dateStr = info.updatedAt ? String(info.updatedAt).slice(5, 10).replace('-', '.') : '';
+      return `
+        <span style="display: inline-block; background: #E8F8F5; color: #1E8449; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #A3E4D7;">
+          🔔 동의 완료${dateStr ? ` (${dateStr})` : ''}
+        </span>
+      `;
+    }
+    return `
+      <span style="display: inline-block; background: #F2F4F4; color: #7F8C8D; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #D5DBDB;">
+        🔕 미동의
+      </span>
+    `;
   },
 
   // ==================== 🐑 성경 미통독 휴면 양떼 선별 & 단체 이벤트 센터 ====================
@@ -615,7 +676,7 @@ const AdminApp = {
     if (candidates.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align: center; color: #2E7D32; font-weight: 700; padding: 28px;">
+          <td colspan="9" style="text-align: center; color: #2E7D32; font-weight: 700; padding: 28px;">
             🎉 놀라워요! 현재 조건(${minDays}일 이상 미통독)에 해당하는 휴면 성도가 한 명도 없습니다!
           </td>
         </tr>
@@ -629,6 +690,7 @@ const AdminApp = {
       const isChecked = this.dormantSelectedUserIds.has(u.id);
       const stage = st.stage || 1;
       const talents = st.talents || 0;
+      const pushBadgeHtml = this.renderPushStatusBadge(u.id);
 
       const lastReadText = item.lastReadDate
         ? `<span style="font-weight: 700; color: #333;">${item.lastReadDate}</span> <span style="font-size: 11px; color: #888;">(누적 ${item.totalReadSum}장)</span>`
@@ -654,6 +716,7 @@ const AdminApp = {
           </td>
           <td><span class="cell-badge">${u.cell || '미지정'}</span></td>
           <td><span style="font-weight: 600;">${stage}단계 🐑</span></td>
+          <td style="text-align: center;">${pushBadgeHtml}</td>
           <td>${lastReadText}</td>
           <td>${elapsedBadge}</td>
           <td style="font-weight: 800; color: #D68910;">${talents.toLocaleString()} 🪙</td>
@@ -978,7 +1041,26 @@ const AdminApp = {
   renderFilteredTable() {
     const userTableBody = document.getElementById('admin-user-tbody');
     const badgeTotalUsers = document.getElementById('badge-total-users');
+    const badgePushAgreed = document.getElementById('badge-push-agreed');
+    const badgePushUnagreed = document.getElementById('badge-push-unagreed');
+    const pushFilterSelect = document.getElementById('admin-filter-push');
     if (!userTableBody) return;
+
+    // 전체 성도 기준 알람 동의 / 미동의 집계
+    const totalAgreedCount = this.allUsers.filter(u => !!(this.pushSubMap && this.pushSubMap[u.id] && this.pushSubMap[u.id].agreed)).length;
+    const totalUnagreedCount = Math.max(0, this.allUsers.length - totalAgreedCount);
+
+    if (badgePushAgreed) {
+      badgePushAgreed.textContent = `🔔 알람 동의: ${totalAgreedCount}명`;
+    }
+    if (badgePushUnagreed) {
+      badgePushUnagreed.textContent = `🔕 미동의: ${totalUnagreedCount}명`;
+    }
+    if (pushFilterSelect && pushFilterSelect.options.length >= 3) {
+      pushFilterSelect.options[0].textContent = `전체 (${this.allUsers.length}명)`;
+      pushFilterSelect.options[1].textContent = `🔔 알람 동의한 성도만 (${totalAgreedCount}명)`;
+      pushFilterSelect.options[2].textContent = `🔕 알람 미동의 성도만 (${totalUnagreedCount}명)`;
+    }
 
     let filtered = [...this.allUsers];
 
@@ -987,7 +1069,14 @@ const AdminApp = {
       filtered = filtered.filter(u => u.cell === this.selectedCell);
     }
 
-    // 2) 검색어 필터 (이름, 닉네임, 아이디)
+    // 2) 알람 동의 여부 필터
+    if (this.selectedPushFilter === 'AGREED') {
+      filtered = filtered.filter(u => !!(this.pushSubMap && this.pushSubMap[u.id] && this.pushSubMap[u.id].agreed));
+    } else if (this.selectedPushFilter === 'UNAGREED') {
+      filtered = filtered.filter(u => !(this.pushSubMap && this.pushSubMap[u.id] && this.pushSubMap[u.id].agreed));
+    }
+
+    // 3) 검색어 필터 (이름, 닉네임, 아이디)
     if (this.searchKeyword) {
       const kw = this.searchKeyword;
       filtered = filtered.filter(u => 
@@ -998,7 +1087,7 @@ const AdminApp = {
       );
     }
 
-    // 3) 정렬
+    // 4) 정렬
     filtered.sort((a, b) => {
       const stA = this.stateMap[a.id] || {};
       const stB = this.stateMap[b.id] || {};
@@ -1011,6 +1100,11 @@ const AdminApp = {
         const dA = stA.daysSinceLastRead !== undefined ? stA.daysSinceLastRead : Infinity;
         const dB = stB.daysSinceLastRead !== undefined ? stB.daysSinceLastRead : Infinity;
         if (dA !== dB) return dB - dA;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      } else if (this.sortBy === 'push') {
+        const pA = (this.pushSubMap && this.pushSubMap[a.id] && this.pushSubMap[a.id].agreed) ? 1 : 0;
+        const pB = (this.pushSubMap && this.pushSubMap[b.id] && this.pushSubMap[b.id].agreed) ? 1 : 0;
+        if (pB !== pA) return pB - pA;
         return (a.name || '').localeCompare(b.name || '', 'ko');
       } else if (this.sortBy === 'talents') {
         return (stB.talents || 0) - (stA.talents || 0) ||
@@ -1033,7 +1127,7 @@ const AdminApp = {
     if (filtered.length === 0) {
       userTableBody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; color: #888; padding: 24px;">
+          <td colspan="10" style="text-align: center; color: #888; padding: 24px;">
             조건에 맞는 성도가 없습니다.
           </td>
         </tr>
@@ -1049,6 +1143,7 @@ const AdminApp = {
       const stage = st.stage || 1;
       const lastReadDate = st.lastReadDate;
       const daysSince = st.daysSinceLastRead !== undefined ? st.daysSinceLastRead : Infinity;
+      const pushBadgeHtml = this.renderPushStatusBadge(u.id);
 
       let readStatusHtml = '';
       if (!lastReadDate || daysSince === Infinity) {
@@ -1069,6 +1164,7 @@ const AdminApp = {
             <span style="font-size: 11px; color: #666;">(${u.nickname || u.name})</span>
           </td>
           <td><span class="cell-badge">${u.cell || '미지정'}</span></td>
+          <td style="text-align: center;">${pushBadgeHtml}</td>
           <td style="font-weight: 800; color: ${todayCount > 0 ? '#2E7D32' : '#999'};">
             ${todayCount > 0 ? `${todayCount}장 📖` : '0장'}
           </td>

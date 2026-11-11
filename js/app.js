@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
-  APP_VERSION: 'v10.1',
+  APP_VERSION: 'v10.2',
   VAPID_PUBLIC_KEY: 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
@@ -3527,52 +3527,69 @@ const App = {
   },
 
   async subscribeUserToPush() {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+    if (typeof window === 'undefined') return null;
     const currentUser = (typeof AuthService !== 'undefined') ? AuthService.getCurrentUser() : null;
     if (!currentUser || !currentUser.id) return null;
 
+    let sub = null;
     try {
-      const reg = await navigator.serviceWorker.ready;
-      let sub = await reg.pushManager.getSubscription();
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        const reg = await navigator.serviceWorker.ready;
+        sub = await reg.pushManager.getSubscription();
 
-      if (!sub && this.VAPID_PUBLIC_KEY) {
-        const appServerKey = this.urlBase64ToUint8Array(this.VAPID_PUBLIC_KEY);
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: appServerKey
-        });
+        if (!sub && this.VAPID_PUBLIC_KEY) {
+          const appServerKey = this.urlBase64ToUint8Array(this.VAPID_PUBLIC_KEY);
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: appServerKey
+          });
+        }
       }
+    } catch (err) {
+      console.warn('PushManager 구독 시도 경고 (동의 상태는 기록 진행):', err);
+    }
 
-      if (sub && typeof supabaseClient !== 'undefined' && supabaseClient) {
-        const subJson = sub.toJSON();
-        const endpoint = subJson.endpoint;
-        const p256dh = (subJson.keys && subJson.keys.p256dh) || '';
-        const auth = (subJson.keys && subJson.keys.auth) || '';
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      try {
+        if (sub) {
+          const subJson = sub.toJSON();
+          const endpoint = subJson.endpoint;
+          if (endpoint) {
+            const { error } = await supabaseClient
+              .from('user_push_subscriptions')
+              .upsert([{
+                user_id: String(currentUser.id),
+                endpoint: endpoint,
+                subscription: subJson,
+                user_agent: navigator.userAgent || '',
+                updated_at: new Date().toISOString()
+              }], { onConflict: 'endpoint' });
 
-        if (endpoint && p256dh && auth) {
-          const { error } = await supabaseClient
+            if (error) {
+              console.warn('푸시 구독키 DB 저장 경고:', error.message);
+            } else {
+              console.log('🔔 [WebPush] 기기 푸시 구독키가 클라우드에 등록되었습니다.');
+            }
+          }
+        } else if ('Notification' in window && Notification.permission === 'granted') {
+          // 브라우저 알림 권한은 허용되었으나 PushManager 구독 객체가 없는 환경에서도 알람 동의 여부 기록
+          const fallbackEndpoint = `consent:${String(currentUser.id)}`;
+          await supabaseClient
             .from('user_push_subscriptions')
             .upsert([{
               user_id: String(currentUser.id),
-              endpoint: endpoint,
-              p256dh: p256dh,
-              auth: auth,
+              endpoint: fallbackEndpoint,
+              subscription: { consent: 'granted', endpoint: '' },
               user_agent: navigator.userAgent || '',
               updated_at: new Date().toISOString()
             }], { onConflict: 'endpoint' });
-
-          if (error) {
-            console.warn('푸시 구독키 DB 저장 건너뜀 (테이블 미생성 시 무시):', error.message);
-          } else {
-            console.log('🔔 [WebPush] 기기 푸시 구독키가 클라우드에 등록되었습니다.');
-          }
         }
+      } catch (dbErr) {
+        console.warn('푸시 동의 DB 기록 건너뜀:', dbErr);
       }
-      return sub;
-    } catch (err) {
-      console.warn('PushManager 구독 건너뜀:', err);
-      return null;
     }
+
+    return sub;
   },
 
   async triggerWebPush(payload) {

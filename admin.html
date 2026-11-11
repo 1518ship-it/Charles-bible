@@ -352,6 +352,7 @@
                 <th>성도 이름</th>
                 <th>소속 셀</th>
                 <th>찰스 상태</th>
+                <th style="text-align: center;">알람 동의</th>
                 <th>마지막 통독일</th>
                 <th style="color: #C0392B;">미통독 경과</th>
                 <th style="color: #D68910;">보유 달란트</th>
@@ -367,19 +368,29 @@
 
       <!-- 2. 가입 사용자 관리 & 오늘 통독 및 달란트 현황 -->
       <div class="admin-card">
-        <div class="admin-card-title">
-          <span>👥 등록된 성도 명부 & 통독·달란트 관리</span>
-          <span id="badge-total-users"
-            style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총
-            0명</span>
+        <div class="admin-card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <span>👥 등록된 성도 명부 & 통독·달란트·알람 관리</span>
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <span id="badge-push-agreed"
+              style="font-size: 11px; font-weight: 800; background: #E8F8F5; color: #1E8449; padding: 2px 8px; border-radius: 10px; border: 1px solid #A3E4D7;">
+              🔔 알람 동의: 0명
+            </span>
+            <span id="badge-push-unagreed"
+              style="font-size: 11px; font-weight: 800; background: #F2F4F4; color: #5D6D7E; padding: 2px 8px; border-radius: 10px; border: 1px solid #D5DBDB;">
+              🔕 미동의: 0명
+            </span>
+            <span id="badge-total-users"
+              style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총
+              0명</span>
+          </div>
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
-          성도들의 오늘 통독 장수, 보유 달란트 잔액을 확인하고 <strong>달란트 지급/차감</strong> 및 <strong>비밀번호 초기화/셀 변경</strong>을 직접 관리할 수 있습니다.
+          성도들의 오늘 통독 장수, 보유 달란트 잔액, <strong>휴대전화 알람 동의 여부</strong>를 확인하고 <strong>달란트 지급/차감</strong> 및 <strong>비밀번호 초기화/셀 변경</strong>을 직접 관리할 수 있습니다.
         </p>
 
         <!-- 필터 및 검색 툴바 -->
-        <div class="admin-toolbar">
-          <div class="admin-toolbar-item" style="flex: 1; min-width: 160px;">
+        <div class="admin-toolbar" style="flex-wrap: wrap; gap: 8px;">
+          <div class="admin-toolbar-item" style="flex: 1; min-width: 150px;">
             <input type="text" id="admin-search-user" class="admin-input admin-search-input"
               placeholder="🔍 이름 또는 아이디 검색...">
           </div>
@@ -390,10 +401,19 @@
             </select>
           </div>
           <div class="admin-toolbar-item">
+            <span style="font-size: 12px; font-weight: 700;">알람 상태:</span>
+            <select id="admin-filter-push" class="admin-select" style="min-width: 135px; font-weight: 700;">
+              <option value="ALL">전체 (알람 무관)</option>
+              <option value="AGREED">🔔 알람 동의한 성도만</option>
+              <option value="UNAGREED">🔕 알람 미동의 성도만</option>
+            </select>
+          </div>
+          <div class="admin-toolbar-item">
             <span style="font-size: 12px; font-weight: 700;">정렬:</span>
             <select id="admin-sort-by" class="admin-select" style="min-width: 110px;">
               <option value="todayRead">오늘 읽은순 📖</option>
               <option value="dormant">오래 안 읽은순 (휴면순) 💤</option>
+              <option value="push">알람 동의순 🔔</option>
               <option value="talents">달란트 많은순 🪙</option>
               <option value="streak">연속 통독일순 🔥</option>
               <option value="name">이름순 (가나다)</option>
@@ -412,6 +432,7 @@
                 <th>아이디</th>
                 <th>성도 이름</th>
                 <th>소속 셀</th>
+                <th style="text-align: center;">알람 동의</th>
                 <th style="color: #2E7D32;">오늘 통독</th>
                 <th style="color: #D68910;">보유 달란트</th>
                 <th style="color: #E65100;">연속 통독</th>
@@ -1086,12 +1107,12 @@ Deno.serve(async (req: Request) => {
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=9.9"></script>
-  <script src="js/charles-pixel.js?v=9.9"></script>
-  <script src="js/auth.js?v=9.9"></script>
-  <script src="js/storage.js?v=9.9"></script>
-  <script src="js/talent.js?v=9.9"></script>
-  <script src="js/admin.js?v=9.9"></script>
+  <script src="js/bible-data.js?v=10.2"></script>
+  <script src="js/charles-pixel.js?v=10.2"></script>
+  <script src="js/auth.js?v=10.2"></script>
+  <script src="js/storage.js?v=10.2"></script>
+  <script src="js/talent.js?v=10.2"></script>
+  <script src="js/admin.js?v=10.2"></script>
 
 </body>
 
