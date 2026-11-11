@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const App = {
-  APP_VERSION: 'v9.7',
+  APP_VERSION: 'v9.8',
   VAPID_PUBLIC_KEY: 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
@@ -56,6 +56,9 @@ const App = {
 
     // ☁️ 이미 로그인된 사용자의 경우 Supabase에서 최신 통독 진행도 및 오늘 읽은 장수 실시간 동기화
     if (AuthService.isAuthenticated()) {
+      if (AuthService.touchCurrentUserLogin) {
+        AuthService.touchCurrentUserLogin();
+      }
       try {
         await StorageService.syncFromCloud();
         this.renderAll();

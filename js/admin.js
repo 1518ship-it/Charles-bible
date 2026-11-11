@@ -25,6 +25,12 @@ const AdminApp = {
   weeklySelectedCell: 'ALL',
   weeklyOnlyTtibu: false,
 
+  // 🐑 성경 미통독 휴면 양떼 선별 상태
+  dormantMinDays: 7,
+  dormantSelectedCell: 'ALL',
+  dormantSelectedUserIds: new Set(),
+  _dormantSelectionInitialized: false,
+
   init() {
     this.checkAdminAuth();
     this.bindEvents();
@@ -267,6 +273,71 @@ const AdminApp = {
         this.copyTtibuWinnersList();
       });
     }
+
+    // 6) 🐑 성경 미통독 휴면 양떼 선별 & 이벤트 발송 이벤트
+    const dormantDaysSelect = document.getElementById('dormant-select-days');
+    if (dormantDaysSelect) {
+      dormantDaysSelect.addEventListener('change', (e) => {
+        this.dormantMinDays = parseInt(e.target.value, 10) || 7;
+        this._dormantSelectionInitialized = false;
+        RetroAudio.click();
+        this.renderDormantDashboard();
+      });
+    }
+
+    const dormantCellSelect = document.getElementById('dormant-filter-cell');
+    if (dormantCellSelect) {
+      dormantCellSelect.addEventListener('change', (e) => {
+        this.dormantSelectedCell = e.target.value || 'ALL';
+        this._dormantSelectionInitialized = false;
+        RetroAudio.click();
+        this.renderDormantDashboard();
+      });
+    }
+
+    const dormantCheckAll = document.getElementById('dormant-check-all');
+    if (dormantCheckAll) {
+      dormantCheckAll.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        const checkboxes = document.querySelectorAll('.dormant-user-checkbox');
+        checkboxes.forEach(cb => {
+          cb.checked = isChecked;
+          const uid = cb.dataset.uid;
+          if (uid) {
+            if (isChecked) this.dormantSelectedUserIds.add(uid);
+            else this.dormantSelectedUserIds.delete(uid);
+          }
+        });
+        this.updateDormantSelectedCount();
+      });
+    }
+
+    const copyDormantBtn = document.getElementById('btn-copy-dormant-list');
+    if (copyDormantBtn) {
+      copyDormantBtn.addEventListener('click', () => {
+        this.copyDormantUsersList();
+      });
+    }
+
+    const openBulkDormantBtn = document.getElementById('btn-open-bulk-dormant-msg');
+    if (openBulkDormantBtn) {
+      openBulkDormantBtn.addEventListener('click', () => {
+        this.openBulkDormantMessageModal();
+      });
+    }
+
+    document.querySelectorAll('.btn-dormant-template').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.applyDormantTemplate(btn.dataset.tpl);
+      });
+    });
+
+    const sendBulkDormantBtn = document.getElementById('btn-send-bulk-dormant-message');
+    if (sendBulkDormantBtn) {
+      sendBulkDormantBtn.addEventListener('click', () => {
+        this.handleSendBulkDormantMessage();
+      });
+    }
   },
 
   // ==================== 3. 모달 공통 및 개별 이벤트 ====================
@@ -444,11 +515,374 @@ const AdminApp = {
     this.initWeeklyDashboard();
     this.renderWeeklyDashboard();
 
+    // 🐑 성경 미통독 휴면 양떼 선별 대시보드 렌더링
+    this._dormantSelectionInitialized = false;
+    this.renderDormantDashboard();
+
     // 🍁 가을 특별 이벤트 미션 현황 통계 렌더링
     this.renderAutumnEventStats();
 
     // 최근 발송 메시지 내역 불러오기
     this.loadSentMessages();
+  },
+
+  // ==================== 🐑 성경 미통독 휴면 양떼 선별 & 단체 이벤트 센터 ====================
+  getDormantCandidates(minDays = null, cellFilter = null) {
+    const threshold = minDays !== null ? minDays : (this.dormantMinDays || 7);
+    const cellTarget = cellFilter !== null ? cellFilter : (this.dormantSelectedCell || 'ALL');
+
+    const list = [];
+    this.allUsers.forEach(u => {
+      if (cellTarget !== 'ALL' && (u.cell || '미지정') !== cellTarget) return;
+
+      const st = this.stateMap[u.id] || {};
+      const lastReadDate = st.lastReadDate || null;
+      const daysSince = (st.daysSinceLastRead !== undefined && st.daysSinceLastRead !== null)
+        ? st.daysSinceLastRead
+        : Infinity;
+      const totalReadSum = st.totalReadSum || 0;
+
+      // 성경을 한 번도 안 읽었거나(daysSince === Infinity), 마지막 통독일로부터 threshold(기본 7일) 이상 경과한 경우 선별
+      if (daysSince >= threshold) {
+        list.push({
+          user: u,
+          state: st,
+          lastReadDate,
+          daysSinceLastRead: daysSince,
+          totalReadSum,
+          isNeverRead: !lastReadDate || daysSince === Infinity
+        });
+      }
+    });
+
+    // 정렬: 오래 안 읽은 순 (단, 1장 이상 읽었던 장기 휴면자를 먼저 보여주거나 미통독 일수 내림차순)
+    list.sort((a, b) => {
+      if (a.isNeverRead !== b.isNeverRead) {
+        return a.isNeverRead ? 1 : -1; // 통독 기록이 있는 휴면 성도를 상단에, 미시작 성도를 그 다음에 배치
+      }
+      if (!a.isNeverRead && !b.isNeverRead && b.daysSinceLastRead !== a.daysSinceLastRead) {
+        return b.daysSinceLastRead - a.daysSinceLastRead;
+      }
+      return (a.user.name || '').localeCompare(b.user.name || '', 'ko');
+    });
+
+    return list;
+  },
+
+  renderDormantDashboard() {
+    const tbody = document.getElementById('dormant-user-tbody');
+    if (!tbody) return;
+
+    const minDays = this.dormantMinDays || 7;
+    const candidates = this.getDormantCandidates(minDays, this.dormantSelectedCell);
+
+    // 전체 기준 KPI (셀 필터 적용된 후보군 기준)
+    const shortCount = candidates.filter(c => !c.isNeverRead && c.daysSinceLastRead >= 7 && c.daysSinceLastRead <= 13).length;
+    const longCount = candidates.filter(c => !c.isNeverRead && c.daysSinceLastRead >= 14).length;
+    const neverCount = candidates.filter(c => c.isNeverRead).length;
+
+    const badgeEl = document.getElementById('badge-dormant-count');
+    if (badgeEl) badgeEl.textContent = `💤 ${minDays}일+ 미통독 휴면 양떼: ${candidates.length}명`;
+
+    const kpiTotal = document.getElementById('dormant-kpi-total');
+    const kpiTotalSub = document.getElementById('dormant-kpi-total-sub');
+    const kpiShort = document.getElementById('dormant-kpi-short');
+    const kpiLong = document.getElementById('dormant-kpi-long');
+    const kpiNever = document.getElementById('dormant-kpi-never');
+
+    if (kpiTotal) kpiTotal.textContent = `${candidates.length}명`;
+    if (kpiTotalSub) kpiTotalSub.textContent = `${minDays}일 이상 성경 미통독`;
+    if (kpiShort) kpiShort.textContent = `${shortCount}명`;
+    if (kpiLong) kpiLong.textContent = `${longCount}명`;
+    if (kpiNever) kpiNever.textContent = `${neverCount}명`;
+
+    // 초기 선택 상태: 후보군 전체 선택
+    if (!this._dormantSelectionInitialized) {
+      this.dormantSelectedUserIds = new Set(candidates.map(c => c.user.id));
+      this._dormantSelectionInitialized = true;
+      const checkAllEl = document.getElementById('dormant-check-all');
+      if (checkAllEl) checkAllEl.checked = candidates.length > 0;
+    } else {
+      // 현재 필터에 없는 ID 정리
+      const validIds = new Set(candidates.map(c => c.user.id));
+      for (const id of Array.from(this.dormantSelectedUserIds)) {
+        if (!validIds.has(id)) this.dormantSelectedUserIds.delete(id);
+      }
+    }
+
+    this.updateDormantSelectedCount();
+
+    if (candidates.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align: center; color: #2E7D32; font-weight: 700; padding: 28px;">
+            🎉 놀라워요! 현재 조건(${minDays}일 이상 미통독)에 해당하는 휴면 성도가 한 명도 없습니다!
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = candidates.map(item => {
+      const u = item.user;
+      const st = item.state;
+      const isChecked = this.dormantSelectedUserIds.has(u.id);
+      const stage = st.stage || 1;
+      const talents = st.talents || 0;
+
+      const lastReadText = item.lastReadDate
+        ? `<span style="font-weight: 700; color: #333;">${item.lastReadDate}</span> <span style="font-size: 11px; color: #888;">(누적 ${item.totalReadSum}장)</span>`
+        : `<span style="color: #999;">기록 없음 (0장)</span>`;
+
+      let elapsedBadge = '';
+      if (item.isNeverRead) {
+        elapsedBadge = `<span style="display: inline-block; background: #F2F4F4; color: #5D6D7E; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #BDC3C7;">🥚 통독 미시작</span>`;
+      } else if (item.daysSinceLastRead >= 14) {
+        elapsedBadge = `<span style="display: inline-block; background: #FDEDEC; color: #C0392B; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #F5B7B1;">🚨 ${item.daysSinceLastRead}일째 미통독</span>`;
+      } else {
+        elapsedBadge = `<span style="display: inline-block; background: #FEF9E7; color: #B7950B; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #F9E79F;">💤 ${item.daysSinceLastRead}일째 미통독</span>`;
+      }
+
+      const rawLogin = u.last_login_at || u.lastLoginAt || st.lastSyncedAt || u.created_at || u.registeredAt;
+      const loginDateText = rawLogin ? String(rawLogin).slice(0, 10) : '-';
+
+      return `
+        <tr>
+          <td style="text-align: center;">
+            <input type="checkbox" class="dormant-user-checkbox" data-uid="${u.id}" ${isChecked ? 'checked' : ''} style="cursor: pointer; width: 15px; height: 15px;">
+          </td>
+          <td>
+            <strong>${u.name}</strong>
+            <span style="font-size: 11px; color: #666;">(${u.nickname || u.name})</span>
+          </td>
+          <td><span class="cell-badge">${u.cell || '미지정'}</span></td>
+          <td><span style="font-weight: 600;">${stage}단계 🐑</span></td>
+          <td>${lastReadText}</td>
+          <td>${elapsedBadge}</td>
+          <td style="font-weight: 800; color: #D68910;">${talents.toLocaleString()} 🪙</td>
+          <td style="font-size: 11px; color: #666;">${loginDateText}</td>
+          <td style="text-align: center;">
+            <div class="action-btn-group" style="justify-content: center;">
+              <button type="button" class="admin-btn admin-btn-sm btn-dormant-msg" data-uid="${u.id}" title="개인 격려 쪽지 보내기">
+                💌 쪽지
+              </button>
+              <button type="button" class="admin-btn admin-btn-sm admin-btn-warning btn-dormant-talent" data-uid="${u.id}" title="달란트 지급">
+                🪙 달란트
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // 체크박스 개별 이벤트
+    tbody.querySelectorAll('.dormant-user-checkbox').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const uid = e.target.dataset.uid;
+        if (!uid) return;
+        if (e.target.checked) {
+          this.dormantSelectedUserIds.add(uid);
+        } else {
+          this.dormantSelectedUserIds.delete(uid);
+        }
+        const checkAllEl = document.getElementById('dormant-check-all');
+        if (checkAllEl) {
+          checkAllEl.checked = this.dormantSelectedUserIds.size === candidates.length && candidates.length > 0;
+        }
+        this.updateDormantSelectedCount();
+      });
+    });
+
+    // 개별 쪽지/달란트 버튼 연결
+    tbody.querySelectorAll('.btn-dormant-msg').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.openDirectMessageModal(btn.dataset.uid);
+      });
+    });
+    tbody.querySelectorAll('.btn-dormant-talent').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.openTalentModal(btn.dataset.uid);
+      });
+    });
+  },
+
+  updateDormantSelectedCount() {
+    const countEl = document.getElementById('dormant-selected-count');
+    if (countEl) {
+      countEl.textContent = String(this.dormantSelectedUserIds.size);
+    }
+  },
+
+  copyDormantUsersList() {
+    const minDays = this.dormantMinDays || 7;
+    const candidates = this.getDormantCandidates(minDays, this.dormantSelectedCell);
+
+    // 체크된 성도가 있으면 체크된 성도 기준, 없으면 전체 선별 성도 기준
+    const targetList = candidates.filter(c => this.dormantSelectedUserIds.has(c.user.id));
+    const finalItems = targetList.length > 0 ? targetList : candidates;
+
+    if (finalItems.length === 0) {
+      this.showToast('복사할 휴면 성도 명단이 없습니다.', 'info');
+      return;
+    }
+
+    // 셀별로 그룹화
+    const byCell = {};
+    finalItems.forEach(item => {
+      const cellName = item.user.cell || '미지정';
+      if (!byCell[cellName]) byCell[cellName] = [];
+      const statusStr = item.isNeverRead ? '미시작' : `${item.daysSinceLastRead}일째 미통독`;
+      byCell[cellName].push(`${item.user.name}(${statusStr})`);
+    });
+
+    const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr)
+      ? StorageService.getTodayDateStr()
+      : new Date().toISOString().slice(0, 10);
+
+    let text = `🐑 [말씀양 찰스] ${minDays}일 이상 성경 미통독 양떼 명단 (${todayStr} 기준 / 총 ${finalItems.length}명)\n`;
+    text += `----------------------------------------\n`;
+    Object.keys(byCell).sort().forEach(cell => {
+      text += `▪ ${cell} (${byCell[cell].length}명): ${byCell[cell].join(', ')}\n`;
+    });
+    text += `----------------------------------------\n`;
+    text += `🌿 우리 셀의 쉬고 있는 양떼들에게 따뜻한 안부와 말씀 응원을 보내주세요!`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      RetroAudio.success();
+      this.showToast(`📋 휴면 성도 ${finalItems.length}명 명단이 클립보드에 복사되었습니다!`, 'success');
+    }).catch(() => {
+      alert(text);
+    });
+  },
+
+  applyDormantTemplate(tplId) {
+    const titleInput = document.getElementById('input-bulk-dormant-title');
+    const senderInput = document.getElementById('input-bulk-dormant-sender');
+    const contentInput = document.getElementById('input-bulk-dormant-content');
+    if (!titleInput || !contentInput) return;
+
+    RetroAudio.click();
+    if (String(tplId) === '1') {
+      titleInput.value = '🐑 띵동! 배고픈 찰스가 성도님의 말씀 풀을 기다리고 있어요 🌿';
+      if (senderInput) senderInput.value = '말씀양 찰스';
+      contentInput.value =
+        '사랑하는 성도님! 요즘 바쁘고 분주한 일상 속에서도 주님의 평안이 함께하시길 기도합니다 🙏\n\n' +
+        '성도님의 말씀양 찰스가 성도님이 먹여주시는 싱싱한 말씀 풀을 애타게 기다리고 있어요! 🐑🌿\n' +
+        '오늘 가볍게 신약 성경 1장부터 다시 읽으며 찰스에게 힘을 주시겠어요? 주님의 말씀이 성도님의 하루에 큰 힘과 위로가 될 거예요 ✨';
+    } else if (String(tplId) === '2') {
+      titleInput.value = '🎁 [돌아온 어린양 특별 이벤트] 오늘 말씀 1장 읽고 선물 받아가세요!';
+      if (senderInput) senderInput.value = '서원경 청년부';
+      contentInput.value =
+        '반가워요 성도님! 오랜만에 양떼목장에 돌아오시는 성도님들을 위해 특별한 환영 이벤트를 준비했어요 🎉\n\n' +
+        '지금 접속해서 성경 말씀 1장만 읽어도 찰스가 다시 쑥쑥 자라나고 풍성한 은혜와 달란트 보상이 기다리고 있답니다! 🪙✨\n' +
+        '아래 [📖 말씀 읽으러 가기] 버튼을 눌러 지금 바로 다시 시작해 보세요!';
+    } else if (String(tplId) === '3') {
+      titleInput.value = '💖 성도님, 요즘 어떻게 지내시나요? 양떼목장이 응원합니다!';
+      if (senderInput) senderInput.value = '양떼목장 운영자';
+      contentInput.value =
+        '사랑하고 축복하는 성도님! 한 주간 평안하셨나요?\n\n' +
+        '잠시 성경 통독을 쉬고 계셨더라도 괜찮아요! 언제든 다시 펼쳐 읽는 그 순간이 가장 은혜로운 시작입니다 📖🌿\n' +
+        '오늘 자기 전 단 5분, 말씀 한 장으로 주님과 따뜻한 교제를 나누어 보세요. 늘 기도하며 응원합니다! 🐑💖';
+    }
+  },
+
+  openBulkDormantMessageModal() {
+    const minDays = this.dormantMinDays || 7;
+    const candidates = this.getDormantCandidates(minDays, this.dormantSelectedCell);
+    const selectedList = candidates.filter(c => this.dormantSelectedUserIds.has(c.user.id));
+
+    if (selectedList.length === 0) {
+      alert('일괄 메세지를 발송할 휴면 성도를 체크박스로 1명 이상 선택해 주세요.');
+      return;
+    }
+
+    const countEl = document.getElementById('bulk-dormant-target-count');
+    const namesEl = document.getElementById('bulk-dormant-target-names');
+    if (countEl) countEl.textContent = String(selectedList.length);
+    if (namesEl) {
+      namesEl.textContent = selectedList.map(c => `${c.user.name}(${c.user.cell || '미지정'})`).join(', ');
+    }
+
+    const titleInput = document.getElementById('input-bulk-dormant-title');
+    const contentInput = document.getElementById('input-bulk-dormant-content');
+    if (titleInput && !titleInput.value.trim() && contentInput && !contentInput.value.trim()) {
+      this.applyDormantTemplate('1');
+    }
+
+    this.openModal('modal-bulk-dormant-message');
+  },
+
+  async handleSendBulkDormantMessage() {
+    const minDays = this.dormantMinDays || 7;
+    const candidates = this.getDormantCandidates(minDays, this.dormantSelectedCell);
+    const selectedList = candidates.filter(c => this.dormantSelectedUserIds.has(c.user.id));
+
+    if (selectedList.length === 0) {
+      alert('선택된 발송 대상 성도가 없습니다.');
+      return;
+    }
+
+    const title = (document.getElementById('input-bulk-dormant-title')?.value || '').trim();
+    const sender = (document.getElementById('input-bulk-dormant-sender')?.value || '말씀양 찰스').trim() || '말씀양 찰스';
+    const content = (document.getElementById('input-bulk-dormant-content')?.value || '').trim();
+    const sendBtn = document.getElementById('btn-send-bulk-dormant-message');
+
+    if (!title || !content) {
+      alert('메세지 제목과 본문 내용을 모두 입력해 주세요.');
+      return;
+    }
+
+    if (!confirm(`선택된 휴면 성도 ${selectedList.length}명에게 1:1 이벤트 메세지와 휴대폰 푸시 알림을 일괄 발송하시겠습니까?`)) {
+      return;
+    }
+
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = `⏳ ${selectedList.length}명에게 발송 중...`;
+    }
+
+    try {
+      const nowIso = new Date().toISOString();
+      const rows = selectedList.map(c => ({
+        target_type: 'USER',
+        target_user_id: String(c.user.id),
+        title,
+        content,
+        sender_name: sender,
+        created_at: nowIso
+      }));
+
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        const { error } = await supabaseClient.from('admin_messages').insert(rows);
+        if (error) throw error;
+
+        // 각 대상 성도에게 백그라운드 휴대폰 Web Push 발송 (비동기 병렬 실행)
+        Promise.allSettled(
+          selectedList.map(c =>
+            this.triggerWebPushForAdminMessage({
+              target_type: 'USER',
+              target_user_id: String(c.user.id),
+              title,
+              content
+            })
+          )
+        );
+      }
+
+      this.closeModal('modal-bulk-dormant-message');
+      RetroAudio.success();
+      this.showToast(`🚀 휴면 성도 ${selectedList.length}명에게 이벤트 메세지 및 푸시 발송을 완료했습니다!`, 'success');
+      this.loadSentMessages();
+    } catch (err) {
+      console.error('휴면 성도 일괄 메세지 발송 오류:', err);
+      RetroAudio.error();
+      alert('일괄 발송 중 오류가 발생했습니다: ' + (err.message || err));
+    } finally {
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '🚀 선택된 휴면 성도에게 일괄 발송하기';
+      }
+    }
   },
 
   // ==================== 🍁 가을 특별 이벤트 미션 현황 통계 ====================
@@ -514,9 +948,10 @@ const AdminApp = {
   // 셀 목록 드롭다운 채우기
   populateCellFilterOptions() {
     const cellFilter = document.getElementById('admin-filter-cell');
-    if (!cellFilter) return;
+    const dormantCellFilter = document.getElementById('dormant-filter-cell');
 
     const currentVal = this.selectedCell;
+    const currentDormantVal = this.dormantSelectedCell;
     const cells = new Set();
     this.allUsers.forEach(u => {
       if (u.cell && u.cell !== '미지정') cells.add(u.cell);
@@ -530,9 +965,17 @@ const AdminApp = {
       optionsHtml += `<option value="${cell}">${cell} (${count}명)</option>`;
     });
 
-    cellFilter.innerHTML = optionsHtml;
-    cellFilter.value = cells.has(currentVal) ? currentVal : 'ALL';
-    this.selectedCell = cellFilter.value;
+    if (cellFilter) {
+      cellFilter.innerHTML = optionsHtml;
+      cellFilter.value = cells.has(currentVal) ? currentVal : 'ALL';
+      this.selectedCell = cellFilter.value;
+    }
+
+    if (dormantCellFilter) {
+      dormantCellFilter.innerHTML = optionsHtml;
+      dormantCellFilter.value = cells.has(currentDormantVal) ? currentDormantVal : 'ALL';
+      this.dormantSelectedCell = dormantCellFilter.value;
+    }
   },
 
   // 필터 및 정렬 적용 후 테이블 렌더링
@@ -568,6 +1011,11 @@ const AdminApp = {
         return (stB.todayRead || 0) - (stA.todayRead || 0) ||
                (stB.talents || 0) - (stA.talents || 0) ||
                (stB.streakCount || 0) - (stA.streakCount || 0);
+      } else if (this.sortBy === 'dormant') {
+        const dA = stA.daysSinceLastRead !== undefined ? stA.daysSinceLastRead : Infinity;
+        const dB = stB.daysSinceLastRead !== undefined ? stB.daysSinceLastRead : Infinity;
+        if (dA !== dB) return dB - dA;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
       } else if (this.sortBy === 'talents') {
         return (stB.talents || 0) - (stA.talents || 0) ||
                (stB.todayRead || 0) - (stA.todayRead || 0);
@@ -603,8 +1051,21 @@ const AdminApp = {
       const talents = st.talents || 0;
       const streak = st.streakCount || 0;
       const stage = st.stage || 1;
-      const lastLogin = u.last_login_at || u.lastLoginAt;
+      const lastLogin = u.last_login_at || u.lastLoginAt || st.lastSyncedAt;
       const dateText = lastLogin ? String(lastLogin).slice(0, 10) : (u.created_at ? String(u.created_at).slice(0, 10) : '-');
+      const lastReadDate = st.lastReadDate;
+      const daysSince = st.daysSinceLastRead !== undefined ? st.daysSinceLastRead : Infinity;
+
+      let readStatusHtml = '';
+      if (!lastReadDate || daysSince === Infinity) {
+        readStatusHtml = `<div style="font-size: 11px; color: #999; font-weight: 600;">📖 미시작 (0장)</div>`;
+      } else if (daysSince === 0) {
+        readStatusHtml = `<div style="font-size: 11px; color: #2E7D32; font-weight: 700;">📖 오늘 통독 (${lastReadDate.slice(5)})</div>`;
+      } else if (daysSince >= 7) {
+        readStatusHtml = `<div style="font-size: 11px; color: #C0392B; font-weight: 700;">💤 ${daysSince}일전 통독 (${lastReadDate.slice(5)})</div>`;
+      } else {
+        readStatusHtml = `<div style="font-size: 11px; color: #555; font-weight: 600;">📖 ${daysSince}일전 통독 (${lastReadDate.slice(5)})</div>`;
+      }
 
       return `
         <tr data-user-row="${u.id}">
@@ -624,7 +1085,10 @@ const AdminApp = {
             ${streak > 0 ? `${streak}일 🔥` : '0일'}
           </td>
           <td><span style="font-weight: 600;">${stage}단계 🐑</span></td>
-          <td style="font-size: 11px; color: #666;">${dateText}</td>
+          <td style="font-size: 11px; color: #666; line-height: 1.35;">
+            ${readStatusHtml}
+            <div style="font-size: 10px; color: #888;">접속: ${dateText}</div>
+          </td>
           <td style="text-align: center;">
             <div class="action-btn-group" style="justify-content: center;">
               <button type="button" class="admin-btn admin-btn-sm admin-btn-warning btn-action-talent" data-uid="${u.id}" title="달란트 지급 및 수정">
@@ -754,6 +1218,7 @@ const AdminApp = {
       RetroAudio.success();
       this.showToast(`🪙 [${userName}] 성도님의 달란트가 ${safeAmount.toLocaleString()}🪙로 설정되었습니다!`, 'success');
       this.renderFilteredTable();
+      this.renderDormantDashboard();
     } catch (err) {
       console.error('달란트 저장 실패:', err);
       RetroAudio.error();
@@ -876,6 +1341,7 @@ const AdminApp = {
       this.showToast(`💾 [${cleanName}] 성도님의 정보가 성공적으로 수정되었습니다!`, 'success');
       this.populateCellFilterOptions();
       this.renderFilteredTable();
+      this.renderDormantDashboard();
     } catch (err) {
       console.error('성도 정보 저장 실패:', err);
       RetroAudio.error();
@@ -944,6 +1410,7 @@ const AdminApp = {
       this.showToast(`🗑️ [${userName}] 성도 계정이 삭제되었습니다.`, 'info');
       this.populateCellFilterOptions();
       this.renderFilteredTable();
+      this.renderDormantDashboard();
     } catch (err) {
       console.error('성도 삭제 실패:', err);
       RetroAudio.error();

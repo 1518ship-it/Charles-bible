@@ -237,6 +237,100 @@
         </div>
       </div>
 
+      <!-- 🐑 성경 미통독 휴면 양떼 선별 & 복귀 이벤트 센터 -->
+      <div class="admin-card" id="admin-dormant-card" style="border: 1.5px solid #2980B9; background: linear-gradient(135deg, rgba(41, 128, 185, 0.05), rgba(142, 68, 173, 0.03));">
+        <div class="admin-card-title" style="color: #1F618D; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span>🐑</span> 성경 미통독 휴면 양떼 선별 & 복귀 이벤트 센터
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span id="badge-dormant-count" style="font-size: 11px; font-weight: 800; background: #EBF5FB; color: #1F618D; padding: 3px 10px; border-radius: 10px; border: 1px solid #85C1E9;">
+              💤 선별된 휴면 양떼: 0명
+            </span>
+          </div>
+        </div>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
+          성경을 안 읽은 지 <strong>7일 이상</strong> 지난 휴면 성도(통독 미시작 성도 포함)를 자동으로 선별합니다. 체크박스로 대상을 선택해 <strong>단체 이벤트 쪽지 & 휴대전화 푸시 알림</strong>을 한 번에 보내거나 카카오톡 공유용 명단을 복사할 수 있습니다.
+        </p>
+
+        <!-- 휴면 KPI 요약 카드 그리드 -->
+        <div class="weekly-kpi-grid" style="margin-bottom: 12px;">
+          <div class="weekly-kpi-card" style="border-color: #2980B9;">
+            <div class="weekly-kpi-label">💤 선별된 미통독 성도</div>
+            <div class="weekly-kpi-val" id="dormant-kpi-total" style="color: #1F618D;">0명</div>
+            <div class="weekly-kpi-sub" id="dormant-kpi-total-sub">7일 이상 성경 미통독</div>
+          </div>
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">🌱 단기 휴면 (7~13일)</div>
+            <div class="weekly-kpi-val" id="dormant-kpi-short" style="color: #D68910;">0명</div>
+            <div class="weekly-kpi-sub">가벼운 격려 시 복귀 유력!</div>
+          </div>
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">🚨 장기 미통독 (14일+)</div>
+            <div class="weekly-kpi-val" id="dormant-kpi-long" style="color: #C0392B;">0명</div>
+            <div class="weekly-kpi-sub">특별 이벤트 케어 대상</div>
+          </div>
+          <div class="weekly-kpi-card">
+            <div class="weekly-kpi-label">🥚 통독 미시작 (0장)</div>
+            <div class="weekly-kpi-val" id="dormant-kpi-never" style="color: #7F8C8D;">0명</div>
+            <div class="weekly-kpi-sub">가입 후 첫 통독 전</div>
+          </div>
+        </div>
+
+        <!-- 휴면 선별 툴바 -->
+        <div class="admin-toolbar" style="flex-wrap: wrap; gap: 8px;">
+          <div class="admin-toolbar-item">
+            <span style="font-size: 12px; font-weight: 700;">미통독 기준:</span>
+            <select id="dormant-select-days" class="admin-select" style="font-weight: 700; min-width: 175px;">
+              <option value="7" selected>7일 이상 안 읽은 성도 (기본)</option>
+              <option value="3">3일 이상 안 읽은 성도</option>
+              <option value="14">14일 이상 안 읽은 성도</option>
+              <option value="30">30일 이상 안 읽은 성도</option>
+            </select>
+          </div>
+
+          <div class="admin-toolbar-item">
+            <span style="font-size: 12px; font-weight: 700;">소속 셀:</span>
+            <select id="dormant-filter-cell" class="admin-select" style="min-width: 110px;">
+              <option value="ALL">전체 셀</option>
+            </select>
+          </div>
+
+          <div style="margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" id="btn-copy-dormant-list" class="admin-btn admin-btn-sm" style="background: #EBF5FB; border-color: #2980B9; color: #154360; font-weight: 800;" title="셀별 휴면 성도 명단 클립보드 복사">
+              📋 휴면 명단 카톡 복사
+            </button>
+            <button type="button" id="btn-open-bulk-dormant-msg" class="admin-btn admin-btn-sm admin-btn-primary" style="background: #2E7D32; border-color: #111; color: #FFF; font-weight: 800;" title="체크된 휴면 성도에게 일괄 이벤트 쪽지 및 휴대폰 푸시 발송">
+              💌 선택 성도 일괄 이벤트 쪽지 & 푸시 발송 (<span id="dormant-selected-count">0</span>명)
+            </button>
+          </div>
+        </div>
+
+        <!-- 휴면 성도 목록 테이블 -->
+        <div style="overflow-x: auto; max-height: 420px; overflow-y: auto; border: 1px solid #DDD; border-radius: 6px; background: #FFF;">
+          <table class="admin-table">
+            <thead style="position: sticky; top: 0; z-index: 2;">
+              <tr>
+                <th style="width: 38px; text-align: center;">
+                  <input type="checkbox" id="dormant-check-all" checked style="cursor: pointer; width: 15px; height: 15px;" title="전체 선택/해제">
+                </th>
+                <th>성도 이름</th>
+                <th>소속 셀</th>
+                <th>찰스 상태</th>
+                <th>마지막 통독일</th>
+                <th style="color: #C0392B;">미통독 경과</th>
+                <th style="color: #D68910;">보유 달란트</th>
+                <th>최근 접속일</th>
+                <th style="text-align: center;">개별 액션</th>
+              </tr>
+            </thead>
+            <tbody id="dormant-user-tbody">
+              <!-- 동적 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- 2. 가입 사용자 관리 & 오늘 통독 및 달란트 현황 -->
       <div class="admin-card">
         <div class="admin-card-title">
@@ -262,6 +356,7 @@
             <span style="font-size: 12px; font-weight: 700;">정렬:</span>
             <select id="admin-sort-by" class="admin-select" style="min-width: 110px;">
               <option value="todayRead">오늘 읽은순 📖</option>
+              <option value="dormant">오래 안 읽은순 (휴면순) 💤</option>
               <option value="talents">달란트 많은순 🪙</option>
               <option value="streak">연속 통독일순 🔥</option>
               <option value="name">이름순 (가나다)</option>
@@ -284,7 +379,7 @@
                 <th style="color: #D68910;">보유 달란트</th>
                 <th style="color: #E65100;">연속 통독</th>
                 <th>찰스 상태</th>
-                <th>최근 접속</th>
+                <th>마지막 통독 / 접속</th>
                 <th style="text-align: center;">관리 / 액션</th>
               </tr>
             </thead>
@@ -857,6 +952,68 @@ Deno.serve(async (req: Request) => {
     </div>
   </div>
 
+  <!-- ==================== 🐑 휴면 성도 단체 복귀 이벤트 쪽지 & 푸시 일괄 발송 모달 ==================== -->
+  <div id="modal-bulk-dormant-message" class="admin-modal-overlay">
+    <div class="admin-modal" style="max-width: 540px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <span>🐑</span> <span>휴면 성도 단체 이벤트 메세지 & 푸시 발송</span>
+        </div>
+        <button type="button" class="admin-modal-close" data-close-modal="modal-bulk-dormant-message">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-user-info-box" style="flex-direction: column; align-items: flex-start; gap: 6px; background: #EBF5FB; border-color: #2980B9;">
+          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+            <strong style="font-size: 14px; color: #154360;">발송 대상: <span id="bulk-dormant-target-count">0</span>명 선택됨</strong>
+            <span class="msg-badge-user" style="background: #2980B9; color: #FFF;">1:1 어린양 메세지 + 휴대폰 푸시</span>
+          </div>
+          <div id="bulk-dormant-target-names" style="font-size: 11px; color: #34495E; max-height: 60px; overflow-y: auto; line-height: 1.4; width: 100%;">
+            -
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: #555; margin-bottom: 6px;">✨ 빠른 이벤트 문구 템플릿 (클릭 시 자동 입력):</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="1" style="font-size: 11px; background: #FFF9C4;">
+              🐑 1. 배고픈 찰스의 편지
+            </button>
+            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="2" style="font-size: 11px; background: #E8F8F5;">
+              🎁 2. 휴면 복귀 특별 이벤트 안내
+            </button>
+            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="3" style="font-size: 11px; background: #F5EEF8;">
+              💖 3. 따뜻한 안부와 오늘 1장 응원
+            </button>
+          </div>
+        </div>
+
+        <form id="form-bulk-dormant-message">
+          <div style="display: flex; gap: 10px;" class="admin-form-group">
+            <div style="flex: 2;">
+              <label class="admin-label">이벤트 / 격려 메세지 제목</label>
+              <input type="text" id="input-bulk-dormant-title" class="admin-input" required>
+            </div>
+            <div style="flex: 1;">
+              <label class="admin-label">발신자 명</label>
+              <input type="text" id="input-bulk-dormant-sender" class="admin-input" value="말씀양 찰스" required>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">메세지 본문 내용</label>
+            <textarea id="input-bulk-dormant-content" class="admin-textarea" rows="5" required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn" data-close-modal="modal-bulk-dormant-message">취소</button>
+        <button type="button" id="btn-send-bulk-dormant-message" class="admin-btn admin-btn-primary" style="background: #2E7D32;">
+          🚀 선택된 휴면 성도에게 일괄 발송하기
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 알림 토스트 컨테이너 -->
   <div id="admin-toast-container" class="admin-toast-container"></div>
 
@@ -865,12 +1022,12 @@ Deno.serve(async (req: Request) => {
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=8.9"></script>
-  <script src="js/charles-pixel.js?v=8.9"></script>
-  <script src="js/auth.js?v=8.9"></script>
-  <script src="js/storage.js?v=8.9"></script>
-  <script src="js/talent.js?v=8.9"></script>
-  <script src="js/admin.js?v=8.9"></script>
+  <script src="js/bible-data.js?v=9.8"></script>
+  <script src="js/charles-pixel.js?v=9.8"></script>
+  <script src="js/auth.js?v=9.8"></script>
+  <script src="js/storage.js?v=9.8"></script>
+  <script src="js/talent.js?v=9.8"></script>
+  <script src="js/admin.js?v=9.8"></script>
 
 </body>
 </html>

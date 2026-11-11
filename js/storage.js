@@ -886,12 +886,49 @@ const StorageService = {
   },
 
   // ==================== 6-1. 친구 통독 및 찰스 정보 조회 ====================
+  // daily_counts 캘린더에서 마지막 통독일(YYYY-MM-DD), 미통독 경과일(daysSinceLastRead), 누적 통독장수 계산
+  getLastReadInfoFromDaily(dailyCounts, todayStr = null, fallbackLastReadDate = null) {
+    const today = todayStr || this.getTodayDateStr();
+    const counts = (dailyCounts && typeof dailyCounts === 'object') ? dailyCounts : {};
+    const validDates = [];
+    let totalReadSum = 0;
+
+    for (const [d, val] of Object.entries(counts)) {
+      if (d === '__talent_data__' || !/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+      const num = Number(val) || 0;
+      if (num > 0) {
+        validDates.push(d);
+        totalReadSum += num;
+      }
+    }
+    validDates.sort();
+
+    let lastReadDate = validDates.length > 0 ? validDates[validDates.length - 1] : null;
+    if (!lastReadDate && fallbackLastReadDate && /^\d{4}-\d{2}-\d{2}$/.test(String(fallbackLastReadDate).slice(0, 10)) && totalReadSum > 0) {
+      lastReadDate = String(fallbackLastReadDate).slice(0, 10);
+    }
+
+    if (!lastReadDate) {
+      return { lastReadDate: null, daysSinceLastRead: Infinity, totalReadSum };
+    }
+
+    const [ty, tm, td] = today.split('-').map(Number);
+    const [ly, lm, ld] = lastReadDate.split('-').map(Number);
+    const todayUtc = Date.UTC(ty, tm - 1, td);
+    const lastUtc = Date.UTC(ly, lm - 1, ld);
+    const diffDays = Math.max(0, Math.round((todayUtc - lastUtc) / 86400000));
+
+    return { lastReadDate, daysSinceLastRead: diffDays, totalReadSum };
+  },
+
   async getUserState(userId) {
     const todayStr = this.getTodayDateStr();
     const uid = String(userId || '').trim();
 
     // 1) 본인인 경우 실시간 로컬 데이터 반환
     if (uid === this.getCurrentUserId()) {
+      const dc = this.getDailyCounts();
+      const readInfo = this.getLastReadInfoFromDaily(dc, todayStr);
       return {
         userId: uid,
         stage: this.getCharlesStage(),
@@ -899,7 +936,10 @@ const StorageService = {
         todayRead: this.getTodayReadCount(),
         talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : (parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10)),
         equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
-        dailyCounts: this.getDailyCounts()
+        dailyCounts: dc,
+        lastReadDate: readInfo.lastReadDate,
+        daysSinceLastRead: readInfo.daysSinceLastRead,
+        totalReadSum: readInfo.totalReadSum
       };
     }
 
@@ -910,6 +950,8 @@ const StorageService = {
     let talents = 0;
     let equipped = {};
     let dailyCounts = {};
+    let lastSyncedAt = null;
+    let fallbackLastRead = null;
 
     try {
       const s = localStorage.getItem(`charles_user_${uid}_stage`);
@@ -945,7 +987,7 @@ const StorageService = {
       try {
         let { data, error } = await supabaseClient
           .from('user_reading_state')
-          .select('charles_stage, streak_count, daily_counts, equipped')
+          .select('charles_stage, streak_count, daily_counts, equipped, last_read_date, updated_at')
           .eq('user_id', uid)
           .maybeSingle();
 
@@ -953,7 +995,7 @@ const StorageService = {
         if (error && error.message && (error.message.includes('equipped') || error.code === '42703')) {
           const fallback = await supabaseClient
             .from('user_reading_state')
-            .select('charles_stage, streak_count, daily_counts')
+            .select('charles_stage, streak_count, daily_counts, last_read_date, updated_at')
             .eq('user_id', uid)
             .maybeSingle();
           data = fallback.data;
@@ -963,6 +1005,8 @@ const StorageService = {
         if (!error && data) {
           if (data.charles_stage) stage = data.charles_stage;
           if (data.streak_count !== undefined && data.streak_count !== null) streakCount = data.streak_count;
+          if (data.last_read_date) fallbackLastRead = data.last_read_date;
+          if (data.updated_at) lastSyncedAt = data.updated_at;
           if (data.daily_counts && typeof data.daily_counts === 'object') {
             dailyCounts = data.daily_counts;
             todayRead = data.daily_counts[todayStr] || 0;
@@ -998,6 +1042,8 @@ const StorageService = {
       }
     }
 
+    const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr, fallbackLastRead);
+
     return {
       userId: uid,
       stage,
@@ -1005,7 +1051,11 @@ const StorageService = {
       todayRead,
       talents,
       equipped,
-      dailyCounts
+      dailyCounts,
+      lastReadDate: readInfo.lastReadDate,
+      daysSinceLastRead: readInfo.daysSinceLastRead,
+      totalReadSum: readInfo.totalReadSum,
+      lastSyncedAt
     };
   },
 
@@ -1022,6 +1072,8 @@ const StorageService = {
     // 1) 로컬 스토리지 캐시로 기본값 우선 채우기 (오프라인 지원 및 즉시 화면 렌더링)
     cleanIds.forEach(uid => {
       if (uid === currentUid) {
+        const dc = this.getDailyCounts();
+        const readInfo = this.getLastReadInfoFromDaily(dc, todayStr);
         stateMap[uid] = {
           userId: uid,
           stage: this.getCharlesStage(),
@@ -1029,7 +1081,11 @@ const StorageService = {
           todayRead: this.getTodayReadCount(),
           talents: typeof TalentService !== 'undefined' ? TalentService.getTalents() : (parseInt(localStorage.getItem(this.getUserKey('talents')) || '0', 10)),
           equipped: typeof TalentService !== 'undefined' ? TalentService.getEquipped() : {},
-          dailyCounts: this.getDailyCounts()
+          dailyCounts: dc,
+          lastReadDate: readInfo.lastReadDate,
+          daysSinceLastRead: readInfo.daysSinceLastRead,
+          totalReadSum: readInfo.totalReadSum,
+          lastSyncedAt: null
         };
         return;
       }
@@ -1070,15 +1126,28 @@ const StorageService = {
         }
       } catch (e) {}
 
-      stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped, dailyCounts };
+      const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr);
+      stateMap[uid] = {
+        userId: uid,
+        stage,
+        streakCount,
+        todayRead,
+        talents,
+        equipped,
+        dailyCounts,
+        lastReadDate: readInfo.lastReadDate,
+        daysSinceLastRead: readInfo.daysSinceLastRead,
+        totalReadSum: readInfo.totalReadSum,
+        lastSyncedAt: null
+      };
     });
 
     // 2) Supabase에서 1회의 단일 쿼리로 전체 친구 상태 일괄(Batch) 조회!
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
       try {
         const selectFields = (this._supportsTalentColumns === false)
-          ? 'user_id, charles_stage, streak_count, daily_counts'
-          : 'user_id, charles_stage, streak_count, daily_counts, equipped';
+          ? 'user_id, charles_stage, streak_count, daily_counts, last_read_date, updated_at'
+          : 'user_id, charles_stage, streak_count, daily_counts, equipped, last_read_date, updated_at';
 
         let query = supabaseClient
           .from('user_reading_state')
@@ -1151,7 +1220,22 @@ const StorageService = {
               localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
             } catch (e) {}
 
-            stateMap[uid] = { userId: uid, stage, streakCount, todayRead, talents, equipped, dailyCounts };
+            const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr, row.last_read_date);
+            const syncTime = row.updated_at || (dailyCounts.__talent_data__ && dailyCounts.__talent_data__.updated_at) || null;
+
+            stateMap[uid] = {
+              userId: uid,
+              stage,
+              streakCount,
+              todayRead,
+              talents,
+              equipped,
+              dailyCounts,
+              lastReadDate: readInfo.lastReadDate,
+              daysSinceLastRead: readInfo.daysSinceLastRead,
+              totalReadSum: readInfo.totalReadSum,
+              lastSyncedAt: syncTime
+            };
           });
         }
       } catch (err) {

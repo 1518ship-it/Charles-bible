@@ -105,6 +105,24 @@ const AuthService = {
     return this.getCurrentUser() !== null;
   },
 
+  // 자동 로그인 세션 사용자의 최근 접속일(last_login_at) 갱신
+  async touchCurrentUserLogin() {
+    const user = this.getCurrentUser();
+    if (!user || !user.id) return;
+    const nowIso = new Date().toISOString();
+    user.lastLoginAt = nowIso;
+    try {
+      localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_USER, JSON.stringify(user));
+    } catch (e) {}
+
+    const db = this.getDb();
+    if (db) {
+      try {
+        await db.from('members').update({ last_login_at: nowIso }).eq('id', user.id);
+      } catch (e) {}
+    }
+  },
+
   // 전체 등록된 사용자 목록 조회 (Supabase 클라우드 우선, 로컬 폴백)
   async getAllUsers() {
     const db = this.getDb();
