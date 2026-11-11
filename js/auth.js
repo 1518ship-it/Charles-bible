@@ -17,12 +17,12 @@ const RetroAudio = {
   ctx: null,
   enabled: false,
 
-  init() {},
-  playBeep() {},
-  click() {},
-  check() {},
-  success() {},
-  error() {}
+  init() { },
+  playBeep() { },
+  click() { },
+  check() { },
+  success() { },
+  error() { }
 };
 
 const AuthService = {
@@ -113,13 +113,13 @@ const AuthService = {
     user.lastLoginAt = nowIso;
     try {
       localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_USER, JSON.stringify(user));
-    } catch (e) {}
+    } catch (e) { }
 
     const db = this.getDb();
     if (db) {
       try {
         await db.from('members').update({ last_login_at: nowIso }).eq('id', user.id);
-      } catch (e) {}
+      } catch (e) { }
     }
   },
 

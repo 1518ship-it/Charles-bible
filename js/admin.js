@@ -615,7 +615,7 @@ const AdminApp = {
     if (candidates.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; color: #2E7D32; font-weight: 700; padding: 28px;">
+          <td colspan="8" style="text-align: center; color: #2E7D32; font-weight: 700; padding: 28px;">
             🎉 놀라워요! 현재 조건(${minDays}일 이상 미통독)에 해당하는 휴면 성도가 한 명도 없습니다!
           </td>
         </tr>
@@ -643,9 +643,6 @@ const AdminApp = {
         elapsedBadge = `<span style="display: inline-block; background: #FEF9E7; color: #B7950B; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #F9E79F;">💤 ${item.daysSinceLastRead}일째 미통독</span>`;
       }
 
-      const rawLogin = u.last_login_at || u.lastLoginAt || st.lastSyncedAt || u.created_at || u.registeredAt;
-      const loginDateText = rawLogin ? String(rawLogin).slice(0, 10) : '-';
-
       return `
         <tr>
           <td style="text-align: center;">
@@ -660,7 +657,6 @@ const AdminApp = {
           <td>${lastReadText}</td>
           <td>${elapsedBadge}</td>
           <td style="font-weight: 800; color: #D68910;">${talents.toLocaleString()} 🪙</td>
-          <td style="font-size: 11px; color: #666;">${loginDateText}</td>
           <td style="text-align: center;">
             <div class="action-btn-group" style="justify-content: center;">
               <button type="button" class="admin-btn admin-btn-sm btn-dormant-msg" data-uid="${u.id}" title="개인 격려 쪽지 보내기">
@@ -1051,8 +1047,6 @@ const AdminApp = {
       const talents = st.talents || 0;
       const streak = st.streakCount || 0;
       const stage = st.stage || 1;
-      const lastLogin = u.last_login_at || u.lastLoginAt || st.lastSyncedAt;
-      const dateText = lastLogin ? String(lastLogin).slice(0, 10) : (u.created_at ? String(u.created_at).slice(0, 10) : '-');
       const lastReadDate = st.lastReadDate;
       const daysSince = st.daysSinceLastRead !== undefined ? st.daysSinceLastRead : Infinity;
 
@@ -1060,11 +1054,11 @@ const AdminApp = {
       if (!lastReadDate || daysSince === Infinity) {
         readStatusHtml = `<div style="font-size: 11px; color: #999; font-weight: 600;">📖 미시작 (0장)</div>`;
       } else if (daysSince === 0) {
-        readStatusHtml = `<div style="font-size: 11px; color: #2E7D32; font-weight: 700;">📖 오늘 통독 (${lastReadDate.slice(5)})</div>`;
+        readStatusHtml = `<div style="font-size: 11px; color: #2E7D32; font-weight: 700;">📖 오늘 통독 (${lastReadDate})</div>`;
       } else if (daysSince >= 7) {
-        readStatusHtml = `<div style="font-size: 11px; color: #C0392B; font-weight: 700;">💤 ${daysSince}일전 통독 (${lastReadDate.slice(5)})</div>`;
+        readStatusHtml = `<div style="font-size: 11px; color: #C0392B; font-weight: 700;">💤 ${daysSince}일전 (${lastReadDate})</div>`;
       } else {
-        readStatusHtml = `<div style="font-size: 11px; color: #555; font-weight: 600;">📖 ${daysSince}일전 통독 (${lastReadDate.slice(5)})</div>`;
+        readStatusHtml = `<div style="font-size: 11px; color: #555; font-weight: 600;">📖 ${daysSince}일전 (${lastReadDate})</div>`;
       }
 
       return `
@@ -1085,9 +1079,8 @@ const AdminApp = {
             ${streak > 0 ? `${streak}일 🔥` : '0일'}
           </td>
           <td><span style="font-weight: 600;">${stage}단계 🐑</span></td>
-          <td style="font-size: 11px; color: #666; line-height: 1.35;">
+          <td style="font-size: 11px; color: #666;">
             ${readStatusHtml}
-            <div style="font-size: 10px; color: #888;">접속: ${dateText}</div>
           </td>
           <td style="text-align: center;">
             <div class="action-btn-group" style="justify-content: center;">

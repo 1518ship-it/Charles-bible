@@ -1147,7 +1147,7 @@ const StorageService = {
       try {
         const selectFields = (this._supportsTalentColumns === false)
           ? 'user_id, charles_stage, streak_count, daily_counts, last_read_date, updated_at'
-          : 'user_id, charles_stage, streak_count, daily_counts, equipped, last_read_date, updated_at';
+          : 'user_id, charles_stage, streak_count, daily_counts, talents, equipped, last_read_date, updated_at';
 
         let query = supabaseClient
           .from('user_reading_state')
@@ -1177,7 +1177,7 @@ const StorageService = {
         if (!error && Array.isArray(data)) {
           data.forEach(row => {
             const uid = String(row.user_id || '').trim();
-            if (!uid || uid === currentUid) return;
+            if (!uid) return;
 
             let stage = row.charles_stage || 1;
             let streakCount = (row.streak_count !== undefined && row.streak_count !== null) ? row.streak_count : 0;
@@ -1186,20 +1186,29 @@ const StorageService = {
             let equipped = (row.equipped && typeof row.equipped === 'object') ? row.equipped : {};
             let dailyCounts = (row.daily_counts && typeof row.daily_counts === 'object') ? { ...row.daily_counts } : {};
 
-            if (row.daily_counts && typeof row.daily_counts === 'object') {
-              todayRead = row.daily_counts[todayStr] || 0;
-              // 친구 찰스 상태 및 스트릭도 캘린더 데이터를 기준으로 무결점 보정
-              const derivedStreak = this.calculateStreakFromDaily(row.daily_counts, todayStr);
-              streakCount = derivedStreak.count;
-              stage = this.calculateStageFromDaily(row.daily_counts, todayStr);
+            // 현재 브라우저 로그인 유저인 경우 로컬 daily_counts와 원격 daily_counts를 병합해 누락 방지
+            if (uid === currentUid) {
+              const localDc = this.getDailyCounts();
+              for (const [dKey, cnt] of Object.entries(localDc)) {
+                if (dKey === '__talent_data__') continue;
+                dailyCounts[dKey] = Math.max(Number(dailyCounts[dKey]) || 0, Number(cnt) || 0);
+              }
+            }
 
-              if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.equipped) {
+            if (dailyCounts && typeof dailyCounts === 'object') {
+              todayRead = dailyCounts[todayStr] || 0;
+              // 친구 찰스 상태 및 스트릭도 캘린더 데이터를 기준으로 무결점 보정
+              const derivedStreak = this.calculateStreakFromDaily(dailyCounts, todayStr);
+              streakCount = derivedStreak.count;
+              stage = this.calculateStageFromDaily(dailyCounts, todayStr);
+
+              if (dailyCounts.__talent_data__ && dailyCounts.__talent_data__.equipped) {
                 if (!row.equipped || Object.keys(equipped).length === 0) {
-                  equipped = { ...row.daily_counts.__talent_data__.equipped };
+                  equipped = { ...dailyCounts.__talent_data__.equipped };
                 }
               }
-              if (row.daily_counts.__talent_data__ && row.daily_counts.__talent_data__.talents !== undefined) {
-                talents = row.daily_counts.__talent_data__.talents;
+              if (dailyCounts.__talent_data__ && dailyCounts.__talent_data__.talents !== undefined) {
+                talents = dailyCounts.__talent_data__.talents;
               }
             }
 
@@ -1207,18 +1216,20 @@ const StorageService = {
               talents = row.talents;
             }
 
-            // 로컬 스토리지 캐시 최신화
-            try {
-              localStorage.setItem(`charles_user_${uid}_stage`, String(stage));
-              localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify({ count: streakCount, lastDate: null }));
-              if (row.daily_counts) {
-                localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(row.daily_counts));
-              }
-              if (equipped && Object.keys(equipped).length > 0) {
-                localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
-              }
-              localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
-            } catch (e) {}
+            // 로컬 스토리지 캐시 최신화 (타 유저인 경우)
+            if (uid !== currentUid) {
+              try {
+                localStorage.setItem(`charles_user_${uid}_stage`, String(stage));
+                localStorage.setItem(`charles_user_${uid}_streak`, JSON.stringify({ count: streakCount, lastDate: null }));
+                if (row.daily_counts) {
+                  localStorage.setItem(`charles_user_${uid}_daily_counts`, JSON.stringify(row.daily_counts));
+                }
+                if (equipped && Object.keys(equipped).length > 0) {
+                  localStorage.setItem(`charles_user_${uid}_equipped`, JSON.stringify(equipped));
+                }
+                localStorage.setItem(`charles_user_${uid}_talents`, String(talents));
+              } catch (e) {}
+            }
 
             const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr, row.last_read_date);
             const syncTime = row.updated_at || (dailyCounts.__talent_data__ && dailyCounts.__talent_data__.updated_at) || null;

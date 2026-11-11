@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,10 +13,11 @@
   <meta http-equiv="Expires" content="0">
   <link rel="stylesheet" href="css/admin.css?v=8.9">
 </head>
+
 <body>
 
   <div class="admin-wrapper">
-    
+
     <!-- 관리자 콘솔 헤더 -->
     <header class="admin-header">
       <div class="admin-title">
@@ -23,10 +25,12 @@
         <span>CHARLES' BIBLE ADMIN</span>
       </div>
       <div>
-        <a href="item-test.html" class="admin-btn" style="background: #38bdf8; color: #0f172a; font-weight: 700; margin-right: 8px;">
+        <a href="item-test.html" class="admin-btn"
+          style="background: #38bdf8; color: #0f172a; font-weight: 700; margin-right: 8px;">
           🧪 아이템 연구소 & 테스트
         </a>
-        <a href="praise-event.html?admin=true" class="admin-btn" style="background: #facc15; color: #111; font-weight: 700; margin-right: 8px;">
+        <a href="praise-event.html?admin=true" class="admin-btn"
+          style="background: #facc15; color: #111; font-weight: 700; margin-right: 8px;">
           🎶 찬양집회 이벤트 테스트
         </a>
         <a href="index.html" class="admin-btn">
@@ -44,7 +48,9 @@
       </p>
 
       <form id="admin-login-form" style="max-width: 320px; margin: 0 auto;">
-        <input type="text" id="admin-pin-input" class="admin-input" placeholder="관리자 코드 입력 (기본: 654321)" required autocomplete="off" inputmode="numeric" style="-webkit-text-security: disc; text-align: center; margin-bottom: 10px;">
+        <input type="text" id="admin-pin-input" class="admin-input" placeholder="관리자 코드 입력 (기본: 654321)" required
+          autocomplete="off" inputmode="numeric"
+          style="-webkit-text-security: disc; text-align: center; margin-bottom: 10px;">
         <div id="admin-auth-error" style="color: #E74C3C; font-size: 12px; margin-bottom: 10px; display: none;">
           관리자 코드가 올바르지 않습니다.
         </div>
@@ -67,11 +73,13 @@
         </p>
 
         <div style="background: #F7F7F7; border: 1.5px solid #111; padding: 12px; margin-bottom: 14px;">
-          현재 활성화된 가입코드: <span id="disp-current-key" style="font-size: 18px; font-weight: 800; color: #2E7D32;">123456</span>
+          현재 활성화된 가입코드: <span id="disp-current-key"
+            style="font-size: 18px; font-weight: 800; color: #2E7D32;">123456</span>
         </div>
 
         <form id="form-change-key" style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <input type="text" id="input-new-key" class="admin-input" placeholder="새로운 6자리 가입코드 입력" required maxlength="10">
+          <input type="text" id="input-new-key" class="admin-input" placeholder="새로운 6자리 가입코드 입력" required
+            maxlength="10">
           <button type="submit" class="admin-btn admin-btn-primary" style="white-space: nowrap;">
             가입코드 변경
           </button>
@@ -92,11 +100,13 @@
         </p>
 
         <div style="background: #F7F7F7; border: 1.5px solid #111; padding: 12px; margin-bottom: 14px;">
-          현재 활성화된 관리자 코드: <span id="disp-current-admin-key" style="font-size: 18px; font-weight: 800; color: #C0392B;">654321</span>
+          현재 활성화된 관리자 코드: <span id="disp-current-admin-key"
+            style="font-size: 18px; font-weight: 800; color: #C0392B;">654321</span>
         </div>
 
         <form id="form-change-admin-key" style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <input type="text" id="input-new-admin-key" class="admin-input" placeholder="새로운 관리자 코드 입력" required maxlength="10">
+          <input type="text" id="input-new-admin-key" class="admin-input" placeholder="새로운 관리자 코드 입력" required
+            maxlength="10">
           <button type="submit" class="admin-btn admin-btn-primary" style="white-space: nowrap;">
             관리자 코드 변경
           </button>
@@ -108,12 +118,15 @@
       </div>
 
       <!-- 🍁 가을 특별 이벤트 미션 현황 (10.08 ~ 11.15) -->
-      <div class="admin-card" id="admin-autumn-event-card" style="border: 1.5px solid #E67E22; background: linear-gradient(135deg, rgba(230, 126, 34, 0.05), rgba(192, 57, 43, 0.02));">
-        <div class="admin-card-title" style="color: #D35400; display: flex; justify-content: space-between; align-items: center;">
+      <div class="admin-card" id="admin-autumn-event-card"
+        style="border: 1.5px solid #E67E22; background: linear-gradient(135deg, rgba(230, 126, 34, 0.05), rgba(192, 57, 43, 0.02));">
+        <div class="admin-card-title"
+          style="color: #D35400; display: flex; justify-content: space-between; align-items: center;">
           <div style="display: flex; align-items: center; gap: 6px;">
             <span>🍁</span> [가을,,,단풍,,,그리고 성경통독,,,] 현황
           </div>
-          <span style="font-size: 11px; font-weight: 700; background: rgba(230, 126, 34, 0.15); color: #D35400; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(230, 126, 34, 0.3);">
+          <span
+            style="font-size: 11px; font-weight: 700; background: rgba(230, 126, 34, 0.15); color: #D35400; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(230, 126, 34, 0.3);">
             10.08 ~ 11.15 진행중
           </span>
         </div>
@@ -121,26 +134,32 @@
           <strong>'가을은 독서의 계절이 아니라 성경통독의 계절~'</strong> 특별 미션 3종의 성도별 달성 현황입니다.
         </p>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 6px;">
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 6px;">
           <!-- 1. 15장 돌파 달성자 -->
           <div style="background: #FFF; border: 1.5px solid #E67E22; border-radius: 8px; padding: 12px;">
             <div style="font-size: 11px; font-weight: 700; color: #D35400; margin-bottom: 4px;">🍁 도전! 15장 완독</div>
             <div style="font-size: 20px; font-weight: 800; color: #111;" id="stat-autumn-15-count">0명</div>
-            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;" id="stat-autumn-15-names">달성자 없음</div>
+            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;"
+              id="stat-autumn-15-names">달성자 없음</div>
           </div>
 
           <!-- 2. 오늘 아침 05~11시 통독자 -->
           <div style="background: #FFF; border: 1.5px solid #F39C12; border-radius: 8px; padding: 12px;">
-            <div style="font-size: 11px; font-weight: 700; color: #D35400; margin-bottom: 4px;">🌅 오늘 아침 (05~11시) 통독</div>
+            <div style="font-size: 11px; font-weight: 700; color: #D35400; margin-bottom: 4px;">🌅 오늘 아침 (05~11시) 통독
+            </div>
             <div style="font-size: 20px; font-weight: 800; color: #111;" id="stat-autumn-morning-count">0명</div>
-            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;" id="stat-autumn-morning-names">달성자 없음</div>
+            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;"
+              id="stat-autumn-morning-names">달성자 없음</div>
           </div>
 
           <!-- 3. 오늘 저녁 21~24시 통독자 -->
           <div style="background: #FFF; border: 1.5px solid #8E44AD; border-radius: 8px; padding: 12px;">
-            <div style="font-size: 11px; font-weight: 700; color: #8E44AD; margin-bottom: 4px;">🌙 오늘 저녁 (21~24시) 통독</div>
+            <div style="font-size: 11px; font-weight: 700; color: #8E44AD; margin-bottom: 4px;">🌙 오늘 저녁 (21~24시) 통독
+            </div>
             <div style="font-size: 20px; font-weight: 800; color: #111;" id="stat-autumn-night-count">0명</div>
-            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;" id="stat-autumn-night-names">달성자 없음</div>
+            <div style="font-size: 11px; color: #777; margin-top: 2px; word-break: break-all;"
+              id="stat-autumn-night-names">달성자 없음</div>
           </div>
         </div>
       </div>
@@ -150,12 +169,15 @@
         <div class="admin-card-title">
           <span>📊 사용자 주간 현황</span>
           <div style="display: flex; gap: 6px; align-items: center;">
-            <span id="badge-weekly-total-users" style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총 0명</span>
+            <span id="badge-weekly-total-users"
+              style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총
+              0명</span>
             <span id="badge-weekly-ttibu-count" class="badge-ttibu-pill">🎁 띠부띠부 대상: 0명</span>
           </div>
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
-          선택한 주의 <strong>일~토요일 동안 매일 3장 이상</strong> 성경을 통독한 성도에게 <strong>[ 🎁 띠부띠부! ]</strong> 칭호가 수여됩니다. 주차별 요일 통독 기록과 달성자를 확인하세요.
+          선택한 주의 <strong>일~토요일 동안 매일 3장 이상</strong> 성경을 통독한 성도에게 <strong>[ 🎁 띠부띠부! ]</strong> 칭호가 수여됩니다. 주차별 요일 통독 기록과
+          달성자를 확인하세요.
         </p>
 
         <!-- 주간 툴바: 주차 선택, 이전/다음 주 이동, 셀 필터, 띠부띠부 필터, 명단 복사 -->
@@ -175,13 +197,16 @@
             </select>
           </div>
 
-          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; cursor: pointer; user-select: none; background: #FFF9E6; border: 1.5px solid #111; padding: 4px 10px; border-radius: 4px;">
+          <label
+            style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; cursor: pointer; user-select: none; background: #FFF9E6; border: 1.5px solid #111; padding: 4px 10px; border-radius: 4px;">
             <input type="checkbox" id="weekly-only-ttibu" style="accent-color: #D4AC0D; cursor: pointer;">
             <span>🎁 띠부띠부 대상자만 보기</span>
           </label>
 
           <div style="margin-left: auto; display: flex; gap: 6px;">
-            <button type="button" id="btn-copy-ttibu-list" class="admin-btn admin-btn-sm" style="background: #FFF9C4; border-color: #F1C40F; color: #7D6608; font-weight: 800;" title="카카오톡 공지용 띠부띠부 명단 클립보드 복사">
+            <button type="button" id="btn-copy-ttibu-list" class="admin-btn admin-btn-sm"
+              style="background: #FFF9C4; border-color: #F1C40F; color: #7D6608; font-weight: 800;"
+              title="카카오톡 공지용 띠부띠부 명단 클립보드 복사">
               📋 띠부띠부 명단 복사
             </button>
           </div>
@@ -238,19 +263,23 @@
       </div>
 
       <!-- 🐑 성경 미통독 휴면 양떼 선별 & 복귀 이벤트 센터 -->
-      <div class="admin-card" id="admin-dormant-card" style="border: 1.5px solid #2980B9; background: linear-gradient(135deg, rgba(41, 128, 185, 0.05), rgba(142, 68, 173, 0.03));">
-        <div class="admin-card-title" style="color: #1F618D; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div class="admin-card" id="admin-dormant-card"
+        style="border: 1.5px solid #2980B9; background: linear-gradient(135deg, rgba(41, 128, 185, 0.05), rgba(142, 68, 173, 0.03));">
+        <div class="admin-card-title"
+          style="color: #1F618D; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div style="display: flex; align-items: center; gap: 6px;">
             <span>🐑</span> 성경 미통독 휴면 양떼 선별 & 복귀 이벤트 센터
           </div>
           <div style="display: flex; gap: 6px; align-items: center;">
-            <span id="badge-dormant-count" style="font-size: 11px; font-weight: 800; background: #EBF5FB; color: #1F618D; padding: 3px 10px; border-radius: 10px; border: 1px solid #85C1E9;">
+            <span id="badge-dormant-count"
+              style="font-size: 11px; font-weight: 800; background: #EBF5FB; color: #1F618D; padding: 3px 10px; border-radius: 10px; border: 1px solid #85C1E9;">
               💤 선별된 휴면 양떼: 0명
             </span>
           </div>
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
-          성경을 안 읽은 지 <strong>7일 이상</strong> 지난 휴면 성도(통독 미시작 성도 포함)를 자동으로 선별합니다. 체크박스로 대상을 선택해 <strong>단체 이벤트 쪽지 & 휴대전화 푸시 알림</strong>을 한 번에 보내거나 카카오톡 공유용 명단을 복사할 수 있습니다.
+          성경을 안 읽은 지 <strong>7일 이상</strong> 지난 휴면 성도(통독 미시작 성도 포함)를 자동으로 선별합니다. 체크박스로 대상을 선택해 <strong>단체 이벤트 쪽지 & 휴대전화
+            푸시 알림</strong>을 한 번에 보내거나 카카오톡 공유용 명단을 복사할 수 있습니다.
         </p>
 
         <!-- 휴면 KPI 요약 카드 그리드 -->
@@ -297,22 +326,28 @@
           </div>
 
           <div style="margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" id="btn-copy-dormant-list" class="admin-btn admin-btn-sm" style="background: #EBF5FB; border-color: #2980B9; color: #154360; font-weight: 800;" title="셀별 휴면 성도 명단 클립보드 복사">
+            <button type="button" id="btn-copy-dormant-list" class="admin-btn admin-btn-sm"
+              style="background: #EBF5FB; border-color: #2980B9; color: #154360; font-weight: 800;"
+              title="셀별 휴면 성도 명단 클립보드 복사">
               📋 휴면 명단 카톡 복사
             </button>
-            <button type="button" id="btn-open-bulk-dormant-msg" class="admin-btn admin-btn-sm admin-btn-primary" style="background: #2E7D32; border-color: #111; color: #FFF; font-weight: 800;" title="체크된 휴면 성도에게 일괄 이벤트 쪽지 및 휴대폰 푸시 발송">
+            <button type="button" id="btn-open-bulk-dormant-msg" class="admin-btn admin-btn-sm admin-btn-primary"
+              style="background: #2E7D32; border-color: #111; color: #FFF; font-weight: 800;"
+              title="체크된 휴면 성도에게 일괄 이벤트 쪽지 및 휴대폰 푸시 발송">
               💌 선택 성도 일괄 이벤트 쪽지 & 푸시 발송 (<span id="dormant-selected-count">0</span>명)
             </button>
           </div>
         </div>
 
         <!-- 휴면 성도 목록 테이블 -->
-        <div style="overflow-x: auto; max-height: 420px; overflow-y: auto; border: 1px solid #DDD; border-radius: 6px; background: #FFF;">
+        <div
+          style="overflow-x: auto; max-height: 420px; overflow-y: auto; border: 1px solid #DDD; border-radius: 6px; background: #FFF;">
           <table class="admin-table">
             <thead style="position: sticky; top: 0; z-index: 2;">
               <tr>
                 <th style="width: 38px; text-align: center;">
-                  <input type="checkbox" id="dormant-check-all" checked style="cursor: pointer; width: 15px; height: 15px;" title="전체 선택/해제">
+                  <input type="checkbox" id="dormant-check-all" checked
+                    style="cursor: pointer; width: 15px; height: 15px;" title="전체 선택/해제">
                 </th>
                 <th>성도 이름</th>
                 <th>소속 셀</th>
@@ -320,7 +355,6 @@
                 <th>마지막 통독일</th>
                 <th style="color: #C0392B;">미통독 경과</th>
                 <th style="color: #D68910;">보유 달란트</th>
-                <th>최근 접속일</th>
                 <th style="text-align: center;">개별 액션</th>
               </tr>
             </thead>
@@ -335,7 +369,9 @@
       <div class="admin-card">
         <div class="admin-card-title">
           <span>👥 등록된 성도 명부 & 통독·달란트 관리</span>
-          <span id="badge-total-users" style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총 0명</span>
+          <span id="badge-total-users"
+            style="font-size: 11px; font-weight: 700; background: #E0E0E0; padding: 2px 8px; border-radius: 10px;">총
+            0명</span>
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 12px;">
           성도들의 오늘 통독 장수, 보유 달란트 잔액을 확인하고 <strong>달란트 지급/차감</strong> 및 <strong>비밀번호 초기화/셀 변경</strong>을 직접 관리할 수 있습니다.
@@ -344,7 +380,8 @@
         <!-- 필터 및 검색 툴바 -->
         <div class="admin-toolbar">
           <div class="admin-toolbar-item" style="flex: 1; min-width: 160px;">
-            <input type="text" id="admin-search-user" class="admin-input admin-search-input" placeholder="🔍 이름 또는 아이디 검색...">
+            <input type="text" id="admin-search-user" class="admin-input admin-search-input"
+              placeholder="🔍 이름 또는 아이디 검색...">
           </div>
           <div class="admin-toolbar-item">
             <span style="font-size: 12px; font-weight: 700;">소속 셀:</span>
@@ -379,7 +416,7 @@
                 <th style="color: #D68910;">보유 달란트</th>
                 <th style="color: #E65100;">연속 통독</th>
                 <th>찰스 상태</th>
-                <th>마지막 통독 / 접속</th>
+                <th>마지막 통독일</th>
                 <th style="text-align: center;">관리 / 액션</th>
               </tr>
             </thead>
@@ -396,11 +433,13 @@
           <span>📢</span> 유저 공지사항 & 어린양의 메세지(1:1) 발송 센터
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 16px;">
-          전체 성도에게 전할 공지사항이나 특정 성도에게 보내는 1:1 <strong>'어린양의 메세지'</strong>를 발송할 수 있습니다. 성도 앱 상단의 <strong>💬 하트 말풍선</strong>에 알림(레드닷)이 표시됩니다.
+          전체 성도에게 전할 공지사항이나 특정 성도에게 보내는 1:1 <strong>'어린양의 메세지'</strong>를 발송할 수 있습니다. 성도 앱 상단의 <strong>💬 하트
+            말풍선</strong>에 알림(레드닷)이 표시됩니다.
         </p>
 
         <!-- 메시지 작성 폼 -->
-        <form id="form-send-admin-message" style="background: #FAFAFA; border: 1px solid var(--admin-border); border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+        <form id="form-send-admin-message"
+          style="background: #FAFAFA; border: 1px solid var(--admin-border); border-radius: 6px; padding: 16px; margin-bottom: 20px;">
           <!-- 발송 대상 선택 (라디오) -->
           <div class="admin-form-group">
             <label class="admin-label">발송 대상 선택</label>
@@ -427,7 +466,8 @@
           <div style="display: flex; gap: 12px;" class="admin-form-group">
             <div style="flex: 2;">
               <label class="admin-label">공지 / 메시지 제목</label>
-              <input type="text" id="input-msg-title" class="admin-input" placeholder="예: [청년부 공지] 이번 주 통독 모임 안내 / [어린양의 메세지] 성도님을 응원합니다!" required>
+              <input type="text" id="input-msg-title" class="admin-input"
+                placeholder="예: [청년부 공지] 이번 주 통독 모임 안내 / [어린양의 메세지] 성도님을 응원합니다!" required>
             </div>
             <div style="flex: 1;">
               <label class="admin-label">발신자 명</label>
@@ -437,11 +477,13 @@
 
           <div class="admin-form-group">
             <label class="admin-label">메시지 본문 내용</label>
-            <textarea id="input-msg-content" class="admin-textarea" rows="4" placeholder="성도들에게 전달할 따뜻한 격려나 공지 내용을 작성해주세요." required></textarea>
+            <textarea id="input-msg-content" class="admin-textarea" rows="4"
+              placeholder="성도들에게 전달할 따뜻한 격려나 공지 내용을 작성해주세요." required></textarea>
           </div>
 
           <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="submit" id="btn-submit-message" class="admin-btn admin-btn-primary" style="padding: 10px 20px; font-size: 14px;">
+            <button type="submit" id="btn-submit-message" class="admin-btn admin-btn-primary"
+              style="padding: 10px 20px; font-size: 14px;">
               🚀 메시지 발송하기
             </button>
           </div>
@@ -449,7 +491,8 @@
 
         <!-- 최근 발송 내역 (운영자 전체 공지 & 어린양의 메세지만 표시) -->
         <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
             <div>
               <div style="font-weight: 700; font-size: 14px; color: #333;">
                 📋 최근 발송된 공지 및 어린양의 메세지 내역 (<span id="count-sent-messages">0</span>건)
@@ -462,7 +505,8 @@
               <button type="button" id="btn-refresh-messages" class="admin-btn admin-btn-sm" style="font-size: 12px;">
                 🔄 내역 새로고침
               </button>
-              <button type="button" id="btn-delete-all-messages" class="admin-btn admin-btn-sm admin-btn-danger" style="font-size: 12px;">
+              <button type="button" id="btn-delete-all-messages" class="admin-btn admin-btn-sm admin-btn-danger"
+                style="font-size: 12px;">
                 🗑️ 내역 전체 삭제
               </button>
             </div>
@@ -479,9 +523,11 @@
           <span>☁️</span> Supabase 요약 테이블(VIEW) · 메시지 · 휴대폰 Web Push 구독 테이블 SQL
         </div>
         <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 10px;">
-          Supabase 페이지의 <strong>[SQL Editor]</strong>에서 아래 쿼리를 복사해 1회 실행하면 요약 뷰, 공지/쪽지 테이블, 그리고 <strong>휴대폰 백그라운드 푸시 구독 테이블(user_push_subscriptions)</strong>이 모두 생성됩니다.
+          Supabase 페이지의 <strong>[SQL Editor]</strong>에서 아래 쿼리를 복사해 1회 실행하면 요약 뷰, 공지/쪽지 테이블, 그리고 <strong>휴대폰 백그라운드 푸시 구독
+            테이블(user_push_subscriptions)</strong>이 모두 생성됩니다.
         </p>
-        <pre id="admin-sql-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 컬럼 안전 추가
+        <pre id="admin-sql-box"
+          style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; line-height: 1.5; font-family: monospace; margin-bottom: 10px;">-- 1. [기존 테이블 보완] user_reading_state에 달란트/아이템/퀘스트 컬럼 안전 추가
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS talents integer DEFAULT 0;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS equipped jsonb DEFAULT '{}'::jsonb;
 ALTER TABLE IF EXISTS public.user_reading_state ADD COLUMN IF NOT EXISTS inventory jsonb DEFAULT '[]'::jsonb;
@@ -670,10 +716,13 @@ DROP FUNCTION IF EXISTS public.record_member_login(text);</pre>
             📲 2단계: 앱이 완전히 꺼져 있어도 울리는 Web Push (Supabase Edge Function) 등록 코드
           </div>
           <p style="font-size: 12px; color: var(--admin-muted); line-height: 1.5; margin-bottom: 10px;">
-            1) Supabase 대시보드 좌측 메뉴 <strong>[Edge Functions]</strong> 클릭 ➔ <strong>[Deploy a new function]</strong> ➔ <strong>[Via Editor]</strong> 선택<br>
-            2) Function 이름에 <code>send-push</code> 입력 후, 아래 코드를 복사해 붙여넣고 <strong>[Deploy]</strong>를 누르면 앱이 꺼진 휴대폰에도 푸시가 발송됩니다! (무료 플랜 지원)
+            1) Supabase 대시보드 좌측 메뉴 <strong>[Edge Functions]</strong> 클릭 ➔ <strong>[Deploy a new function]</strong> ➔
+            <strong>[Via Editor]</strong> 선택<br>
+            2) Function 이름에 <code>send-push</code> 입력 후, 아래 코드를 복사해 붙여넣고 <strong>[Deploy]</strong>를 누르면 앱이 꺼진 휴대폰에도 푸시가
+            발송됩니다! (무료 플랜 지원)
           </p>
-          <pre id="admin-edge-fn-box" style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 11px; max-height: 220px; overflow-y: auto; overflow-x: auto; line-height: 1.45; font-family: monospace; margin-bottom: 10px;">import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+          <pre id="admin-edge-fn-box"
+            style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 6px; font-size: 11px; max-height: 220px; overflow-y: auto; overflow-x: auto; line-height: 1.45; font-family: monospace; margin-bottom: 10px;">import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 
 const corsHeaders = {
@@ -792,14 +841,15 @@ Deno.serve(async (req: Request) => {
 
         <form id="form-manage-talent">
           <input type="hidden" id="input-talent-user-id">
-          
+
           <div class="admin-form-group">
             <label class="admin-label">변경할 달란트 수량</label>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="number" id="input-talent-amount" class="admin-input" min="0" max="99999" required style="font-size: 18px; font-weight: 800; text-align: center;">
+              <input type="number" id="input-talent-amount" class="admin-input" min="0" max="99999" required
+                style="font-size: 18px; font-weight: 800; text-align: center;">
               <span style="font-weight: 800; font-size: 18px; color: #D68910;">🪙</span>
             </div>
-            
+
             <!-- 빠른 증감 태그 -->
             <div class="quick-amount-tags">
               <span style="font-size: 11px; color: #666; width: 100%; margin-bottom: 2px;">빠른 증감 단축버튼:</span>
@@ -809,7 +859,8 @@ Deno.serve(async (req: Request) => {
               <button type="button" class="quick-tag-btn" data-delta="10">+10</button>
               <button type="button" class="quick-tag-btn" data-delta="-1" style="color: #C0392B;">-1</button>
               <button type="button" class="quick-tag-btn" data-delta="-5" style="color: #C0392B;">-5</button>
-              <button type="button" class="quick-tag-btn" id="btn-talent-reset-zero" style="color: #777;">0으로 리셋</button>
+              <button type="button" class="quick-tag-btn" id="btn-talent-reset-zero" style="color: #777;">0으로
+                리셋</button>
             </div>
           </div>
 
@@ -843,7 +894,8 @@ Deno.serve(async (req: Request) => {
 
           <div class="admin-form-group">
             <label class="admin-label">아이디 (ID)</label>
-            <input type="text" id="input-member-disp-id" class="admin-input" disabled style="background: #F0F0F0; color: #555; font-weight: 700;">
+            <input type="text" id="input-member-disp-id" class="admin-input" disabled
+              style="background: #F0F0F0; color: #555; font-weight: 700;">
           </div>
 
           <div style="display: flex; gap: 10px;" class="admin-form-group">
@@ -865,14 +917,16 @@ Deno.serve(async (req: Request) => {
             </div>
           </div>
 
-          <div class="admin-form-group" style="background: #FAFAFA; padding: 12px; border: 1.5px dashed #CCC; border-radius: 4px;">
+          <div class="admin-form-group"
+            style="background: #FAFAFA; padding: 12px; border: 1.5px dashed #CCC; border-radius: 4px;">
             <label class="admin-label" style="display: flex; justify-content: space-between; align-items: center;">
               <span>🔑 비밀번호 관리</span>
               <span id="disp-current-pw-preview" style="font-size: 11px; color: #666; font-weight: normal;"></span>
             </label>
             <div style="display: flex; gap: 6px;">
               <input type="text" id="input-member-new-password" class="admin-input" placeholder="새 비밀번호 입력 (변경 시만 입력)">
-              <button type="button" id="btn-quick-reset-pw" class="admin-btn admin-btn-sm" style="white-space: nowrap;" title="비밀번호를 '1234'로 설정">
+              <button type="button" id="btn-quick-reset-pw" class="admin-btn admin-btn-sm" style="white-space: nowrap;"
+                title="비밀번호를 '1234'로 설정">
                 '1234'로 초기화
               </button>
             </div>
@@ -929,7 +983,8 @@ Deno.serve(async (req: Request) => {
           <div style="display: flex; gap: 10px;" class="admin-form-group">
             <div style="flex: 2;">
               <label class="admin-label">메세지 제목</label>
-              <input type="text" id="input-direct-msg-title" class="admin-input" placeholder="예: [어린양의 메세지] 성도님, 오늘 통독도 함께 힘내요!" required>
+              <input type="text" id="input-direct-msg-title" class="admin-input"
+                placeholder="예: [어린양의 메세지] 성도님, 오늘 통독도 함께 힘내요!" required>
             </div>
             <div style="flex: 1;">
               <label class="admin-label">발신자 명</label>
@@ -939,7 +994,8 @@ Deno.serve(async (req: Request) => {
 
           <div class="admin-form-group">
             <label class="admin-label">메세지 본문 내용</label>
-            <textarea id="input-direct-msg-content" class="admin-textarea" rows="4" placeholder="성도님께 전달할 격려와 축복의 어린양 메세지를 작성해주세요." required></textarea>
+            <textarea id="input-direct-msg-content" class="admin-textarea" rows="4"
+              placeholder="성도님께 전달할 격려와 축복의 어린양 메세지를 작성해주세요." required></textarea>
           </div>
         </form>
       </div>
@@ -962,26 +1018,33 @@ Deno.serve(async (req: Request) => {
         <button type="button" class="admin-modal-close" data-close-modal="modal-bulk-dormant-message">&times;</button>
       </div>
       <div class="admin-modal-body">
-        <div class="admin-user-info-box" style="flex-direction: column; align-items: flex-start; gap: 6px; background: #EBF5FB; border-color: #2980B9;">
+        <div class="admin-user-info-box"
+          style="flex-direction: column; align-items: flex-start; gap: 6px; background: #EBF5FB; border-color: #2980B9;">
           <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-            <strong style="font-size: 14px; color: #154360;">발송 대상: <span id="bulk-dormant-target-count">0</span>명 선택됨</strong>
+            <strong style="font-size: 14px; color: #154360;">발송 대상: <span id="bulk-dormant-target-count">0</span>명
+              선택됨</strong>
             <span class="msg-badge-user" style="background: #2980B9; color: #FFF;">1:1 어린양 메세지 + 휴대폰 푸시</span>
           </div>
-          <div id="bulk-dormant-target-names" style="font-size: 11px; color: #34495E; max-height: 60px; overflow-y: auto; line-height: 1.4; width: 100%;">
+          <div id="bulk-dormant-target-names"
+            style="font-size: 11px; color: #34495E; max-height: 60px; overflow-y: auto; line-height: 1.4; width: 100%;">
             -
           </div>
         </div>
 
         <div style="margin-bottom: 12px;">
-          <div style="font-size: 11px; font-weight: 700; color: #555; margin-bottom: 6px;">✨ 빠른 이벤트 문구 템플릿 (클릭 시 자동 입력):</div>
+          <div style="font-size: 11px; font-weight: 700; color: #555; margin-bottom: 6px;">✨ 빠른 이벤트 문구 템플릿 (클릭 시 자동 입력):
+          </div>
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="1" style="font-size: 11px; background: #FFF9C4;">
+            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="1"
+              style="font-size: 11px; background: #FFF9C4;">
               🐑 1. 배고픈 찰스의 편지
             </button>
-            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="2" style="font-size: 11px; background: #E8F8F5;">
+            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="2"
+              style="font-size: 11px; background: #E8F8F5;">
               🎁 2. 휴면 복귀 특별 이벤트 안내
             </button>
-            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="3" style="font-size: 11px; background: #F5EEF8;">
+            <button type="button" class="admin-btn admin-btn-sm btn-dormant-template" data-tpl="3"
+              style="font-size: 11px; background: #F5EEF8;">
               💖 3. 따뜻한 안부와 오늘 1장 응원
             </button>
           </div>
@@ -1007,7 +1070,8 @@ Deno.serve(async (req: Request) => {
       </div>
       <div class="admin-modal-footer">
         <button type="button" class="admin-btn" data-close-modal="modal-bulk-dormant-message">취소</button>
-        <button type="button" id="btn-send-bulk-dormant-message" class="admin-btn admin-btn-primary" style="background: #2E7D32;">
+        <button type="button" id="btn-send-bulk-dormant-message" class="admin-btn admin-btn-primary"
+          style="background: #2E7D32;">
           🚀 선택된 휴면 성도에게 일괄 발송하기
         </button>
       </div>
@@ -1022,12 +1086,13 @@ Deno.serve(async (req: Request) => {
   <script src="js/supabase-config.js"></script>
 
   <!-- 스크립트 로드 -->
-  <script src="js/bible-data.js?v=9.8"></script>
-  <script src="js/charles-pixel.js?v=9.8"></script>
-  <script src="js/auth.js?v=9.8"></script>
-  <script src="js/storage.js?v=9.8"></script>
-  <script src="js/talent.js?v=9.8"></script>
-  <script src="js/admin.js?v=9.8"></script>
+  <script src="js/bible-data.js?v=9.9"></script>
+  <script src="js/charles-pixel.js?v=9.9"></script>
+  <script src="js/auth.js?v=9.9"></script>
+  <script src="js/storage.js?v=9.9"></script>
+  <script src="js/talent.js?v=9.9"></script>
+  <script src="js/admin.js?v=9.9"></script>
 
 </body>
+
 </html>
