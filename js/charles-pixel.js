@@ -1875,40 +1875,40 @@ function renderAccessoryHeaderBanner(itemId, scale) {
 
   let r = '';
 
-  // 📜 두루마리(Scroll) 형태의 특수 배너 렌더링
+  // 📜 두루마리(Scroll) 형태의 특수 배너 렌더링 (슬림 & 핏)
   if (theme.isScroll) {
-    // 1. 좌우 원목 손잡이 롤러 봉 (y: -6.6 ~ -0.6)
+    // 1. 좌우 원목 손잡이 롤러 봉 (y: -5.4 ~ -1.2, height: 4.2)
     // 좌측 원목 봉
-    r += `<rect x="${0.2 * scale}" y="${-6.6 * scale}" width="${1.0 * scale}" height="${6.0 * scale}" rx="${0.5 * scale}" fill="#78350f" stroke="#451a03" stroke-width="${0.4 * scale}" />`;
-    r += `<circle cx="${0.7 * scale}" cy="${-6.7 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
-    r += `<circle cx="${0.7 * scale}" cy="${-0.5 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
+    r += `<rect x="${0.7 * scale}" y="${-5.4 * scale}" width="${0.8 * scale}" height="${4.2 * scale}" rx="${0.4 * scale}" fill="#78350f" stroke="#451a03" stroke-width="${0.35 * scale}" />`;
+    r += `<circle cx="${1.1 * scale}" cy="${-5.5 * scale}" r="${0.55 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.25 * scale}" />`;
+    r += `<circle cx="${1.1 * scale}" cy="${-1.1 * scale}" r="${0.55 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.25 * scale}" />`;
 
     // 우측 원목 봉
-    r += `<rect x="${22.8 * scale}" y="${-6.6 * scale}" width="${1.0 * scale}" height="${6.0 * scale}" rx="${0.5 * scale}" fill="#78350f" stroke="#451a03" stroke-width="${0.4 * scale}" />`;
-    r += `<circle cx="${23.3 * scale}" cy="${-6.7 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
-    r += `<circle cx="${23.3 * scale}" cy="${-0.5 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
+    r += `<rect x="${22.5 * scale}" y="${-5.4 * scale}" width="${0.8 * scale}" height="${4.2 * scale}" rx="${0.4 * scale}" fill="#78350f" stroke="#451a03" stroke-width="${0.35 * scale}" />`;
+    r += `<circle cx="${22.9 * scale}" cy="${-5.5 * scale}" r="${0.55 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.25 * scale}" />`;
+    r += `<circle cx="${22.9 * scale}" cy="${-1.1 * scale}" r="${0.55 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.25 * scale}" />`;
 
-    // 2. 좌우 말려있는 두루마리 양피지 롤 (Cylinder)
-    r += `<rect x="${1.2 * scale}" y="${-6.1 * scale}" width="${1.5 * scale}" height="${5.0 * scale}" rx="${0.4 * scale}" fill="#fde68a" stroke="#b45309" stroke-width="${0.5 * scale}" />`;
-    r += `<rect x="${21.3 * scale}" y="${-6.1 * scale}" width="${1.5 * scale}" height="${5.0 * scale}" rx="${0.4 * scale}" fill="#fde68a" stroke="#b45309" stroke-width="${0.5 * scale}" />`;
+    // 2. 좌우 말려있는 두루마리 양피지 롤 (Cylinder - y: -5.0 ~ -1.6, height: 3.4)
+    r += `<rect x="${1.5 * scale}" y="${-5.0 * scale}" width="${1.3 * scale}" height="${3.4 * scale}" rx="${0.35 * scale}" fill="#fde68a" stroke="#b45309" stroke-width="${0.45 * scale}" />`;
+    r += `<rect x="${21.2 * scale}" y="${-5.0 * scale}" width="${1.3 * scale}" height="${3.4 * scale}" rx="${0.35 * scale}" fill="#fde68a" stroke="#b45309" stroke-width="${0.45 * scale}" />`;
     // 롤 안쪽 음영
-    r += `<rect x="${1.5 * scale}" y="${-5.8 * scale}" width="${0.6 * scale}" height="${4.4 * scale}" fill="#d97706" opacity="0.4" />`;
-    r += `<rect x="${21.9 * scale}" y="${-5.8 * scale}" width="${0.6 * scale}" height="${4.4 * scale}" fill="#d97706" opacity="0.4" />`;
+    r += `<rect x="${1.8 * scale}" y="${-4.8 * scale}" width="${0.5 * scale}" height="${3.0 * scale}" fill="#d97706" opacity="0.4" />`;
+    r += `<rect x="${21.7 * scale}" y="${-4.8 * scale}" width="${0.5 * scale}" height="${3.0 * scale}" fill="#d97706" opacity="0.4" />`;
 
-    // 3. 중앙에 시원하게 펼쳐진 양피지 몸체 (Parchment Body - x: 2.2 ~ 21.8, y: -5.9 ~ -1.3)
-    r += `<rect x="${2.2 * scale}" y="${-5.9 * scale}" width="${19.6 * scale}" height="${4.6 * scale}" rx="${0.4 * scale}" fill="${theme.bg}" stroke="${theme.border}" stroke-width="${0.65 * scale}" />`;
+    // 3. 중앙 양피지 본체 (Parchment Body - y: -4.8 ~ -1.8, height: 3.0)
+    r += `<rect x="${2.4 * scale}" y="${-4.8 * scale}" width="${19.2 * scale}" height="${3.0 * scale}" rx="${0.35 * scale}" fill="${theme.bg}" stroke="${theme.border}" stroke-width="${0.55 * scale}" />`;
 
-    // 4. 고풍스러운 양피지 상/하단 이중 테두리 & 디테일 스티치 선
-    r += `<rect x="${2.8 * scale}" y="${-5.5 * scale}" width="${18.4 * scale}" height="${0.22 * scale}" fill="#b45309" opacity="0.45" />`;
-    r += `<rect x="${2.8 * scale}" y="${-1.7 * scale}" width="${18.4 * scale}" height="${0.22 * scale}" fill="#b45309" opacity="0.45" />`;
+    // 4. 고풍스러운 양피지 상/하단 이중 가이드 라인
+    r += `<rect x="${3.0 * scale}" y="${-4.5 * scale}" width="${18.0 * scale}" height="${0.18 * scale}" fill="#b45309" opacity="0.45" />`;
+    r += `<rect x="${3.0 * scale}" y="${-2.1 * scale}" width="${18.0 * scale}" height="${0.18 * scale}" fill="#b45309" opacity="0.45" />`;
 
     // 좌우 코너 십자가 픽셀 포인트
-    r += `<rect x="${2.9 * scale}" y="${-3.8 * scale}" width="${0.5 * scale}" height="${0.5 * scale}" fill="#b45309" />`;
-    r += `<rect x="${20.6 * scale}" y="${-3.8 * scale}" width="${0.5 * scale}" height="${0.5 * scale}" fill="#b45309" />`;
+    r += `<rect x="${3.1 * scale}" y="${-3.45 * scale}" width="${0.45 * scale}" height="${0.45 * scale}" fill="#b45309" />`;
+    r += `<rect x="${20.45 * scale}" y="${-3.45 * scale}" width="${0.45 * scale}" height="${0.45 * scale}" fill="#b45309" />`;
 
-    // 5. 문구 텍스트 '즐거운 헌신' 렌더링
-    const fontSize = scale * 2.3;
-    r += `<text x="${12 * scale}" y="${-3.45 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="-0.3px">${theme.title}</text>`;
+    // 5. 문구 텍스트 '즐거운 헌신' 렌더링 (단정하고 아담한 폰트 크기)
+    const fontSize = scale * 1.65;
+    r += `<text x="${12 * scale}" y="${-3.25 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="0.2px">${theme.title}</text>`;
 
     return r;
   }
