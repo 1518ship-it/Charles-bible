@@ -1616,16 +1616,16 @@ const CHURCH_BG_ITEM_PIXELS = {
     name: '[시안5] 서원경교회 (찰스 키 맞춤 · 좌측)',
     category: '좌측 소품',
     icon: '⛪',
-    desc: '찰스 키(높이 약 12.6그리드)와 비슷한 크기로 찰스 왼편에 나란히 서 있는 서원경교회 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 4.9, 0.28, -6.0)
+    desc: '찰스 왼편에 여유 있게 떨어져 나란히 서 있는 서원경교회 시안입니다.',
+    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 2.2, 0.34, -12.5)
   },
   'side_church_glow_full_left': {
     slot: 'side',
     name: '[시안6] 빛내림 서원경교회 (찰스 키 맞춤 · 좌측)',
     category: '좌측 소품',
     icon: '✨',
-    desc: '찰스 키와 비슷한 크기로 찰스 왼편에 서 있으며, 종탑 십자가에 황금빛 광채가 내리는 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 4.9, 0.28, -6.0)
+    desc: '찰스 왼편에 여유 있게 떨어져 서 있으며, 종탑 십자가에 황금빛 광채가 내리는 시안입니다.',
+    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 2.2, 0.34, -12.5)
   }
 };
 
@@ -1987,7 +1987,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
 
   const canvasWidth = 24;
   const canvasHeight = 24;
-  const leftPaddingGrid = hasLeftFullChurch ? 6.5 : 0;
+  const leftPaddingGrid = hasLeftFullChurch ? 12.5 : 0;
   const svgWidth = Math.round((canvasWidth + leftPaddingGrid) * scale);
   const svgHeight = canvasHeight * scale;
   const viewBoxMinX = Math.round(-leftPaddingGrid * scale);
@@ -2102,7 +2102,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
          class="charles-svg ${animClass} ${hasBanner ? 'has-charles-banner' : ''}" 
-         style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '190px' : '150px'}; display: block; margin: 0 auto;">
+         style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '220px' : '150px'}; display: block; margin: 0 auto;">
       <g class="layer-back">${backRects}</g>
       <g class="layer-body">${bodyRects}</g>
       <g class="layer-side">${sideRects}</g>
