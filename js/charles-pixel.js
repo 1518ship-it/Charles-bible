@@ -1610,6 +1610,22 @@ const CHURCH_BG_ITEM_PIXELS = {
     icon: '✨',
     desc: '하단 우측에 배치되며 종탑 십자가에서 황금빛 광채가 반짝이는 미니어처 시안입니다.',
     pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 9.2, 0.22, 15.2)
+  },
+  'side_church_full_left': {
+    slot: 'side',
+    name: '[시안5] 서원경교회 1:1 비율 (좌측 배치)',
+    category: '좌측 1:1 소품',
+    icon: '⛪',
+    desc: '찰스와 동일한 1:1 풀 비율(0.5x HD)로 찰스 왼편에 나란히 서 있는 서원경교회 시안입니다.',
+    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, -4.0, 0.5, -14.5)
+  },
+  'side_church_glow_full_left': {
+    slot: 'side',
+    name: '[시안6] 빛내림 서원경교회 1:1 비율 (좌측 배치)',
+    category: '좌측 1:1 소품',
+    icon: '✨',
+    desc: '찰스와 동일한 1:1 풀 비율로 찰스 왼편에 서 있으며, 종탑 십자가에 황금빛 광채가 내리는 시안입니다.',
+    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, -4.0, 0.5, -14.5)
   }
 };
 
@@ -1966,12 +1982,15 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   // 캔버스 크기: 24x24 (배너 착용 여부에 따라 상단 여백 동적 확장)
   const hasBanner = !!(equipped && (equipped.banner || (equipped.hold && String(equipped.hold).startsWith('banner_'))));
   const bannerId = hasBanner ? (equipped.banner || equipped.hold) : null;
-  const hasChurchBg = !!(equipped && ((equipped.back && String(equipped.back).startsWith('church_seowonkyung_')) || (equipped.grass && String(equipped.grass).startsWith('church_seowonkyung_'))));
+  const hasChurchBg = !!(equipped && ((equipped.back && String(equipped.back).startsWith('church_seowonkyung_')) || (equipped.grass && String(equipped.grass).startsWith('church_seowonkyung_')) || (equipped.side && String(equipped.side).includes('church_'))));
+  const hasLeftFullChurch = !!(equipped && equipped.side && (equipped.side === 'side_church_full_left' || equipped.side === 'side_church_glow_full_left'));
 
   const canvasWidth = 24;
   const canvasHeight = 24;
-  const svgWidth = canvasWidth * scale;
+  const leftPaddingGrid = hasLeftFullChurch ? 14.5 : 0;
+  const svgWidth = Math.round((canvasWidth + leftPaddingGrid) * scale);
   const svgHeight = canvasHeight * scale;
+  const viewBoxMinX = Math.round(-leftPaddingGrid * scale);
 
   // 머리 위 배너, 모자, 왕관, 서원경교회 종탑 십자가가 위쪽으로 잘리지 않도록 넉넉한 상단 헤드룸 동적 확보
   let topPaddingGrid = 3.5; // 기본 상단 여백 (모자, 왕관 y:0, 귀도리 등 상단 천장 닿음 방지)
@@ -2081,9 +2100,9 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   }
 
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
          class="charles-svg ${animClass} ${hasBanner ? 'has-charles-banner' : ''}" 
-         style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 150px; display: block; margin: 0 auto;">
+         style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '230px' : '150px'}; display: block; margin: 0 auto;">
       <g class="layer-back">${backRects}</g>
       <g class="layer-body">${bodyRects}</g>
       <g class="layer-side">${sideRects}</g>

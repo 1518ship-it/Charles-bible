@@ -877,7 +877,8 @@ const ItemStudio = {
     const hasBanner = !!(this.equipped && this.equipped.banner);
     const bannerId = this.equipped ? this.equipped.banner : null;
     const hasMelody = this.equipped && this.equipped.back === 'back_melody_aura';
-    const hasChurchBg = !!(this.equipped && this.equipped.back && String(this.equipped.back).startsWith('church_seowonkyung_'));
+    const hasChurchBg = !!(this.equipped && ((this.equipped.back && String(this.equipped.back).startsWith('church_seowonkyung_')) || (this.equipped.side && String(this.equipped.side).includes('church_'))));
+    const hasLeftFullChurch = !!(this.equipped && this.equipped.side && (this.equipped.side === 'side_church_full_left' || this.equipped.side === 'side_church_glow_full_left'));
 
     const scale = this.scale;
     const canvasWidth = 24;
@@ -891,8 +892,10 @@ const ItemStudio = {
       topPaddingGrid = 6.0; // 서원경교회 종탑 십자가 / 멜로디 음표 착용 시 여유 확보
     }
 
+    const leftPaddingGrid = hasLeftFullChurch ? 14.5 : 0;
     const bottomPaddingGrid = 2.0; // 바닥 잔디/그림자 여유 공간
-    const svgWidth = canvasWidth * scale;
+    const svgWidth = Math.round((canvasWidth + leftPaddingGrid) * scale);
+    const viewBoxMinX = Math.round(-leftPaddingGrid * scale);
     const viewBoxMinY = Math.round(-topPaddingGrid * scale);
     const viewBoxHeight = Math.round((canvasHeight + topPaddingGrid + bottomPaddingGrid) * scale);
 
@@ -1005,9 +1008,9 @@ const ItemStudio = {
     }
 
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
            class="charles-svg ${this.animClass}" 
-           style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: 220px; display: block; margin: 0 auto;">
+           style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '320px' : '220px'}; display: block; margin: 0 auto;">
         <g class="layer-back">${backRects}</g>
         <g class="layer-grass">${grassRects}</g>
         <g class="layer-body">${bodyRects}</g>
