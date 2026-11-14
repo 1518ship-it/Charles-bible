@@ -550,44 +550,6 @@ const STUDIO_PRAISE_MUSIC_ITEM_PIXELS = (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'un
   }
 };
 
-// ==========================================
-// 👑 셀장 & 바나바 직분 스페셜 배너 프로토타입 (4종 - 특수 장식 테두리)
-// ==========================================
-const ROLE_BANNER_PROTOTYPE_ITEMS = {
-  'banner_cell_leader_royal': {
-    id: 'banner_cell_leader_royal',
-    slot: 'banner',
-    category: '직분 배너 (셀장)',
-    name: '[셀장] 로얄 크라운 & 월계수 금장 배너',
-    icon: '👑',
-    desc: '상단 중앙 루비 황금왕관 크레스트 + 좌우 크림슨 리본 & 3단 황금 월계수 + 4모서리 루비 보석 이중 금박 프레임'
-  },
-  'banner_cell_leader_navy': {
-    id: 'banner_cell_leader_navy',
-    slot: 'banner',
-    category: '직분 배너 (셀장)',
-    name: '[셀장] 임페리얼 네이비 & 별빛 휘장 배너',
-    icon: '🛡️',
-    desc: '상단 황금 십자가 방패 & 은빛 날개 크레스트 + 좌우 로얄블루 제비꼬리 페넌트 리본 + 4모서리 황금 다이아 프레임'
-  },
-  'banner_barnabas_blossom': {
-    id: 'banner_barnabas_blossom',
-    slot: 'banner',
-    category: '직분 배너 (바나바)',
-    name: '[바나바] 사랑의 하트화관 & 천사날개 배너',
-    icon: '💖',
-    desc: '상단 사랑의 픽셀 하트 & 골드 윙 크레스트 + 좌우 순백의 3단 미니 천사 날개 + 4모서리 진주 꽃봉오리 로즈골드 프레임'
-  },
-  'banner_barnabas_olive': {
-    id: 'banner_barnabas_olive',
-    slot: 'banner',
-    category: '직분 배너 (바나바)',
-    name: '[바나바] 은혜의 올리브 화관 & 새싹 배너',
-    icon: '🌿',
-    desc: '상단 축복의 초록 새싹 & 햇살 크레스트 + 좌우 올리브 잎사귀 & 황금열매 화관 + 4모서리 데이지 꽃 에메랄드 프레임'
-  }
-};
-
 // 통합 아이템 픽셀 도우미 함수
 function getAnyItemPixels(id) {
   if (!id) return null;
@@ -606,7 +568,6 @@ function getAnyItemPixels(id) {
 // 통합 아이템 정보 도우미 함수
 function getAnyItemInfo(id) {
   if (!id) return null;
-  if (typeof ROLE_BANNER_PROTOTYPE_ITEMS !== 'undefined' && ROLE_BANNER_PROTOTYPE_ITEMS[id]) return ROLE_BANNER_PROTOTYPE_ITEMS[id];
   if (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS[id]) return TALENT_ITEMS[id];
   if (typeof STUDIO_PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id]) return STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id];
   if (typeof PROTOTYPE_ITEM_PIXELS !== 'undefined' && PROTOTYPE_ITEM_PIXELS[id]) return PROTOTYPE_ITEM_PIXELS[id];
@@ -632,9 +593,7 @@ const ItemStudio = {
   activeDrawColor: '#18181b',
   drawTool: 'pencil', // pencil | eraser
   isMouseDown: false,
-  equipped: {
-    banner: 'banner_cell_leader_royal'
-  },
+  equipped: {},
   customPixels: [],
   customSlot: 'head',
   originalUserEquippedBackup: null,
@@ -644,50 +603,14 @@ const ItemStudio = {
     this.renderAllCatalogs();
     this.initPixelCanvas();
     this.updateCanvas();
-    this.updateEquippedChips();
-    this.updateJsonViewer();
     this.bindEvents();
-    console.log('🧪 Charles Item Test Studio Initialized with Role Banners & Praise Instruments!');
+    console.log('🧪 Charles Item Test Studio Initialized with Praise Instruments!');
   },
 
   renderAllCatalogs() {
-    this.renderRoleBannersCatalog();
     this.renderCurrentCatalog();
     this.renderPraiseMusicCatalog();
     this.renderPrototypeCatalog();
-  },
-
-  // 0. 👑 셀장 & 바나바 직분 스페셜 배너 카탈로그 렌더링
-  renderRoleBannersCatalog() {
-    const container = document.getElementById('role-banners-container');
-    if (!container) return;
-
-    let html = '';
-    for (const [id, item] of Object.entries(ROLE_BANNER_PROTOTYPE_ITEMS)) {
-      const isEq = this.isEquipped(id);
-      const iconSvg = (typeof getAccessoryIconSvg === 'function') ? getAccessoryIconSvg(id) : '';
-      const isCell = id.includes('cell_leader');
-      const tagStyle = isCell
-        ? 'background: #fef3c7; color: #b45309; border: 1px solid #f59e0b;'
-        : 'background: #ffe4e6; color: #be123c; border: 1px solid #fb7185;';
-
-      html += `
-        <div class="item-test-card ${isEq ? 'equipped' : ''}" onclick="ItemStudio.toggleEquip('${id}')" id="card-${id}">
-          <div class="item-card-top">
-            <span class="item-slot-tag" style="${tagStyle}">${item.icon} ${item.category}</span>
-            <span class="item-equip-status">${isEq ? '착용중 ✓' : ''}</span>
-          </div>
-          <div class="item-preview-box" style="height: 88px; background: #f8fafc;">
-            <div style="width: 100%; max-width: 170px; display: flex; align-items: center; justify-content: center;">
-              ${iconSvg ? iconSvg.replace('max-width: 64px; max-height: 56px;', 'width: 100%; max-width: 165px; height: auto;') : `<span style="font-size: 28px;">${item.icon}</span>`}
-            </div>
-          </div>
-          <div class="item-title" style="font-size: 13.5px;">${item.name}</div>
-          <div class="item-desc">${item.desc || ''}</div>
-        </div>
-      `;
-    }
-    container.innerHTML = html;
   },
 
   initSessionInfo() {
@@ -918,10 +841,10 @@ const ItemStudio = {
     const canvasWidth = 24;
     const canvasHeight = 24;
 
-    // 상단 돌출 아이템(직분배너 상단 크레스트: -8.3, 일반배너: -6.0, 멜로디: -3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
+    // 상단 돌출 아이템(배너: -6.0, 멜로디: -3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
     let topPaddingGrid = 4.0; // 기본 헤드룸: 왕관(y:0), 모자, 귀도리가 위로 닿지 않고 40px 여유 확보
     if (hasBanner) {
-      topPaddingGrid = 9.5; // 배너 및 상단 왕관/하트/새싹 크레스트 착용 시 상단 여백 확장
+      topPaddingGrid = 9.0; // 배너 착용 시: -9.0까지 상단 확장 (배너가 -6.0에 위치하므로 상단 30px 완전 여유)
     } else if (hasMelody) {
       topPaddingGrid = 6.0; // 멜로디 음표 착용 시 여유 확보
     }
@@ -1287,25 +1210,7 @@ pixels: ${JSON.stringify(this.customPixels)}`;
   // 💾 프리셋 및 계정 주입
   // ==========================================
   applyPreset(presetName) {
-    if (presetName === 'cell_leader') {
-      this.equipped = {
-        banner: 'banner_cell_leader_royal',
-        head: 'head_golden_crown',
-        hold: 'hold_shepherd_staff',
-        grass: 'back_daisy_field'
-      };
-      this.setStage(4);
-      this.setTheme('theme-pasture');
-    } else if (presetName === 'barnabas') {
-      this.equipped = {
-        banner: 'banner_barnabas_blossom',
-        back: 'back_angel_wings',
-        side: 'side_blessing_giftbox',
-        grass: 'back_daisy_field'
-      };
-      this.setStage(4);
-      this.setTheme('theme-pasture');
-    } else if (presetName === 'classic') {
+    if (presetName === 'classic') {
       this.equipped = {
         head: 'head_straw_hat',
         glasses: 'head_glasses',

@@ -12,8 +12,8 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- 스타일시트 -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=10.4">
-  <link rel="stylesheet" href="css/item-test.css?v=10.4">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=10.5">
+  <link rel="stylesheet" href="css/item-test.css?v=10.5">
 </head>
 <body class="studio-body">
 
@@ -149,13 +149,10 @@
     <!-- ==================== 우측: 탭 네비게이션 & 아이템/도트 셀렉터 패널 ==================== -->
     <section class="studio-content-panel">
 
-      <!-- 상단 6개 탭 버튼 -->
-      <div class="studio-tabs-bar" style="flex-wrap: wrap;">
-        <button type="button" class="studio-tab-btn active" data-tab="role_banners">
-          <span>👑</span> 셀장·바나바 배너 (신규 4종)
-        </button>
-        <button type="button" class="studio-tab-btn" data-tab="released">
-          <span>🛍️</span> 기존 출시 (31종)
+      <!-- 상단 5개 탭 버튼 -->
+      <div class="studio-tabs-bar">
+        <button type="button" class="studio-tab-btn active" data-tab="released">
+          <span>🛍️</span> 기존 출시 (23종)
         </button>
         <button type="button" class="studio-tab-btn" data-tab="praise">
           <span>🎸</span> 찬양집회 악기 (8종)
@@ -171,26 +168,8 @@
         </button>
       </div>
 
-      <!-- 탭 0: 👑 셀장 & 바나바 스페셜 장식 테두리 배너 (신규 프로토타입) -->
-      <div id="tab-pane-role_banners" class="tab-pane active">
-        <div class="studio-card" style="border: 2px solid #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 45%);">
-          <div class="studio-card-header">
-            <div class="studio-card-title" style="color: #92400e;">
-              <span>👑</span> 청년부 직분 스페셜 배너: [셀장] & [바나바] (특수 장식 프레임 4종)
-            </div>
-            <span style="font-size: 11.5px; color: #b45309; font-weight: 800;">★ 상단 왕관/하트/새싹 크레스트 + 좌우 월계수·천사날개·리본 + 4모서리 보석 테두리</span>
-          </div>
-          <p style="font-size: 12.5px; color: #4b5563; margin: 0 0 14px; line-height: 1.5;">
-            기존 찬양집회 배너의 깔끔한 가독성은 유지하면서, 직분의 상징성을 살린 <strong>상단 중앙 픽셀 엠블럼(왕관·십자가방패·하트·새싹)</strong>과 <strong>좌우 입체 장식(월계수·페넌트 리본·천사날개·올리브 화관)</strong>, <strong>4모서리 보석/꽃 스터드 및 이중 금박 레이스 테두리</strong>를 적용했습니다. 카드를 클릭해 왼쪽 피팅룸에서 비교해 보세요!
-          </p>
-          <div id="role-banners-container" class="item-cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));">
-            <!-- JS 동적 주입 -->
-          </div>
-        </div>
-      </div>
-
       <!-- 탭 1: 기존 출시 아이템 목록 -->
-      <div id="tab-pane-released" class="tab-pane">
+      <div id="tab-pane-released" class="tab-pane active">
         <div class="studio-card">
           <div class="studio-card-header">
             <div class="studio-card-title">
@@ -318,14 +297,6 @@
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
-            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left; border-color: #f59e0b; background: #fffbeb;" onclick="ItemStudio.applyPreset('cell_leader')">
-              <div style="font-size: 14px; font-weight: 800; color: #92400e;">👑 든든한 셀장님 스페셜 세트</div>
-              <div style="font-size: 11px; color: #b45309; margin-top: 3px;">[셀장] 로얄 크라운 배너 + 황금면류관 + 목자지팡이 + 성경책 (4단계)</div>
-            </button>
-            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left; border-color: #fb7185; background: #fff1f2;" onclick="ItemStudio.applyPreset('barnabas')">
-              <div style="font-size: 14px; font-weight: 800; color: #9f1239;">💖 사랑의 바나바 스페셜 세트</div>
-              <div style="font-size: 11px; color: #be123c; margin-top: 3px;">[바나바] 하트날개 배너 + 천사날개 + 선물상자 + 데이지풀밭 (4단계)</div>
-            </button>
             <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left;" onclick="ItemStudio.applyPreset('classic')">
               <div style="font-size: 14px; font-weight: 800;">🌾 시골 목장 클래식 세트</div>
               <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">밀짚모자 + 범생이안경 + 성경책 + 데이지풀 (3단계 찰스)</div>
@@ -393,9 +364,9 @@
   <div id="studio-toast" class="studio-toast">알림</div>
 
   <!-- 스크립트 로드 순서: 그래픽 -> 달란트/스토리지 -> 스튜디오 제어 -->
-  <script src="js/charles-pixel.js?v=10.4"></script>
-  <script src="js/talent.js?v=10.4"></script>
-  <script src="js/storage.js?v=10.4"></script>
-  <script src="js/item-test.js?v=10.4"></script>
+  <script src="js/charles-pixel.js?v=10.5"></script>
+  <script src="js/talent.js?v=10.5"></script>
+  <script src="js/storage.js?v=10.5"></script>
+  <script src="js/item-test.js?v=10.5"></script>
 </body>
 </html>
