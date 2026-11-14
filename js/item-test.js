@@ -553,6 +553,9 @@ const STUDIO_PRAISE_MUSIC_ITEM_PIXELS = (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'un
 // 통합 아이템 픽셀 도우미 함수
 function getAnyItemPixels(id) {
   if (!id) return null;
+  if (typeof CHURCH_BG_ITEM_PIXELS !== 'undefined' && CHURCH_BG_ITEM_PIXELS[id]) {
+    return CHURCH_BG_ITEM_PIXELS[id].pixels;
+  }
   if (typeof STUDIO_PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id]) {
     return STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id].pixels;
   }
@@ -568,6 +571,7 @@ function getAnyItemPixels(id) {
 // 통합 아이템 정보 도우미 함수
 function getAnyItemInfo(id) {
   if (!id) return null;
+  if (typeof CHURCH_BG_ITEM_PIXELS !== 'undefined' && CHURCH_BG_ITEM_PIXELS[id]) return CHURCH_BG_ITEM_PIXELS[id];
   if (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS[id]) return TALENT_ITEMS[id];
   if (typeof STUDIO_PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id]) return STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id];
   if (typeof PROTOTYPE_ITEM_PIXELS !== 'undefined' && PROTOTYPE_ITEM_PIXELS[id]) return PROTOTYPE_ITEM_PIXELS[id];
@@ -593,7 +597,9 @@ const ItemStudio = {
   activeDrawColor: '#18181b',
   drawTool: 'pencil', // pencil | eraser
   isMouseDown: false,
-  equipped: {},
+  equipped: {
+    back: 'church_seowonkyung_glowing_cross'
+  },
   customPixels: [],
   customSlot: 'head',
   originalUserEquippedBackup: null,
@@ -603,14 +609,44 @@ const ItemStudio = {
     this.renderAllCatalogs();
     this.initPixelCanvas();
     this.updateCanvas();
+    this.updateEquippedChips();
+    this.updateJsonViewer();
     this.bindEvents();
-    console.log('🧪 Charles Item Test Studio Initialized with Praise Instruments!');
+    console.log('🧪 Charles Item Test Studio Initialized with Seowonkyung Church Backgrounds!');
   },
 
   renderAllCatalogs() {
+    this.renderChurchCatalog();
     this.renderCurrentCatalog();
     this.renderPraiseMusicCatalog();
     this.renderPrototypeCatalog();
+  },
+
+  // 0. 서원경교회 3D 조감도 배경 카탈로그 렌더링
+  renderChurchCatalog() {
+    const container = document.getElementById('church-items-container');
+    if (!container || typeof CHURCH_BG_ITEM_PIXELS === 'undefined') return;
+
+    let html = '';
+    for (const [id, item] of Object.entries(CHURCH_BG_ITEM_PIXELS)) {
+      const isEq = this.isEquipped(id);
+      const iconSvg = this.generateItemSvg(item.pixels, 4, 88);
+
+      html += `
+        <div class="item-test-card ${isEq ? 'equipped' : ''}" onclick="ItemStudio.toggleEquip('${id}')" id="card-${id}">
+          <div class="item-card-top">
+            <span class="item-slot-tag" style="background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;">⛪ ${item.category} (48x48 HD)</span>
+            <span class="item-equip-status">${isEq ? '착용중 ✓' : ''}</span>
+          </div>
+          <div class="item-preview-box" style="height: 96px;">
+            ${iconSvg || `<span style="font-size: 28px;">${item.icon || '⛪'}</span>`}
+          </div>
+          <div class="item-title">${item.name}</div>
+          <div class="item-desc">${item.desc || ''}</div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
   },
 
   initSessionInfo() {
@@ -718,23 +754,28 @@ const ItemStudio = {
     container.innerHTML = html;
   },
 
-  // 픽셀 배열로부터 미리보기 SVG 생성기
-  generateItemSvg(pixels, scale = 3) {
+  // 픽셀 배열로부터 미리보기 SVG 생성기 (4번째 요소 size 서브픽셀 스케일 지원)
+  generateItemSvg(pixels, scale = 3, maxH = 50) {
     if (!pixels || !pixels.length) return '';
-    let minX = 24, maxX = 0, minY = 24, maxY = 0;
-    for (const [x, y] of pixels) {
+    let minX = 999, maxX = -999, minY = 999, maxY = -999;
+    for (const p of pixels) {
+      const x = p[0];
+      const y = p[1];
+      const sz = p[3] || 1;
       if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
+      if (x + sz > maxX) maxX = x + sz;
       if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
+      if (y + sz > maxY) maxY = y + sz;
     }
-    const pad = 1.5;
-    const vb = `${(minX - pad) * scale} ${(minY - pad) * scale} ${(maxX - minX + pad * 2 + 1) * scale} ${(maxY - minY + pad * 2 + 1) * scale}`;
+    const pad = 1.0;
+    const vb = `${(minX - pad) * scale} ${(minY - pad) * scale} ${(maxX - minX + pad * 2) * scale} ${(maxY - minY + pad * 2) * scale}`;
     let rects = '';
-    for (const [x, y, color] of pixels) {
-      rects += `<rect x="${x * scale}" y="${y * scale}" width="${scale}" height="${scale}" fill="${color}" />`;
+    for (const p of pixels) {
+      const sz = p[3] || 1;
+      rects += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${sz * scale}" height="${sz * scale}" fill="${p[2]}" />`;
     }
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" shape-rendering="crispEdges" style="width: auto; height: 50px; max-width: 64px; max-height: 50px; display: block; margin: 0 auto;">${rects}</svg>`;
+    const maxW = Math.round(maxH * 1.25);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" shape-rendering="crispEdges" style="width: auto; height: ${maxH}px; max-width: ${maxW}px; max-height: ${maxH}px; display: block; margin: 0 auto;">${rects}</svg>`;
   },
 
   // 장착 토글
@@ -836,17 +877,18 @@ const ItemStudio = {
     const hasBanner = !!(this.equipped && this.equipped.banner);
     const bannerId = this.equipped ? this.equipped.banner : null;
     const hasMelody = this.equipped && this.equipped.back === 'back_melody_aura';
+    const hasChurchBg = !!(this.equipped && this.equipped.back && String(this.equipped.back).startsWith('church_seowonkyung_'));
 
     const scale = this.scale;
     const canvasWidth = 24;
     const canvasHeight = 24;
 
-    // 상단 돌출 아이템(배너: -6.0, 멜로디: -3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
+    // 상단 돌출 아이템(배너: -6.0, 서원경교회 종탑 십자가: -4.5, 멜로디: -3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
     let topPaddingGrid = 4.0; // 기본 헤드룸: 왕관(y:0), 모자, 귀도리가 위로 닿지 않고 40px 여유 확보
     if (hasBanner) {
       topPaddingGrid = 9.0; // 배너 착용 시: -9.0까지 상단 확장 (배너가 -6.0에 위치하므로 상단 30px 완전 여유)
-    } else if (hasMelody) {
-      topPaddingGrid = 6.0; // 멜로디 음표 착용 시 여유 확보
+    } else if (hasChurchBg || hasMelody) {
+      topPaddingGrid = 6.0; // 서원경교회 종탑 십자가 / 멜로디 음표 착용 시 여유 확보
     }
 
     const bottomPaddingGrid = 2.0; // 바닥 잔디/그림자 여유 공간
@@ -991,7 +1033,8 @@ const ItemStudio = {
     let res = '';
     for (let i = 0; i < pixels.length; i++) {
       const p = pixels[i];
-      res += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${scale}" height="${scale}" fill="${p[2]}" />`;
+      const sz = p[3] || 1;
+      res += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${sz * scale}" height="${sz * scale}" fill="${p[2]}" />`;
     }
     return res;
   },
@@ -1210,7 +1253,15 @@ pixels: ${JSON.stringify(this.customPixels)}`;
   // 💾 프리셋 및 계정 주입
   // ==========================================
   applyPreset(presetName) {
-    if (presetName === 'classic') {
+    if (presetName === 'church_sunday') {
+      this.equipped = {
+        back: 'church_seowonkyung_glowing_cross',
+        glasses: 'head_glasses',
+        hold: 'hold_bible'
+      };
+      this.setStage(3);
+      this.setTheme('theme-pasture');
+    } else if (presetName === 'classic') {
       this.equipped = {
         head: 'head_straw_hat',
         glasses: 'head_glasses',

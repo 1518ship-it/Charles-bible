@@ -12,8 +12,8 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- 스타일시트 -->
-  <link rel="stylesheet" href="css/pixel-theme.css?v=10.5">
-  <link rel="stylesheet" href="css/item-test.css?v=10.5">
+  <link rel="stylesheet" href="css/pixel-theme.css?v=10.6">
+  <link rel="stylesheet" href="css/item-test.css?v=10.6">
 </head>
 <body class="studio-body">
 
@@ -149,9 +149,12 @@
     <!-- ==================== 우측: 탭 네비게이션 & 아이템/도트 셀렉터 패널 ==================== -->
     <section class="studio-content-panel">
 
-      <!-- 상단 5개 탭 버튼 -->
+      <!-- 상단 6개 탭 버튼 -->
       <div class="studio-tabs-bar">
-        <button type="button" class="studio-tab-btn active" data-tab="released">
+        <button type="button" class="studio-tab-btn active" data-tab="church">
+          <span>⛪</span> 우리교회 배경 (3종)
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="released">
           <span>🛍️</span> 기존 출시 (23종)
         </button>
         <button type="button" class="studio-tab-btn" data-tab="praise">
@@ -168,8 +171,23 @@
         </button>
       </div>
 
+      <!-- 탭 0: 서원경교회 3D 조감도 배경 아이템 목록 (기본 활성) -->
+      <div id="tab-pane-church" class="tab-pane active">
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div class="studio-card-title">
+              <span>⛪</span> 서원경교회 3D 조감도 48x48 초고해상도 배경 아이템 (3종)
+            </div>
+            <span style="font-size: 11.5px; color: #0284c7; font-weight: 800;">★ 카드를 클릭해 1~5단계 찰스 뒤편에 장착해보세요!</span>
+          </div>
+          <div id="church-items-container" class="item-cards-grid">
+            <!-- JS 동적 주입 -->
+          </div>
+        </div>
+      </div>
+
       <!-- 탭 1: 기존 출시 아이템 목록 -->
-      <div id="tab-pane-released" class="tab-pane active">
+      <div id="tab-pane-released" class="tab-pane">
         <div class="studio-card">
           <div class="studio-card-header">
             <div class="studio-card-title">
@@ -297,6 +315,10 @@
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+            <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left; border-color: #38bdf8; background: #f0f9ff; grid-column: span 2;" onclick="ItemStudio.applyPreset('church_sunday')">
+              <div style="font-size: 14px; font-weight: 800; color: #0369a1;">⛪ 서원경교회 주일 예배 세트 (NEW)</div>
+              <div style="font-size: 11px; color: #0284c7; margin-top: 3px;">서원경교회 조감도 & 은혜의 빛내림 배경 + 성경책 + 범생이안경 (3단계 찰스)</div>
+            </button>
             <button type="button" class="ctrl-btn" style="padding: 12px; text-align: left;" onclick="ItemStudio.applyPreset('classic')">
               <div style="font-size: 14px; font-weight: 800;">🌾 시골 목장 클래식 세트</div>
               <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">밀짚모자 + 범생이안경 + 성경책 + 데이지풀 (3단계 찰스)</div>
@@ -364,9 +386,9 @@
   <div id="studio-toast" class="studio-toast">알림</div>
 
   <!-- 스크립트 로드 순서: 그래픽 -> 달란트/스토리지 -> 스튜디오 제어 -->
-  <script src="js/charles-pixel.js?v=10.5"></script>
-  <script src="js/talent.js?v=10.5"></script>
-  <script src="js/storage.js?v=10.5"></script>
-  <script src="js/item-test.js?v=10.5"></script>
+  <script src="js/charles-pixel.js?v=10.6"></script>
+  <script src="js/talent.js?v=10.6"></script>
+  <script src="js/storage.js?v=10.6"></script>
+  <script src="js/item-test.js?v=10.6"></script>
 </body>
 </html>
