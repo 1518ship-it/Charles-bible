@@ -250,6 +250,19 @@ const TALENT_ITEMS = {
     themeColor: '#ec4899',
     desc: '사랑한다 말하시네 - 포근하고 따뜻한 로즈 핑크 하트 배너'
   },
+  'banner_joyful_devotion': {
+    id: 'banner_joyful_devotion',
+    slot: 'banner',
+    category: '배너',
+    name: '즐거운 헌신 두루마리 배너',
+    songTitle: '즐거운 헌신',
+    price: 0,
+    inShop: false,
+    isEventReward: true,
+    icon: '📜',
+    themeColor: '#d97706',
+    desc: '기쁨과 자원함으로 주님께 드리는 향기로운 제사, 펼쳐진 성경 두루마리 배너'
+  },
   'banner_all_my_possession': {
     id: 'banner_all_my_possession',
     slot: 'banner',

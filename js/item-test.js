@@ -1256,7 +1256,15 @@ pixels: ${JSON.stringify(this.customPixels)}`;
   // 💾 프리셋 및 계정 주입
   // ==========================================
   applyPreset(presetName) {
-    if (presetName === 'church_sunday') {
+    if (presetName === 'joyful_devotion') {
+      this.equipped = {
+        banner: 'banner_joyful_devotion',
+        head: 'head_straw_hat',
+        hold: 'hold_bible'
+      };
+      this.setStage(3);
+      this.setTheme('theme-white');
+    } else if (presetName === 'church_sunday') {
       this.equipped = {
         back: 'church_seowonkyung_glowing_cross',
         glasses: 'head_glasses',

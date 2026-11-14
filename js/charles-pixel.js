@@ -1853,6 +1853,13 @@ const PRAISE_BANNER_THEMES = {
     title: '내 삶의 이유라', icon: '🌿',
     bg: '#f7fee7', border: '#65a30d', text: '#3f6212',
     primary: '#84cc16', dark: '#4d7c0f', light: '#ecfccb'
+  },
+  // 📜 즐거운 헌신 - 성경 두루마리 (Scroll) 스타일 배너
+  'banner_joyful_devotion': {
+    title: '즐거운 헌신', icon: '📜',
+    bg: '#fef9c3', border: '#b45309', text: '#78350f',
+    primary: '#d97706', dark: '#78350f', light: '#fef3c7',
+    isScroll: true // 양쪽 두루마리 롤 + 고풍스러운 양피지 장식
   }
 };
 
@@ -1867,6 +1874,44 @@ function renderAccessoryHeaderBanner(itemId, scale) {
   if (!theme) return '';
 
   let r = '';
+
+  // 📜 두루마리(Scroll) 형태의 특수 배너 렌더링
+  if (theme.isScroll) {
+    // 1. 좌우 원목 손잡이 롤러 봉 (y: -6.6 ~ -0.6)
+    // 좌측 원목 봉
+    r += `<rect x="${0.2 * scale}" y="${-6.6 * scale}" width="${1.0 * scale}" height="${6.0 * scale}" rx="${0.5 * scale}" fill="#78350f" stroke="#451a03" stroke-width="${0.4 * scale}" />`;
+    r += `<circle cx="${0.7 * scale}" cy="${-6.7 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
+    r += `<circle cx="${0.7 * scale}" cy="${-0.5 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
+
+    // 우측 원목 봉
+    r += `<rect x="${22.8 * scale}" y="${-6.6 * scale}" width="${1.0 * scale}" height="${6.0 * scale}" rx="${0.5 * scale}" fill="#78350f" stroke="#451a03" stroke-width="${0.4 * scale}" />`;
+    r += `<circle cx="${23.3 * scale}" cy="${-6.7 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
+    r += `<circle cx="${23.3 * scale}" cy="${-0.5 * scale}" r="${0.7 * scale}" fill="#d97706" stroke="#78350f" stroke-width="${0.3 * scale}" />`;
+
+    // 2. 좌우 말려있는 두루마리 양피지 롤 (Cylinder)
+    r += `<rect x="${1.2 * scale}" y="${-6.1 * scale}" width="${1.5 * scale}" height="${5.0 * scale}" rx="${0.4 * scale}" fill="#fde68a" stroke="#b45309" stroke-width="${0.5 * scale}" />`;
+    r += `<rect x="${21.3 * scale}" y="${-6.1 * scale}" width="${1.5 * scale}" height="${5.0 * scale}" rx="${0.4 * scale}" fill="#fde68a" stroke="#b45309" stroke-width="${0.5 * scale}" />`;
+    // 롤 안쪽 음영
+    r += `<rect x="${1.5 * scale}" y="${-5.8 * scale}" width="${0.6 * scale}" height="${4.4 * scale}" fill="#d97706" opacity="0.4" />`;
+    r += `<rect x="${21.9 * scale}" y="${-5.8 * scale}" width="${0.6 * scale}" height="${4.4 * scale}" fill="#d97706" opacity="0.4" />`;
+
+    // 3. 중앙에 시원하게 펼쳐진 양피지 몸체 (Parchment Body - x: 2.2 ~ 21.8, y: -5.9 ~ -1.3)
+    r += `<rect x="${2.2 * scale}" y="${-5.9 * scale}" width="${19.6 * scale}" height="${4.6 * scale}" rx="${0.4 * scale}" fill="${theme.bg}" stroke="${theme.border}" stroke-width="${0.65 * scale}" />`;
+
+    // 4. 고풍스러운 양피지 상/하단 이중 테두리 & 디테일 스티치 선
+    r += `<rect x="${2.8 * scale}" y="${-5.5 * scale}" width="${18.4 * scale}" height="${0.22 * scale}" fill="#b45309" opacity="0.45" />`;
+    r += `<rect x="${2.8 * scale}" y="${-1.7 * scale}" width="${18.4 * scale}" height="${0.22 * scale}" fill="#b45309" opacity="0.45" />`;
+
+    // 좌우 코너 십자가 픽셀 포인트
+    r += `<rect x="${2.9 * scale}" y="${-3.8 * scale}" width="${0.5 * scale}" height="${0.5 * scale}" fill="#b45309" />`;
+    r += `<rect x="${20.6 * scale}" y="${-3.8 * scale}" width="${0.5 * scale}" height="${0.5 * scale}" fill="#b45309" />`;
+
+    // 5. 문구 텍스트 '즐거운 헌신' 렌더링
+    const fontSize = scale * 2.3;
+    r += `<text x="${12 * scale}" y="${-3.45 * scale}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="-0.3px">${theme.title}</text>`;
+
+    return r;
+  }
 
   // 1. 검정 테두리 없는 산뜻하고 세련된 테마 전용 컨테이너 (x: 0.5~23.5, y: -6.0 ~ -1.2, width: 23, height: 4.8)
   r += `<rect x="${0.5 * scale}" y="${-6.0 * scale}" width="${23.0 * scale}" height="${4.8 * scale}" rx="${0.6 * scale}" fill="${theme.bg}" stroke="${theme.border}" stroke-width="${0.75 * scale}" />`;
