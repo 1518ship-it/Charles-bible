@@ -1555,76 +1555,12 @@ function buildChurch48To24Pixels(base48, extra48, shiftGx = 0, shiftGy = 0, offs
 }
 
 const CHURCH_BG_ITEM_PIXELS = {
-  'church_seowonkyung_bg_main': {
-    slot: 'back',
-    name: '[우리교회] 서원경교회 3D 조감도 도트 (원본 완벽 재현)',
-    category: '우리교회 배경',
-    icon: '⛪',
-    desc: '보내주신 서원경교회 3D 조감도 이미지를 48x48 초고해상도 도트로 완벽 재현! 좌측 파란 지붕 본당, 중앙 십자가 종탑, 우측 적벽돌 교육관과 푸른 조경까지 그대로 담았습니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, -4.0)
-  },
-  'church_seowonkyung_glowing_cross': {
-    slot: 'back',
-    name: '[우리교회] 서원경교회 조감도 & 은혜의 빛내림 (십자가 강조)',
-    category: '우리교회 배경',
-    icon: '✨',
-    desc: '서원경교회 종탑 꼭대기의 십자가에서 하늘의 은혜로운 황금빛 광채(Sunbeams)가 성도님과 아기양 머리 위로 따스하게 쏟아져 내리는 특별 배경 아이템입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, -4.0)
-  },
-  'church_seowonkyung_portrait_hd': {
-    slot: 'back',
-    name: '[우리교회] 서원경교회 3D 조감도 (아기양 착용 우측 배치형)',
-    category: '우리교회 배경',
-    icon: '⛪',
-    desc: '아기양 캐릭터가 중앙에 서 있을 때 교회 종탑과 파란 지붕 본당이 가려지지 않고 아기양의 어깨 너머로 가장 멋지게 보이도록 구도를 최적화한 착용 전용 버전입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 5, -1, -4.0)
-  },
-  'side_church_mini_left': {
-    slot: 'side',
-    name: '[시안1] 서원경교회 미니어처 (하단 좌측)',
-    category: '하단 좌측 소품',
-    icon: '⛪',
-    desc: '찰스의 왼쪽 발밑에 아담하게 배치되는 서원경교회 3D 조감도 미니어처 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 9.2, 0.22, -2.0)
-  },
-  'side_church_mini_right': {
-    slot: 'side',
-    name: '[시안2] 서원경교회 미니어처 (하단 우측)',
-    category: '하단 우측 소품',
-    icon: '⛪',
-    desc: '찰스의 오른쪽 발밑에 아담하게 배치되는 서원경교회 3D 조감도 미니어처 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 9.2, 0.22, 15.2)
-  },
-  'side_church_glow_left': {
-    slot: 'side',
-    name: '[시안3] 빛내림 서원경교회 (하단 좌측)',
-    category: '하단 좌측 소품',
-    icon: '✨',
-    desc: '하단 좌측에 배치되며 종탑 십자가에서 황금빛 광채가 반짝이는 미니어처 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 9.2, 0.22, -2.0)
-  },
-  'side_church_glow_right': {
-    slot: 'side',
-    name: '[시안4] 빛내림 서원경교회 (하단 우측)',
-    category: '하단 우측 소품',
-    icon: '✨',
-    desc: '하단 우측에 배치되며 종탑 십자가에서 황금빛 광채가 반짝이는 미니어처 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 9.2, 0.22, 15.2)
-  },
-  'side_church_full_left': {
-    slot: 'side',
-    name: '[시안5] 서원경교회 (찰스 키 맞춤 · 좌측)',
-    category: '좌측 소품',
-    icon: '⛪',
-    desc: '찰스 왼편에 여유 있게 떨어져 나란히 서 있는 서원경교회 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 2.2, 0.34, -10.0)
-  },
   'side_church_glow_full_left': {
     slot: 'side',
-    name: '[시안6] 빛내림 서원경교회 (찰스 키 맞춤 · 좌측)',
-    category: '좌측 소품',
-    icon: '✨',
-    desc: '찰스 왼편에 여유 있게 떨어져 서 있으며, 종탑 십자가에 황금빛 광채가 내리는 시안입니다.',
+    name: '서원경교회 & 은혜의 빛내림 (좌측 소품)',
+    category: '우리교회',
+    icon: '⛪',
+    desc: '찰스 왼편에 다정하게 서 있으며, 서원경교회 종탑 십자가에서 따스한 은혜의 황금빛 광채가 쏟아져 내리는 특별 아이템입니다.',
     pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 2.2, 0.34, -10.0)
   }
 };

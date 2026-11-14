@@ -598,7 +598,7 @@ const ItemStudio = {
   drawTool: 'pencil', // pencil | eraser
   isMouseDown: false,
   equipped: {
-    back: 'church_seowonkyung_glowing_cross'
+    side: 'side_church_glow_full_left'
   },
   customPixels: [],
   customSlot: 'head',
@@ -1266,7 +1266,7 @@ pixels: ${JSON.stringify(this.customPixels)}`;
       this.setTheme('theme-white');
     } else if (presetName === 'church_sunday') {
       this.equipped = {
-        back: 'church_seowonkyung_glowing_cross',
+        side: 'side_church_glow_full_left',
         glasses: 'head_glasses',
         hold: 'hold_bible'
       };
