@@ -1617,7 +1617,7 @@ const CHURCH_BG_ITEM_PIXELS = {
     category: '좌측 소품',
     icon: '⛪',
     desc: '찰스 왼편에 여유 있게 떨어져 나란히 서 있는 서원경교회 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 2.2, 0.34, -12.5)
+    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, null, 0, 0, 2.2, 0.34, -10.0)
   },
   'side_church_glow_full_left': {
     slot: 'side',
@@ -1625,7 +1625,7 @@ const CHURCH_BG_ITEM_PIXELS = {
     category: '좌측 소품',
     icon: '✨',
     desc: '찰스 왼편에 여유 있게 떨어져 서 있으며, 종탑 십자가에 황금빛 광채가 내리는 시안입니다.',
-    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 2.2, 0.34, -12.5)
+    pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 2.2, 0.34, -10.0)
   }
 };
 
@@ -1987,7 +1987,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
 
   const canvasWidth = 24;
   const canvasHeight = 24;
-  const leftPaddingGrid = hasLeftFullChurch ? 12.5 : 0;
+  const leftPaddingGrid = hasLeftFullChurch ? 10.0 : 0;
   const svgWidth = Math.round((canvasWidth + leftPaddingGrid) * scale);
   const svgHeight = canvasHeight * scale;
   const viewBoxMinX = Math.round(-leftPaddingGrid * scale);

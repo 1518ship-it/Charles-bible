@@ -892,7 +892,7 @@ const ItemStudio = {
       topPaddingGrid = 6.0; // 서원경교회 종탑 십자가 / 멜로디 음표 착용 시 여유 확보
     }
 
-    const leftPaddingGrid = hasLeftFullChurch ? 12.5 : 0;
+    const leftPaddingGrid = hasLeftFullChurch ? 10.0 : 0;
     const bottomPaddingGrid = 2.0; // 바닥 잔디/그림자 여유 공간
     const svgWidth = Math.round((canvasWidth + leftPaddingGrid) * scale);
     const viewBoxMinX = Math.round(-leftPaddingGrid * scale);
