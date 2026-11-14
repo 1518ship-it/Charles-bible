@@ -892,7 +892,7 @@ const ItemStudio = {
       topPaddingGrid = 6.0; // 서원경교회 종탑 십자가 / 멜로디 음표 착용 시 여유 확보
     }
 
-    const leftPaddingGrid = hasLeftFullChurch ? 14.5 : 0;
+    const leftPaddingGrid = hasLeftFullChurch ? 6.5 : 0;
     const bottomPaddingGrid = 2.0; // 바닥 잔디/그림자 여유 공간
     const svgWidth = Math.round((canvasWidth + leftPaddingGrid) * scale);
     const viewBoxMinX = Math.round(-leftPaddingGrid * scale);
@@ -1010,7 +1010,7 @@ const ItemStudio = {
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
            class="charles-svg ${this.animClass}" 
-           style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '320px' : '220px'}; display: block; margin: 0 auto;">
+           style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '260px' : '220px'}; display: block; margin: 0 auto;">
         <g class="layer-back">${backRects}</g>
         <g class="layer-grass">${grassRects}</g>
         <g class="layer-body">${bodyRects}</g>
