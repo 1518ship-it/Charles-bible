@@ -1692,6 +1692,32 @@ const PRAISE_BANNER_THEMES = {
     title: '내 삶의 이유라', icon: '🌿',
     bg: '#f7fee7', border: '#65a30d', text: '#3f6212',
     primary: '#84cc16', dark: '#4d7c0f', light: '#ecfccb'
+  },
+
+  // ==================== 👑 직분 스페셜 배너 (셀장 & 바나바 - 특수 장식 테두리) ====================
+  'banner_cell_leader_royal': {
+    title: '셀 장', icon: '👑',
+    bg: '#fffbeb', border: '#d97706', text: '#78350f',
+    primary: '#f59e0b', dark: '#b45309', light: '#fef3c7',
+    specialStyle: 'cell_royal'
+  },
+  'banner_cell_leader_navy': {
+    title: '셀 장', icon: '🛡️',
+    bg: '#1e293b', border: '#facc15', text: '#fef08a',
+    primary: '#facc15', dark: '#ca8a04', light: '#38bdf8',
+    specialStyle: 'cell_navy'
+  },
+  'banner_barnabas_blossom': {
+    title: '바나바', icon: '💖',
+    bg: '#fff1f2', border: '#f43f5e', text: '#9f1239',
+    primary: '#fb7185', dark: '#e11d48', light: '#ffe4e6',
+    specialStyle: 'barnabas_blossom'
+  },
+  'banner_barnabas_olive': {
+    title: '바나바', icon: '🌿',
+    bg: '#ecfdf5', border: '#10b981', text: '#065f46',
+    primary: '#34d399', dark: '#059669', light: '#d1fae5',
+    specialStyle: 'barnabas_olive'
   }
 };
 
@@ -1704,6 +1730,11 @@ const PRAISE_BANNER_THEMES = {
 function renderAccessoryHeaderBanner(itemId, scale) {
   const theme = (typeof PRAISE_BANNER_THEMES !== 'undefined') ? PRAISE_BANNER_THEMES[itemId] : null;
   if (!theme) return '';
+
+  // 👑 셀장 & 바나바 스페셜 장식 테두리 배너 전용 렌더러
+  if (theme.specialStyle) {
+    return renderSpecialRoleBanner(theme, scale);
+  }
 
   let r = '';
 
@@ -1743,6 +1774,125 @@ function renderAccessoryHeaderBanner(itemId, scale) {
 }
 
 /**
+ * 👑 셀장 & 💖 바나바 직분 전용 스페셜 장식 테두리 배너 렌더러
+ * - 상단 픽셀 크레스트(왕관 / 방패별 / 하트 / 새싹)
+ * - 좌우 입체 날개·월계수·리본·올리브 화관 장식
+ * - 4모서리 보석/꽃 스터드 + 이중 인그레이빙 골드/테마 프레임
+ */
+function renderSpecialRoleBanner(theme, scale) {
+  let r = '';
+  const s = scale;
+  const style = theme.specialStyle;
+
+  const px = (x, y, w, h, fill, op = 1) =>
+    `<rect x="${x * s}" y="${y * s}" width="${w * s}" height="${h * s}" fill="${fill}"${op < 1 ? ` opacity="${op}"` : ''} />`;
+
+  if (style === 'cell_royal') {
+    // 1) 좌우 크림슨 & 골드 리본 꼬리 + 월계수 잎 장식 (x: 0.2~2.4, 21.6~23.8)
+    r += px(0.2, -4.6, 1.4, 0.8, '#dc2626') + px(0.6, -3.8, 1.4, 0.8, '#b91c1c') + px(0.2, -3.0, 1.4, 0.8, '#dc2626');
+    r += px(22.4, -4.6, 1.4, 0.8, '#dc2626') + px(22.0, -3.8, 1.4, 0.8, '#b91c1c') + px(22.4, -3.0, 1.4, 0.8, '#dc2626');
+    // 좌우 황금 월계수 잎 3단
+    r += px(1.0, -5.6, 1.2, 0.8, '#facc15') + px(0.7, -4.2, 1.3, 0.8, '#f59e0b') + px(1.0, -2.8, 1.2, 0.8, '#facc15');
+    r += px(21.8, -5.6, 1.2, 0.8, '#facc15') + px(22.0, -4.2, 1.3, 0.8, '#f59e0b') + px(21.8, -2.8, 1.2, 0.8, '#facc15');
+
+    // 2) 메인 배너 프레임 (외곽 다크골드 + 메인 골드 보더 + 아이보리 배경 + 내부 금박 이중선)
+    r += `<rect x="${2.0 * s}" y="${-6.1 * s}" width="${20.0 * s}" height="${4.9 * s}" rx="${0.7 * s}" fill="${theme.bg}" stroke="#b45309" stroke-width="${0.85 * s}" />`;
+    r += `<rect x="${2.35 * s}" y="${-5.75 * s}" width="${19.3 * s}" height="${4.2 * s}" rx="${0.45 * s}" fill="none" stroke="#facc15" stroke-width="${0.45 * s}" />`;
+    r += `<rect x="${3.0 * s}" y="${-5.3 * s}" width="${18.0 * s}" height="${3.3 * s}" rx="${0.3 * s}" fill="none" stroke="#d97706" stroke-width="${0.2 * s}" stroke-dasharray="${0.6 * s} ${0.4 * s}" />`;
+
+    // 3) 4모서리 루비 & 골드 보석 스터드
+    r += px(2.5, -5.6, 0.9, 0.9, '#ef4444') + px(20.6, -5.6, 0.9, 0.9, '#ef4444');
+    r += px(2.5, -2.6, 0.9, 0.9, '#ef4444') + px(20.6, -2.6, 0.9, 0.9, '#ef4444');
+    // 좌우 텍스트 옆 미니 왕관/보석 포인트
+    r += px(4.3, -4.0, 0.8, 0.8, '#f59e0b') + px(18.9, -4.0, 0.8, 0.8, '#f59e0b');
+    r += px(4.5, -3.8, 0.4, 0.4, '#ef4444') + px(19.1, -3.8, 0.4, 0.4, '#ef4444');
+
+    // 4) 상단 중앙 로얄 크라운(👑) 픽셀 크레스트 (x: 9.5 ~ 14.5, y: -8.3 ~ -6.1)
+    r += px(9.5, -6.5, 5.0, 0.6, '#b45309'); // 왕관 받침
+    r += px(9.8, -7.3, 4.4, 0.8, '#facc15'); // 왕관 바디
+    r += px(9.8, -8.0, 0.8, 0.7, '#f59e0b') + px(11.6, -8.3, 0.8, 1.0, '#facc15') + px(13.4, -8.0, 0.8, 0.7, '#f59e0b'); // 3봉우리
+    r += px(11.7, -7.1, 0.6, 0.6, '#ef4444'); // 중앙 루비
+    r += px(10.3, -7.1, 0.5, 0.5, '#3b82f6') + px(13.2, -7.1, 0.5, 0.5, '#10b981'); // 좌우 사파이어/에메랄드
+    // 상단 반짝이 스파클
+    r += px(7.8, -7.5, 0.5, 0.5, '#fde047') + px(15.7, -7.5, 0.5, 0.5, '#fde047');
+
+  } else if (style === 'cell_navy') {
+    // 1) 좌우 로얄 블루 & 골드 제비꼬리 페넌트 리본
+    r += px(0.2, -5.2, 1.8, 0.9, '#1d4ed8') + px(0.7, -4.3, 1.3, 0.9, '#1e40af') + px(0.2, -3.4, 1.8, 0.9, '#1d4ed8');
+    r += px(22.0, -5.2, 1.8, 0.9, '#1d4ed8') + px(22.0, -4.3, 1.3, 0.9, '#1e40af') + px(22.0, -3.4, 1.8, 0.9, '#1d4ed8');
+    r += px(0.4, -5.0, 0.6, 0.5, '#facc15') + px(0.4, -3.2, 0.6, 0.5, '#facc15');
+    r += px(23.0, -5.0, 0.6, 0.5, '#facc15') + px(23.0, -3.2, 0.6, 0.5, '#facc15');
+
+    // 2) 메인 네이비 & 골드 이중 프레임
+    r += `<rect x="${2.0 * s}" y="${-6.1 * s}" width="${20.0 * s}" height="${4.9 * s}" rx="${0.7 * s}" fill="#0f172a" stroke="#facc15" stroke-width="${0.8 * s}" />`;
+    r += `<rect x="${2.55 * s}" y="${-5.55 * s}" width="${18.9 * s}" height="${3.8 * s}" rx="${0.4 * s}" fill="#1e293b" stroke="#38bdf8" stroke-width="${0.3 * s}" opacity="0.85" />`;
+
+    // 3) 4모서리 황금 다이아몬드 징 & 좌우 별빛
+    r += px(2.5, -5.6, 0.85, 0.85, '#fde047') + px(20.65, -5.6, 0.85, 0.85, '#fde047');
+    r += px(2.5, -2.55, 0.85, 0.85, '#fde047') + px(20.65, -2.55, 0.85, 0.85, '#fde047');
+    r += px(4.4, -3.9, 0.7, 0.7, '#38bdf8') + px(18.9, -3.9, 0.7, 0.7, '#38bdf8');
+
+    // 4) 상단 중앙 황금 십자가 방패 & 은빛 날개 크레스트
+    r += px(8.8, -6.9, 1.6, 0.6, '#bae6fd') + px(13.6, -6.9, 1.6, 0.6, '#bae6fd');
+    r += px(9.4, -7.4, 1.2, 0.5, '#e0f2fe') + px(13.4, -7.4, 1.2, 0.5, '#e0f2fe');
+    r += px(10.6, -7.9, 2.8, 1.7, '#f59e0b');
+    r += px(11.7, -8.2, 0.6, 2.0, '#fef08a') + px(11.1, -7.3, 1.8, 0.6, '#fef08a');
+
+  } else if (style === 'barnabas_blossom') {
+    // 1) 좌우 순백의 미니 천사 날개 장식 (x: 0.1~2.3, 21.7~23.9)
+    r += px(0.6, -5.6, 1.5, 0.8, '#fbcfe8') + px(0.1, -4.8, 1.9, 0.9, '#ffffff') + px(0.4, -3.9, 1.6, 0.8, '#ffe4e6') + px(0.9, -3.1, 1.2, 0.7, '#ffffff');
+    r += px(21.9, -5.6, 1.5, 0.8, '#fbcfe8') + px(22.0, -4.8, 1.9, 0.9, '#ffffff') + px(22.0, -3.9, 1.6, 0.8, '#ffe4e6') + px(21.9, -3.1, 1.2, 0.7, '#ffffff');
+
+    // 2) 메인 로즈골드 & 블라썸 이중 레이스 프레임
+    r += `<rect x="${2.0 * s}" y="${-6.1 * s}" width="${20.0 * s}" height="${4.9 * s}" rx="${0.85 * s}" fill="${theme.bg}" stroke="#f43f5e" stroke-width="${0.8 * s}" />`;
+    r += `<rect x="${2.5 * s}" y="${-5.6 * s}" width="${19.0 * s}" height="${3.9 * s}" rx="${0.55 * s}" fill="none" stroke="#fbbf24" stroke-width="${0.38 * s}" />`;
+    r += `<rect x="${3.0 * s}" y="${-5.15 * s}" width="${18.0 * s}" height="${3.0 * s}" rx="${0.4 * s}" fill="none" stroke="#fb7185" stroke-width="${0.2 * s}" stroke-dasharray="${0.5 * s} ${0.4 * s}" />`;
+
+    // 3) 4모서리 핑크 진주 꽃봉오리 장식
+    r += px(2.5, -5.6, 0.9, 0.9, '#fb7185') + px(2.7, -5.4, 0.45, 0.45, '#fef08a');
+    r += px(20.6, -5.6, 0.9, 0.9, '#fb7185') + px(20.8, -5.4, 0.45, 0.45, '#fef08a');
+    r += px(2.5, -2.6, 0.9, 0.9, '#fb7185') + px(2.7, -2.4, 0.45, 0.45, '#fef08a');
+    r += px(20.6, -2.6, 0.9, 0.9, '#fb7185') + px(20.8, -2.4, 0.45, 0.45, '#fef08a');
+
+    // 4) 상단 중앙 사랑의 픽셀 하트(💖) & 골드 윙 크레스트
+    r += px(9.2, -6.8, 1.4, 0.5, '#fde047') + px(13.4, -6.8, 1.4, 0.5, '#fde047');
+    r += px(10.6, -8.1, 1.1, 0.8, '#f43f5e') + px(12.3, -8.1, 1.1, 0.8, '#f43f5e');
+    r += px(10.3, -7.5, 3.4, 0.8, '#e11d48');
+    r += px(10.9, -6.8, 2.2, 0.6, '#be123c');
+    r += px(11.5, -6.3, 1.0, 0.4, '#9f1239');
+    r += px(10.8, -7.8, 0.5, 0.5, '#ffffff'); // 하트 하이라이트
+
+  } else if (style === 'barnabas_olive') {
+    // 1) 좌우 올리브 화관 잎사귀 & 열매 장식
+    r += px(0.5, -5.5, 1.4, 0.8, '#10b981') + px(0.2, -4.3, 1.6, 0.8, '#059669') + px(0.5, -3.1, 1.4, 0.8, '#10b981');
+    r += px(22.1, -5.5, 1.4, 0.8, '#10b981') + px(22.2, -4.3, 1.6, 0.8, '#059669') + px(22.1, -3.1, 1.4, 0.8, '#10b981');
+    r += px(1.2, -4.7, 0.6, 0.6, '#facc15') + px(22.2, -4.7, 0.6, 0.6, '#facc15'); // 황금 올리브 열매
+
+    // 2) 메인 에메랄드 & 골드 가든 프레임
+    r += `<rect x="${2.0 * s}" y="${-6.1 * s}" width="${20.0 * s}" height="${4.9 * s}" rx="${0.75 * s}" fill="${theme.bg}" stroke="#059669" stroke-width="${0.8 * s}" />`;
+    r += `<rect x="${2.5 * s}" y="${-5.6 * s}" width="${19.0 * s}" height="${3.9 * s}" rx="${0.45 * s}" fill="none" stroke="#facc15" stroke-width="${0.4 * s}" />`;
+    r += `<rect x="${3.0 * s}" y="${-5.15 * s}" width="${18.0 * s}" height="${3.0 * s}" rx="${0.35 * s}" fill="none" stroke="#34d399" stroke-width="${0.22 * s}" />`;
+
+    // 3) 4모서리 데이지 꽃 스터드
+    r += px(2.4, -5.6, 0.9, 0.9, '#ffffff') + px(2.6, -5.4, 0.5, 0.5, '#facc15');
+    r += px(20.7, -5.6, 0.9, 0.9, '#ffffff') + px(20.9, -5.4, 0.5, 0.5, '#facc15');
+    r += px(2.4, -2.6, 0.9, 0.9, '#ffffff') + px(2.6, -2.4, 0.5, 0.5, '#facc15');
+    r += px(20.7, -2.6, 0.9, 0.9, '#ffffff') + px(20.9, -2.4, 0.5, 0.5, '#facc15');
+
+    // 4) 상단 중앙 축복의 새싹(🌱) & 햇살 크레스트
+    r += px(11.7, -7.5, 0.6, 1.4, '#15803d'); // 새싹 줄기
+    r += px(10.1, -8.2, 1.6, 0.9, '#22c55e') + px(12.3, -8.0, 1.6, 0.9, '#4ade80'); // 양쪽 떡잎
+    r += px(8.8, -7.6, 0.6, 0.6, '#fde047') + px(14.6, -7.6, 0.6, 0.6, '#fde047'); // 햇살 반짝이
+  }
+
+  // 중앙 직분 텍스트 (셀장 / 바나바 - 큼직하고 기품 있는 타이포그래피)
+  const fontSize = scale * 2.75;
+  r += `<text x="${12 * s}" y="${-3.55 * s}" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-size="${fontSize}px" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="${theme.text}" letter-spacing="${0.12 * s}px">${theme.title}</text>`;
+
+  return r;
+}
+
+/**
  * 아이템별 상점/옷장 전용 고화질 픽셀 SVG 아이콘 생성
  */
 function getAccessoryIconSvg(itemId) {
@@ -1755,7 +1905,7 @@ function getAccessoryIconSvg(itemId) {
   } else if (itemId === 'back_daisy_field') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 14.5 20 6" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryDaisyField(1)}</svg>`;
   } else if (itemId && itemId.startsWith('banner_')) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -6.5 24 6.5" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -8.8 24 8.2" class="pixel-item-svg" shape-rendering="crispEdges">${renderAccessoryHeaderBanner(itemId, 1)}</svg>`;
   } else if (typeof AUTUMN_ITEM_PIXELS !== 'undefined' && AUTUMN_ITEM_PIXELS[itemId]) {
     const b = AUTUMN_ITEM_PIXELS[itemId].bounds;
     const pad = 1;
@@ -1811,7 +1961,7 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   // 머리 위 배너, 모자, 왕관, 악세사리가 위쪽으로 잘리지 않도록 넉넉한 상단 헤드룸(상단 여백) 동적 확보
   let topPaddingGrid = 3.5; // 기본 상단 여백 (모자, 왕관 y:0, 귀도리 등 상단 천장 닿음 방지)
   if (hasBanner) {
-    topPaddingGrid = 8.5; // 배너 착용 시 상단 여백 대폭 확장 (배너가 -6.0에 위치하므로 2.5 그리드 완전 여유)
+    topPaddingGrid = 9.2; // 배너(및 상단 왕관/하트 크레스트 y:-8.3) 착용 시 상단 여백 넉넉히 확장
   } else if (equipped && (equipped.back === 'back_melody_aura' || equipped.grass === 'back_melody_aura')) {
     topPaddingGrid = 4.5; // 찬양 음표 아우라 착용 시 상단 여백 추가 확보
   }

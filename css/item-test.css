@@ -586,6 +586,12 @@ body.studio-body {
   overflow: visible;
 }
 
+#role-banners-container .item-preview-box svg {
+  max-width: 170px;
+  max-height: 76px;
+  width: 100%;
+}
+
 .item-title {
   font-size: 13px;
   font-weight: 800;
