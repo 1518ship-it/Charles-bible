@@ -6,7 +6,7 @@
 // ==========================================
 // ❄️ 신규 출시 예정 프로토타입 아이템 픽셀 데이터
 // ==========================================
-const PROTOTYPE_ITEM_PIXELS = {
+var PROTOTYPE_ITEM_PIXELS = {
   // 1. 포근한 산타 모자 (Head: 빨간 삼각 모자 + 흰 방울)
   'head_santa_hat': {
     slot: 'head',
@@ -264,8 +264,9 @@ const PROTOTYPE_ITEM_PIXELS = {
 
 // ==========================================
 // 🎸 찬양집회 스페셜 악기 및 소품 픽셀 데이터 (8종)
+// (charles-pixel.js의 PRAISE_MUSIC_ITEM_PIXELS와 전역 식별자 재선언 충돌을 방지)
 // ==========================================
-const PRAISE_MUSIC_ITEM_PIXELS = {
+const STUDIO_PRAISE_MUSIC_ITEM_PIXELS = (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'undefined') ? PRAISE_MUSIC_ITEM_PIXELS : {
   // 1. 워십 보컬 마이크 (Hold: 찰스 오른쪽 앞발로 쥐고 찬양하는 실버 & 골드 마이크 + 피어오르는 찬양 음표)
   'hold_worship_mic': {
     slot: 'hold',
@@ -552,8 +553,8 @@ const PRAISE_MUSIC_ITEM_PIXELS = {
 // 통합 아이템 픽셀 도우미 함수
 function getAnyItemPixels(id) {
   if (!id) return null;
-  if (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && PRAISE_MUSIC_ITEM_PIXELS[id]) {
-    return PRAISE_MUSIC_ITEM_PIXELS[id].pixels;
+  if (typeof STUDIO_PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id]) {
+    return STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id].pixels;
   }
   if (typeof PROTOTYPE_ITEM_PIXELS !== 'undefined' && PROTOTYPE_ITEM_PIXELS[id]) {
     return PROTOTYPE_ITEM_PIXELS[id].pixels;
@@ -568,7 +569,7 @@ function getAnyItemPixels(id) {
 function getAnyItemInfo(id) {
   if (!id) return null;
   if (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS[id]) return TALENT_ITEMS[id];
-  if (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && PRAISE_MUSIC_ITEM_PIXELS[id]) return PRAISE_MUSIC_ITEM_PIXELS[id];
+  if (typeof STUDIO_PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id]) return STUDIO_PRAISE_MUSIC_ITEM_PIXELS[id];
   if (typeof PROTOTYPE_ITEM_PIXELS !== 'undefined' && PROTOTYPE_ITEM_PIXELS[id]) return PROTOTYPE_ITEM_PIXELS[id];
   if (typeof AUTUMN_ITEM_PIXELS !== 'undefined' && AUTUMN_ITEM_PIXELS[id]) return AUTUMN_ITEM_PIXELS[id];
   return null;
@@ -669,7 +670,7 @@ const ItemStudio = {
     if (!container) return;
 
     let html = '';
-    for (const [id, item] of Object.entries(PRAISE_MUSIC_ITEM_PIXELS)) {
+    for (const [id, item] of Object.entries(STUDIO_PRAISE_MUSIC_ITEM_PIXELS)) {
       const isEq = this.isEquipped(id);
       const iconSvg = this.generateItemSvg(item.pixels);
 
@@ -1035,8 +1036,7 @@ const ItemStudio = {
   unequipSlot(slot) {
     delete this.equipped[slot];
     this.updateCanvas();
-    this.renderCurrentCatalog();
-    this.renderPrototypeCatalog();
+    this.renderAllCatalogs();
     this.updateEquippedChips();
     this.updateJsonViewer();
   },
