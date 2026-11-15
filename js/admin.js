@@ -1582,7 +1582,7 @@ const AdminApp = {
   async triggerWebPushForAdminMessage({ target_type, target_user_id, title, content }) {
     if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.functions) return;
     try {
-      await supabaseClient.functions.invoke('send-push', {
+      await supabaseClient.functions.invoke('hyper-service', {
         body: {
           target_type: target_type || 'ALL',
           target_user_id: target_user_id || null,

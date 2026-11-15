@@ -3610,7 +3610,7 @@ const App = {
   async triggerWebPush(payload) {
     if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.functions) return;
     try {
-      await supabaseClient.functions.invoke('send-push', {
+      await supabaseClient.functions.invoke('hyper-service', {
         body: payload
       });
     } catch (err) {
