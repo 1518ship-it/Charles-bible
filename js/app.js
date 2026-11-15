@@ -3758,14 +3758,7 @@ const App = {
       msgBtn.classList.add('envelope-wobble');
     }
 
-    // 휴대전화 상태표시줄 시스템 알림 호출 (Service Worker showNotification 우선)
-    this.showSystemNotification(
-      '찰스 바이블 🌿',
-      msg.title || '새 응원 메세지가 도착했습니다!',
-      'charles-msg-' + (msg.id || Date.now())
-    );
-
-    // 7초 후 자동 닫기
+    // 7초 후 자동 닫기 (백그라운드 Web Push와 중복 방지를 위해 인앱에서는 시스템 알림 미호출)
     if (this.inAppBannerTimer) clearTimeout(this.inAppBannerTimer);
     this.inAppBannerTimer = setTimeout(() => {
       this.closeInAppPushBanner();
