@@ -616,30 +616,45 @@ const ItemStudio = {
   },
 
   renderAllCatalogs() {
-    this.renderChurchCatalog();
+    this.renderEventCatalog();
     this.renderCurrentCatalog();
     this.renderPraiseMusicCatalog();
     this.renderPrototypeCatalog();
   },
 
-  // 0. 서원경교회 3D 조감도 배경 카탈로그 렌더링
-  renderChurchCatalog() {
-    const container = document.getElementById('church-items-container');
-    if (!container || typeof CHURCH_BG_ITEM_PIXELS === 'undefined') return;
+  // 0. 기간한정 이벤트 아이템 카탈로그 렌더링 (포켓 서원경 & 헌신의 배너)
+  renderEventCatalog() {
+    const container = document.getElementById('event-items-container');
+    if (!container) return;
+
+    // 이벤트 아이템 2종: 포켓 서원경 + 헌신의 배너
+    const eventItems = [];
+    if (typeof CHURCH_BG_ITEM_PIXELS !== 'undefined' && CHURCH_BG_ITEM_PIXELS['side_church_glow_full_left']) {
+      eventItems.push({ id: 'side_church_glow_full_left', ...CHURCH_BG_ITEM_PIXELS['side_church_glow_full_left'] });
+    }
+    if (typeof TALENT_ITEMS !== 'undefined' && TALENT_ITEMS['banner_joyful_devotion']) {
+      eventItems.push({ id: 'banner_joyful_devotion', ...TALENT_ITEMS['banner_joyful_devotion'] });
+    }
 
     let html = '';
-    for (const [id, item] of Object.entries(CHURCH_BG_ITEM_PIXELS)) {
+    for (const item of eventItems) {
+      const id = item.id;
       const isEq = this.isEquipped(id);
-      const iconSvg = this.generateItemSvg(item.pixels, 4, 88);
+      let iconSvg = '';
+      if (item.pixels) {
+        iconSvg = this.generateItemSvg(item.pixels, 4, 88);
+      } else if (typeof getAccessoryIconSvg === 'function') {
+        iconSvg = getAccessoryIconSvg(id);
+      }
 
       html += `
         <div class="item-test-card ${isEq ? 'equipped' : ''}" onclick="ItemStudio.toggleEquip('${id}')" id="card-${id}">
           <div class="item-card-top">
-            <span class="item-slot-tag" style="background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;">⛪ ${item.category} (48x48 HD)</span>
+            <span class="item-slot-tag" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">🎁 ${item.category || item.slot}</span>
             <span class="item-equip-status">${isEq ? '착용중 ✓' : ''}</span>
           </div>
           <div class="item-preview-box" style="height: 96px;">
-            ${iconSvg || `<span style="font-size: 28px;">${item.icon || '⛪'}</span>`}
+            ${iconSvg || `<span style="font-size: 28px;">${item.icon || '🎁'}</span>`}
           </div>
           <div class="item-title">${item.name}</div>
           <div class="item-desc">${item.desc || ''}</div>
@@ -680,6 +695,7 @@ const ItemStudio = {
     const items = (typeof TALENT_ITEMS !== 'undefined') ? TALENT_ITEMS : {};
 
     for (const [id, item] of Object.entries(items)) {
+      if (id === 'banner_joyful_devotion') continue; // 기간한정 이벤트 탭에 단독 노출
       const isEq = this.isEquipped(id);
       const iconSvg = (typeof getAccessoryIconSvg === 'function') ? getAccessoryIconSvg(id) : '';
 
@@ -1259,7 +1275,7 @@ pixels: ${JSON.stringify(this.customPixels)}`;
     if (presetName === 'joyful_devotion') {
       this.equipped = {
         banner: 'banner_joyful_devotion',
-        head: 'head_straw_hat',
+        side: 'side_church_glow_full_left',
         hold: 'hold_bible'
       };
       this.setStage(3);

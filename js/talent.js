@@ -253,15 +253,15 @@ const TALENT_ITEMS = {
   'banner_joyful_devotion': {
     id: 'banner_joyful_devotion',
     slot: 'banner',
-    category: '배너',
-    name: '즐거운 헌신 두루마리 배너',
+    category: '기간한정 이벤트',
+    name: '헌신의 배너',
     songTitle: '즐거운 헌신',
     price: 0,
     inShop: false,
     isEventReward: true,
     icon: '📜',
     themeColor: '#d97706',
-    desc: '기쁨과 자원함으로 주님께 드리는 향기로운 제사, 펼쳐진 성경 두루마리 배너'
+    desc: '기쁨과 자원함으로 주님께 드리는 향기로운 제사, 펼쳐진 성경 두루마리 형태의 헌신의 배너'
   },
   'banner_all_my_possession': {
     id: 'banner_all_my_possession',

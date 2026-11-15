@@ -1557,10 +1557,10 @@ function buildChurch48To24Pixels(base48, extra48, shiftGx = 0, shiftGy = 0, offs
 const CHURCH_BG_ITEM_PIXELS = {
   'side_church_glow_full_left': {
     slot: 'side',
-    name: '서원경교회 & 은혜의 빛내림 (좌측 소품)',
-    category: '우리교회',
+    name: '포켓 서원경',
+    category: '기간한정 이벤트',
     icon: '⛪',
-    desc: '찰스 왼편에 다정하게 서 있으며, 서원경교회 종탑 십자가에서 따스한 은혜의 황금빛 광채가 쏟아져 내리는 특별 아이템입니다.',
+    desc: '찰스 왼편에 다정하게 서 있으며, 서원경교회 종탑 십자가에서 따스한 은혜의 황금빛 광채가 쏟아져 내리는 기간한정 특별 아이템입니다.',
     pixels: buildChurch48To24Pixels(SEOWONKYUNG_CHURCH_RAW_48, SEOWONKYUNG_CHURCH_SUNBEAMS_48, 0, 0, 2.2, 0.34, -10.0)
   }
 };
@@ -1790,7 +1790,7 @@ const PRAISE_BANNER_THEMES = {
     bg: '#f7fee7', border: '#65a30d', text: '#3f6212',
     primary: '#84cc16', dark: '#4d7c0f', light: '#ecfccb'
   },
-  // 📜 즐거운 헌신 - 성경 두루마리 (Scroll) 스타일 배너
+  // 📜 헌신의 배너 - 성경 두루마리 (Scroll) 스타일 배너
   'banner_joyful_devotion': {
     title: '즐거운 헌신', icon: '📜',
     bg: '#fef9c3', border: '#b45309', text: '#78350f',
