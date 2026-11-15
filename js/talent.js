@@ -837,6 +837,7 @@ const TalentService = {
               desc: item.description,
               icon: item.icon || '🍁',
               reward: Number(item.reward) || 1,
+              reward_items: Array.isArray(item.reward_items) ? item.reward_items : undefined,
               mission_type: item.mission_type || 'daily',
               rule_type: item.rule_type,
               target_count: Number(item.target_count) || 1,
@@ -847,6 +848,16 @@ const TalentService = {
               display_order: Number(item.display_order) || 1
             };
           });
+
+          // 원격 DB에 아직 등록되지 않은 코드 내장 특별 이벤트 미션(예: 오늘 하루 기간한정 이벤트) 병합 보존
+          const remoteIds = new Set(this._cachedEventMissions.map(m => m.id));
+          for (const defMission of this.DEFAULT_EVENT_MISSIONS) {
+            if (!remoteIds.has(defMission.id)) {
+              this._cachedEventMissions.push({ ...defMission });
+            }
+          }
+          this._cachedEventMissions.sort((a, b) => (a.display_order ?? 99) - (b.display_order ?? 99));
+
           return this._cachedEventMissions;
         }
       } catch (e) {
