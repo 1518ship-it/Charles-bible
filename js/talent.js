@@ -381,9 +381,16 @@ const TalentService = {
   // 최소 보장 달란트 계산 (수령한 퀘스트 총 보상 - 구매한 아이템 총 가격)
   getExpectedMinTalents() {
     try {
+      let minEarned = 0;
+
+      // 🎁 신규 유저 웰컴 이벤트 (10 달란트) 보장
+      const welcomeClaimed = localStorage.getItem(this.getUserKey('welcome_event_claimed'));
+      if (welcomeClaimed === 'true') {
+        minEarned += 10;
+      }
+
       const claimsStr = localStorage.getItem(this.getUserKey('quest_claims'));
       const claims = claimsStr ? JSON.parse(claimsStr) : {};
-      let minEarned = 0;
       if (claims.daily_login) minEarned += 1;
       if (claims.daily_read_3) minEarned += 1;
       if (claims.weekly_streak_cycle) minEarned += Math.max(0, parseInt(claims.weekly_streak_cycle, 10) || 0);

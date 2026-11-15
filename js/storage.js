@@ -742,6 +742,11 @@ const StorageService = {
           : ((data.quest_claims && typeof data.quest_claims === 'object') ? data.quest_claims : {});
         const localClaims = JSON.parse(localStorage.getItem(`charles_user_${uid}_quest_claims`) || '{}');
 
+        // 🎁 2026-11-15 가입자 신규 유저 웰컴 이벤트 체크 (클라우드 등록일 기준)
+        if (data.created_at && String(data.created_at).startsWith('2026-11-15')) {
+          localStorage.setItem(`charles_user_${uid}_welcome_event_claimed`, 'true');
+        }
+
         const mergedClaims = { ...remoteClaims, ...localClaims };
         if (remoteClaims.daily_login === todayStr || localClaims.daily_login === todayStr) {
           mergedClaims.daily_login = todayStr;

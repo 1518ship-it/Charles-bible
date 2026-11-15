@@ -414,7 +414,12 @@ const App = {
               this.checkAndShowPushPromptModal();
             }, 500);
             const callName = AuthService.getUserCallName(result.user);
-            this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
+            const isTodayNewUser = (new Date().toISOString().slice(0, 10) === '2026-11-15');
+            if (isTodayNewUser) {
+              this.showToast(`🎉 환영합니다, ${callName}! 신규 가입 이벤트로 10 달란트🪙가 지급되었습니다!`);
+            } else {
+              this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
+            }
           } else {
             if (signupErrText) {
               signupErrText.textContent = result.error;

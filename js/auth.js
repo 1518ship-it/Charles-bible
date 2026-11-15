@@ -306,14 +306,32 @@ const AuthService = {
       return { success: false, error: '가입코드가 올바르지 않습니다.' };
     }
 
+    const now = new Date();
+    const nowIso = now.toISOString();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // 🎁 신규 유저 웰컴 이벤트: 2026-11-15 가입자에게 10 달란트 즉시 지급
+    const isNewUserEvent = (todayStr === '2026-11-15');
+    const welcomeTalents = isNewUserEvent ? 10 : 0;
+
     const newUser = {
       id: cleanId,
       name: cleanName,
       nickname: cleanNick,
       cell: cleanCell,
-      registeredAt: new Date().toISOString(),
-      lastLoginAt: new Date().toISOString()
+      registeredAt: nowIso,
+      lastLoginAt: nowIso
     };
+
+    // 로컬 스토리지에 신규 가입자 달란트 초기값 및 웰컴 이벤트 상태 사전 적재
+    try {
+      localStorage.setItem(`charles_user_${cleanId}_talents`, String(welcomeTalents));
+      localStorage.setItem(`charles_user_${cleanId}_talents_updated_at`, nowIso);
+      if (isNewUserEvent) {
+        localStorage.setItem(`charles_user_${cleanId}_welcome_event_claimed`, 'true');
+      }
+    } catch (e) {
+      console.warn('Initial talent storage warning:', e);
+    }
 
     // Supabase members 테이블에 영구 저장
     const db = this.getDb();
