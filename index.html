@@ -1817,6 +1817,49 @@
       </div>
     </div>
 
+    <!-- ==================== 3-1. 기간한정 이벤트 아이템 획득 축하 모달 ==================== -->
+    <div id="limited-event-reward-modal" class="modal-overlay" style="display: none; z-index: 10006;">
+      <div class="modal-sheet" style="max-width: 330px; text-align: center; padding: 24px 20px 20px; border-radius: 18px; border: 2px solid #f59e0b; box-shadow: 0 16px 36px rgba(245, 158, 11, 0.25);">
+        <div style="font-size: 44px; margin-bottom: 6px; line-height: 1; filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.4));">🎁✨🐑</div>
+        <div style="font-size: 17px; font-weight: 900; color: #b45309; margin-bottom: 4px; letter-spacing: -0.3px;">
+          축하합니다!
+        </div>
+        <div style="font-size: 14px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">
+          기간한정 이벤트 아이템을 획득하셨습니다!
+        </div>
+        <div style="background: #fefce8; border: 1.5px dashed #facc15; border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px; background: #ffffff; padding: 8px 10px; border-radius: 8px; border: 1px solid #fef08a;">
+            <span style="font-size: 24px;">📜</span>
+            <div style="text-align: left;">
+              <div style="font-size: 12.5px; font-weight: 800; color: #78350f;">헌신의 배너</div>
+              <div style="font-size: 11px; color: #b45309;">두루마리 머리 위 배너</div>
+            </div>
+            <span style="margin-left: auto; font-size: 11px; font-weight: 800; color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 6px;">지급완료</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; background: #ffffff; padding: 8px 10px; border-radius: 8px; border: 1px solid #fef08a;">
+            <span style="font-size: 24px;">⛪</span>
+            <div style="text-align: left;">
+              <div style="font-size: 12.5px; font-weight: 800; color: #0369a1;">포켓 서원경</div>
+              <div style="font-size: 11px; color: #0284c7;">은혜의 빛내림 좌측 소품</div>
+            </div>
+            <span style="margin-left: auto; font-size: 11px; font-weight: 800; color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 6px;">지급완료</span>
+          </div>
+        </div>
+        <div style="font-size: 11.5px; color: #6b7280; line-height: 1.5; margin-bottom: 16px;">
+          아이템이 <strong>[내 옷장]</strong> 보관함에 안전하게 쏙 들어갔습니다!<br>
+          상점의 <strong>내 옷장</strong> 탭에서 언제든지 직접 착용하실 수 있습니다. 🐑✨
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-modal-confirm" style="flex: 1; background: #d97706; color: #fff; font-weight: 800; font-size: 13px;" onclick="App.openTalentShop('closet'); document.getElementById('limited-event-reward-modal').style.display='none';">
+            👗 내 옷장 가서 입어보기
+          </button>
+          <button type="button" class="btn-modal-confirm" style="flex: 1; background: #f3f4f6; color: #374151; font-weight: 700; font-size: 13px;" onclick="document.getElementById('limited-event-reward-modal').style.display='none';">
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== 말씀 묵상 노트 작성/편집 모달 ==================== -->
     <div id="bible-note-modal" class="modal-overlay" style="display: none; z-index: 10005;">
       <div class="modal-sheet bible-note-sheet">
@@ -1976,11 +2019,11 @@
   <script src="data/bible-nt-bundle.js?v=9.0"></script>
   <script src="js/bible-data.js?v=9.0"></script>
   <script src="js/bible-notes.js?v=9.0"></script>
-  <script src="js/charles-pixel.js?v=10.6"></script>
+  <script src="js/charles-pixel.js?v=11.6"></script>
   <script src="js/auth.js?v=10.2"></script>
   <script src="js/storage.js?v=10.2"></script>
-  <script src="js/talent.js?v=10.2"></script>
-  <script src="js/app.js?v=10.2"></script>
+  <script src="js/talent.js?v=11.6"></script>
+  <script src="js/app.js?v=11.6"></script>
 
 </body>
 </html>

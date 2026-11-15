@@ -263,6 +263,18 @@ const TALENT_ITEMS = {
     themeColor: '#d97706',
     desc: '기쁨과 자원함으로 주님께 드리는 향기로운 제사, 펼쳐진 성경 두루마리 형태의 헌신의 배너'
   },
+  'side_church_glow_full_left': {
+    id: 'side_church_glow_full_left',
+    slot: 'side',
+    category: '기간한정 이벤트',
+    name: '포켓 서원경',
+    price: 0,
+    inShop: false,
+    isEventReward: true,
+    icon: '⛪',
+    themeColor: '#0284c7',
+    desc: '찰스 왼편에 다정하게 서 있으며, 서원경교회 종탑 십자가에서 따스한 은혜의 황금빛 광채가 쏟아져 내리는 기간한정 특별 아이템'
+  },
   'banner_all_my_possession': {
     id: 'banner_all_my_possession',
     slot: 'banner',
@@ -710,6 +722,24 @@ const TalentService = {
   // ==================== [가을 특별 이벤트 미션 기본 정의 & 원격 동기화] ====================
   DEFAULT_EVENT_MISSIONS: [
     {
+      id: 'event_today_limited_item',
+      category: '[🎁 오늘 하루 특별 기간한정 이벤트]',
+      subtitle: '오늘 자정(24:00)까지만 참여할 수 있는 깜짝 선물!',
+      title: '말씀 1장 읽고 기간한정 아이템 받기!',
+      desc: '오늘 말씀 1장 이상 통독 시 [헌신의 배너]와 [포켓 서원경] 선물!',
+      icon: '🎁',
+      reward: 1, // 달란트 1개 보너스
+      reward_items: ['banner_joyful_devotion', 'side_church_glow_full_left'],
+      mission_type: 'once',
+      rule_type: 'daily_count_1',
+      target_count: 1,
+      unit: '장',
+      start_date: '2026-11-15',
+      end_date: '2026-11-15',
+      is_active: true,
+      display_order: 0
+    },
+    {
       id: 'event_autumn_15',
       category: '[가을,,,단풍,,,그리고 성경통독,,,]',
       subtitle: '가을은 독서의 계절이 아니라 성경통독의 계절~',
@@ -909,7 +939,17 @@ const TalentService = {
       const target = em.target_count || 1;
       let status = 'progress';
 
-      if (em.rule_type === 'daily_count_15') {
+      if (em.rule_type === 'daily_count_1') {
+        // [오늘 하루 이벤트] 오늘 말씀 1장 이상 통독 (계정당 1회)
+        const claimed = !!claims[em.id];
+        if (claimed) {
+          status = 'claimed';
+          current = target;
+        } else {
+          current = Math.min(target, todayRead);
+          status = todayRead >= target ? 'ready' : 'progress';
+        }
+      } else if (em.rule_type === 'daily_count_15') {
         // [미션 1] 이벤트 시작일(em.start_date) 이후 하루 15장 이상 완독 (계정당 1회)
         const claimed = !!claims[em.id] || !!claims.event_autumn_read_15;
         if (claimed) {
@@ -976,6 +1016,7 @@ const TalentService = {
         desc: em.desc,
         icon: em.icon,
         reward: em.reward,
+        reward_items: em.reward_items || null,
         current: current,
         target: target,
         unit: em.unit || '장',
@@ -1109,10 +1150,25 @@ const TalentService = {
       }
     }
 
-    this.addTalents(quest.reward);
+    // 기간한정 아이템 보상이 있는 경우 인벤토리에만 추가 (자동 착용 X)
+    let awardedItems = [];
+    if (quest.reward_items && Array.isArray(quest.reward_items)) {
+      const inv = this.getInventory();
+      for (const itId of quest.reward_items) {
+        if (!inv.includes(itId)) {
+          inv.push(itId);
+          awardedItems.push(itId);
+        }
+      }
+      this.saveInventory(inv);
+    }
+
+    if (quest.reward && quest.reward > 0) {
+      this.addTalents(quest.reward);
+    }
     this.saveClaimedRecord(claims);
 
-    // 즉시 클라우드에 퀘스트 수령 및 달란트 잔액을 확정 전송하여 다른 기기 중복 수령 방지
+    // 즉시 클라우드에 퀘스트 수령 및 달란트/인벤토리 잔액을 확정 전송하여 다른 기기 중복 수령 방지
     if (typeof StorageService !== 'undefined' && StorageService.saveToCloud) {
       StorageService.saveToCloud();
     }
@@ -1120,6 +1176,7 @@ const TalentService = {
     return {
       success: true,
       reward: quest.reward,
+      awardedItems: awardedItems,
       isNtComplete: questId === 'achieve_nt_complete',
       quest
     };

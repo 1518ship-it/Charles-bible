@@ -1292,6 +1292,15 @@ const App = {
         ntModal.style.display = 'flex';
       }
       RetroAudio.success();
+    } else if (res.awardedItems && res.awardedItems.length > 0) {
+      // 기간한정 이벤트 아이템 획득 시 전용 축하 팝업 모달 오픈
+      const eventModal = document.getElementById('limited-event-reward-modal');
+      if (eventModal) {
+        eventModal.style.display = 'flex';
+      } else {
+        this.showToast(`🎁 축하합니다! 기간한정 이벤트 아이템을 획득하셨습니다!`);
+      }
+      RetroAudio.success();
     } else {
       this.showToast(`🎉 [${res.quest.title}] 완료! +${res.reward} 달란트 수령!`);
       RetroAudio.click();
