@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const App = {
   APP_VERSION: 'v10.2',
-  VAPID_PUBLIC_KEY: 'BKx-JaFhMeMpXE9WW1w85zoPKMHSWkCnfI-tyr2LOzDEpdfiRBg1xiFh4NOp2per7O1Bqxn0YWAgTk9yaNdyOFU',
+  VAPID_PUBLIC_KEY: 'BD5ilC2mZpYVNuRbG5Lj14lVMm3XM0Blxb675Nwy8o1CFnG4EzWb0JwFQHRHk8FZrtFPN5ZN2cCRWJi9XNBTGW0',
   activeTab: 'home',
   currentTestament: 'NT', // 이번 테스트 버전 기본 신약
   searchKeyword: '',
@@ -3552,6 +3552,29 @@ const App = {
       if ('serviceWorker' in navigator && 'PushManager' in window) {
         const reg = await navigator.serviceWorker.ready;
         sub = await reg.pushManager.getSubscription();
+
+        // 🔐 VAPID 키 교체 대응: 이전 키로 만든 구독이면 해지 후 새 키로 재구독
+        if (sub && this.VAPID_PUBLIC_KEY) {
+          try {
+            const newKey = this.urlBase64ToUint8Array(this.VAPID_PUBLIC_KEY);
+            const curBuf = sub.options && sub.options.applicationServerKey;
+            if (curBuf) {
+              const cur = new Uint8Array(curBuf);
+              const same = cur.length === newKey.length && cur.every((v, i) => v === newKey[i]);
+              if (!same) {
+                const oldEndpoint = sub.endpoint;
+                await sub.unsubscribe();
+                sub = null;
+                if (typeof supabaseClient !== 'undefined' && supabaseClient && oldEndpoint) {
+                  supabaseClient.from('user_push_subscriptions').delete().eq('endpoint', oldEndpoint).then(() => { });
+                }
+                console.log('🔔 [WebPush] 이전 VAPID 키 구독을 해지하고 새 키로 재구독합니다.');
+              }
+            }
+          } catch (keyErr) {
+            console.warn('VAPID 키 비교 경고:', keyErr);
+          }
+        }
 
         if (!sub && this.VAPID_PUBLIC_KEY) {
           const appServerKey = this.urlBase64ToUint8Array(this.VAPID_PUBLIC_KEY);

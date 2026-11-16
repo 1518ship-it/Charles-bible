@@ -451,7 +451,7 @@ const AdminApp = {
 
     const toast = document.createElement('div');
     toast.className = `admin-toast ${type}`;
-    
+
     let icon = '🔔';
     if (type === 'success') icon = '✅';
     else if (type === 'error') icon = '❌';
@@ -946,8 +946,8 @@ const AdminApp = {
 
   // ==================== 🍁 가을 특별 이벤트 미션 현황 통계 ====================
   renderAutumnEventStats() {
-    const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr) 
-      ? StorageService.getTodayDateStr() 
+    const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr)
+      ? StorageService.getTodayDateStr()
       : new Date().toISOString().slice(0, 10);
     const eventMinDate = '2026-10-08';
 
@@ -1017,7 +1017,7 @@ const AdminApp = {
     });
 
     const sortedCells = Array.from(cells).sort();
-    
+
     let optionsHtml = `<option value="ALL">전체 셀 (${this.allUsers.length}명)</option>`;
     sortedCells.forEach(cell => {
       const count = this.allUsers.filter(u => u.cell === cell).length;
@@ -1079,7 +1079,7 @@ const AdminApp = {
     // 3) 검색어 필터 (이름, 닉네임, 아이디)
     if (this.searchKeyword) {
       const kw = this.searchKeyword;
-      filtered = filtered.filter(u => 
+      filtered = filtered.filter(u =>
         (u.name && u.name.toLowerCase().includes(kw)) ||
         (u.nickname && u.nickname.toLowerCase().includes(kw)) ||
         (u.id && u.id.toLowerCase().includes(kw)) ||
@@ -1094,8 +1094,8 @@ const AdminApp = {
 
       if (this.sortBy === 'todayRead') {
         return (stB.todayRead || 0) - (stA.todayRead || 0) ||
-               (stB.talents || 0) - (stA.talents || 0) ||
-               (stB.streakCount || 0) - (stA.streakCount || 0);
+          (stB.talents || 0) - (stA.talents || 0) ||
+          (stB.streakCount || 0) - (stA.streakCount || 0);
       } else if (this.sortBy === 'dormant') {
         const dA = stA.daysSinceLastRead !== undefined ? stA.daysSinceLastRead : Infinity;
         const dB = stB.daysSinceLastRead !== undefined ? stB.daysSinceLastRead : Infinity;
@@ -1108,10 +1108,10 @@ const AdminApp = {
         return (a.name || '').localeCompare(b.name || '', 'ko');
       } else if (this.sortBy === 'talents') {
         return (stB.talents || 0) - (stA.talents || 0) ||
-               (stB.todayRead || 0) - (stA.todayRead || 0);
+          (stB.todayRead || 0) - (stA.todayRead || 0);
       } else if (this.sortBy === 'streak') {
         return (stB.streakCount || 0) - (stA.streakCount || 0) ||
-               (stB.todayRead || 0) - (stA.todayRead || 0);
+          (stB.todayRead || 0) - (stA.todayRead || 0);
       } else if (this.sortBy === 'name') {
         return (a.name || '').localeCompare(b.name || '', 'ko');
       } else if (this.sortBy === 'recent') {
@@ -1230,7 +1230,7 @@ const AdminApp = {
     document.getElementById('modal-talent-user-name').textContent = `${user.name} 성도 (${user.nickname || user.name})`;
     document.getElementById('modal-talent-user-id').textContent = `아이디: ${uid} | 셀: ${user.cell || '미지정'}`;
     document.getElementById('modal-talent-current-amount').textContent = `${curTalents.toLocaleString()} 🪙`;
-    
+
     const inputAmount = document.getElementById('input-talent-amount');
     inputAmount.value = curTalents;
     document.getElementById('input-talent-reason').value = '';
@@ -1296,7 +1296,7 @@ const AdminApp = {
       try {
         localStorage.setItem(`charles_user_${uid}_talents`, String(safeAmount));
         localStorage.setItem(`charles_user_${uid}_talents_updated_at`, nowUtc);
-      } catch (e) {}
+      } catch (e) { }
 
       // 4) 상태 맵 갱신 및 UI 반영
       if (this.stateMap[uid]) {
@@ -1423,7 +1423,7 @@ const AdminApp = {
           localList[localIdx].cell = cleanCell;
           localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_ALL_USERS, JSON.stringify(localList));
         }
-      } catch (e) {}
+      } catch (e) { }
 
       this.closeModal('modal-member');
       RetroAudio.success();
@@ -1488,7 +1488,7 @@ const AdminApp = {
 
         const localList = AuthService.getAllUsersLocal().filter(u => u.id !== uid);
         localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_ALL_USERS, JSON.stringify(localList));
-      } catch (e) {}
+      } catch (e) { }
 
       // 목록에서 제외
       this.allUsers = this.allUsers.filter(u => u.id !== uid);
@@ -1582,8 +1582,11 @@ const AdminApp = {
   async triggerWebPushForAdminMessage({ target_type, target_user_id, title, content }) {
     if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.functions) return;
     try {
+      // 전체 발송(ALL)은 서버에서 관리자 코드를 검증하므로 함께 전달
+      const adminKey = (typeof AuthService !== 'undefined') ? await AuthService.getAdminKey() : '';
       await supabaseClient.functions.invoke('hyper-service', {
         body: {
+          admin_key: adminKey,
           target_type: target_type || 'ALL',
           target_user_id: target_user_id || null,
           title: title || '찰스 바이블 📢',
@@ -1827,7 +1830,7 @@ const AdminApp = {
       const saved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
       saved.unshift(msg);
       localStorage.setItem('charles_admin_sent_messages', JSON.stringify(saved.slice(0, 50)));
-    } catch (e) {}
+    } catch (e) { }
   },
 
   // 최근 발송된 메시지 목록 조회 및 렌더링 (관리자 전체 공지 및 어린양의 메세지만 표시)
@@ -1865,7 +1868,7 @@ const AdminApp = {
       try {
         const localSaved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
         messages = localSaved.filter(m => !this.isCheerOrUserLogMessage(m));
-      } catch (e) {}
+      } catch (e) { }
     }
 
     this.currentAdminSentMessages = messages;
@@ -1959,7 +1962,7 @@ const AdminApp = {
         const saved = JSON.parse(localStorage.getItem('charles_admin_sent_messages') || '[]');
         const updated = saved.filter(m => m.id !== msgId);
         localStorage.setItem('charles_admin_sent_messages', JSON.stringify(updated));
-      } catch (e) {}
+      } catch (e) { }
 
       RetroAudio.success();
       this.showToast('🗑️ 메시지가 삭제되었습니다.', 'info');
@@ -1991,7 +1994,7 @@ const AdminApp = {
 
       try {
         localStorage.removeItem('charles_admin_sent_messages');
-      } catch (e) {}
+      } catch (e) { }
 
       this.currentAdminSentMessages = [];
       RetroAudio.success();
@@ -2015,7 +2018,7 @@ const AdminApp = {
         if (typeof StorageService.getTodayDateStr === 'function') return StorageService.getTodayDateStr();
         if (typeof StorageService.getTodayString === 'function') return StorageService.getTodayString();
       }
-    } catch (e) {}
+    } catch (e) { }
     const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
