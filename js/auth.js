@@ -309,8 +309,8 @@ const AuthService = {
     const now = new Date();
     const nowIso = now.toISOString();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    // 🎁 신규 유저 웰컴 이벤트: 2026-11-15 가입자에게 10 달란트 즉시 지급
-    const isNewUserEvent = (todayStr === '2026-11-15');
+    // 🎁 신규 유저 웰컴 이벤트: 2026-11-15 ~ 2026-11-22 가입자에게 10 달란트 즉시 지급
+    const isNewUserEvent = (todayStr >= '2026-11-15' && todayStr <= '2026-11-22');
     const welcomeTalents = isNewUserEvent ? 10 : 0;
 
     const newUser = {

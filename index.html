@@ -2081,6 +2081,71 @@
       </div>
     </div>
 
+    <!-- 🐑 신규 회원가입 온보딩 3페이지 안내 모달 -->
+    <div id="onboarding-modal-overlay" class="modal-overlay" style="display: none; z-index: 10050;">
+      <div class="modal-card onboarding-modal-card" style="max-width: 390px; width: 92%; padding: 24px 20px; border-radius: 20px; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.22); text-align: center; position: relative;">
+        <!-- 상단 페이지 인디케이터 -->
+        <div id="onboarding-dots" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 18px;">
+          <span class="onboarding-dot active" data-step="0" style="width: 24px; height: 8px; border-radius: 99px; background: #4ade80; transition: all 0.25s;"></span>
+          <span class="onboarding-dot" data-step="1" style="width: 8px; height: 8px; border-radius: 99px; background: #e2e8f0; transition: all 0.25s;"></span>
+          <span class="onboarding-dot" data-step="2" style="width: 8px; height: 8px; border-radius: 99px; background: #e2e8f0; transition: all 0.25s;"></span>
+        </div>
+
+        <!-- 페이지 1 -->
+        <div class="onboarding-page" data-page="0" style="display: block;">
+          <div style="font-size: 54px; line-height: 1.2; margin-bottom: 12px;">🐑📖</div>
+          <h3 style="font-size: 1.18rem; font-weight: 800; color: #1e293b; margin: 0 0 10px 0;">말씀양 찰스와 함께하는 통독</h3>
+          <p style="font-size: 0.92rem; color: #475569; line-height: 1.6; margin: 0 0 16px 0;">
+            매일 성경을 1장 이상 읽으면<br>
+            내 <strong>말씀양 찰스</strong>가 1단계 아기양에서<br>
+            5단계 <strong>황금 왕관 목자양</strong>까지 무럭무럭 자라나요!
+          </p>
+          <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 10px 12px; font-size: 0.83rem; color: #166534; font-weight: 600;">
+            💡 하단 [성경목록] 탭에서 오늘의 말씀을 읽어보세요!
+          </div>
+        </div>
+
+        <!-- 페이지 2 -->
+        <div class="onboarding-page" data-page="1" style="display: none;">
+          <div style="font-size: 54px; line-height: 1.2; margin-bottom: 12px;">🪙🎩</div>
+          <h3 style="font-size: 1.18rem; font-weight: 800; color: #1e293b; margin: 0 0 10px 0;">달란트 모으기 & 찰스 꾸미기</h3>
+          <p style="font-size: 0.92rem; color: #475569; line-height: 1.6; margin: 0 0 16px 0;">
+            매일 접속하고 말씀 퀘스트를 완료하면<br>
+            반짝이는 <strong>달란트(🪙)</strong>를 받을 수 있어요!<br>
+            상점에서 모자, 안경, 옷, 배경을 사서 꾸며보세요.
+          </p>
+          <div id="onboarding-event-badge" style="display: none; background: #fefce8; border: 1.5px solid #fde047; border-radius: 12px; padding: 10px 12px; font-size: 0.84rem; color: #854d0e; font-weight: 700;">
+            🎁 신규 가입 이벤트! 지금 바로 10 달란트가 지급되었어요!
+          </div>
+        </div>
+
+        <!-- 페이지 3 -->
+        <div class="onboarding-page" data-page="2" style="display: none;">
+          <div style="font-size: 54px; line-height: 1.2; margin-bottom: 12px;">🌿✨</div>
+          <h3 style="font-size: 1.18rem; font-weight: 800; color: #1e293b; margin: 0 0 10px 0;">함께 자라는 양떼목장</h3>
+          <p style="font-size: 0.92rem; color: #475569; line-height: 1.6; margin: 0 0 14px 0;">
+            <strong>[양떼목장]</strong> 탭에서 청년부 지체들의 찰스를 구경하고<br>
+            <strong>풀 응원(🌿)</strong>을 보내 서로 격려할 수 있어요!
+          </p>
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 0.88rem; color: #0f172a; line-height: 1.55; font-weight: 600;">
+            🎉 서원경 청년부 말씀양 찰스에 오신 것을<br>
+            진심으로 환영합니다!<br>
+            오늘도 주님의 말씀 안에서 승리하세요!
+          </div>
+        </div>
+
+        <!-- 하단 네비게이션 버튼 -->
+        <div style="display: flex; gap: 10px; margin-top: 22px;">
+          <button type="button" id="btn-onboarding-prev" onclick="App.prevOnboardingPage()" style="display: none; flex: 1; padding: 12px; border-radius: 12px; border: 1.5px solid #cbd5e1; background: #fff; color: #475569; font-weight: 700; font-size: 0.95rem; cursor: pointer;">
+            이전
+          </button>
+          <button type="button" id="btn-onboarding-next" onclick="App.nextOnboardingPage()" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; font-weight: 800; font-size: 0.98rem; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3);">
+            다음
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Supabase SDK & Config -->
@@ -2092,10 +2157,10 @@
   <script src="js/bible-data.js?v=9.0"></script>
   <script src="js/bible-notes.js?v=9.0"></script>
   <script src="js/charles-pixel.js?v=11.6"></script>
-  <script src="js/auth.js?v=11.7"></script>
-  <script src="js/storage.js?v=11.7"></script>
+  <script src="js/auth.js?v=12.0"></script>
+  <script src="js/storage.js?v=12.0"></script>
   <script src="js/talent.js?v=11.8"></script>
-  <script src="js/app.js?v=11.9"></script>
+  <script src="js/app.js?v=12.0"></script>
 
 </body>
 

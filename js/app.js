@@ -410,16 +410,17 @@ const App = {
 
             this.renderAll();
             this.syncPushSubscriptionIfGranted();
-            setTimeout(() => {
-              this.checkAndShowPushPromptModal();
-            }, 500);
             const callName = AuthService.getUserCallName(result.user);
-            const isTodayNewUser = (new Date().toISOString().slice(0, 10) === '2026-11-15');
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const isTodayNewUser = (todayStr >= '2026-11-15' && todayStr <= '2026-11-22');
             if (isTodayNewUser) {
               this.showToast(`🎉 환영합니다, ${callName}! 신규 가입 이벤트로 10 달란트🪙가 지급되었습니다!`);
             } else {
               this.showToast(`환영합니다, ${callName}! 가입이 완료되었습니다.`);
             }
+            // 신규 가입 첫 접속 3페이지 온보딩 안내 모달 표시
+            this.openOnboardingModal(isTodayNewUser);
           } else {
             if (signupErrText) {
               signupErrText.textContent = result.error;
@@ -4888,6 +4889,77 @@ const App = {
         }
       }
     }, 200);
+  },
+
+  // ==================== 신규 회원가입 3페이지 온보딩 안내 ====================
+  _onboardingPage: 0,
+
+  openOnboardingModal(isEventPeriod = false) {
+    const overlay = document.getElementById('onboarding-modal-overlay');
+    if (!overlay) return;
+    this._onboardingPage = 0;
+    const eventBadge = document.getElementById('onboarding-event-badge');
+    if (eventBadge) {
+      eventBadge.style.display = isEventPeriod ? 'block' : 'none';
+    }
+    this.renderOnboardingPage();
+    overlay.style.display = 'flex';
+  },
+
+  renderOnboardingPage() {
+    const pages = document.querySelectorAll('#onboarding-modal-overlay .onboarding-page');
+    const dots = document.querySelectorAll('#onboarding-dots .onboarding-dot');
+    const prevBtn = document.getElementById('btn-onboarding-prev');
+    const nextBtn = document.getElementById('btn-onboarding-next');
+
+    pages.forEach((p, idx) => {
+      p.style.display = (idx === this._onboardingPage) ? 'block' : 'none';
+    });
+
+    dots.forEach((d, idx) => {
+      if (idx === this._onboardingPage) {
+        d.style.width = '24px';
+        d.style.background = '#4ade80';
+      } else {
+        d.style.width = '8px';
+        d.style.background = '#e2e8f0';
+      }
+    });
+
+    if (prevBtn) {
+      prevBtn.style.display = (this._onboardingPage > 0) ? 'block' : 'none';
+    }
+    if (nextBtn) {
+      nextBtn.textContent = (this._onboardingPage === 2) ? '🐑 시작하기' : '다음';
+    }
+  },
+
+  prevOnboardingPage() {
+    if (this._onboardingPage > 0) {
+      this._onboardingPage--;
+      if (typeof RetroAudio !== 'undefined') RetroAudio.click();
+      this.renderOnboardingPage();
+    }
+  },
+
+  nextOnboardingPage() {
+    if (typeof RetroAudio !== 'undefined') RetroAudio.click();
+    if (this._onboardingPage < 2) {
+      this._onboardingPage++;
+      this.renderOnboardingPage();
+    } else {
+      this.closeOnboardingModal();
+    }
+  },
+
+  closeOnboardingModal() {
+    const overlay = document.getElementById('onboarding-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
+    setTimeout(() => {
+      if (this.checkAndShowPushPromptModal) {
+        this.checkAndShowPushPromptModal();
+      }
+    }, 300);
   }
 };
 
