@@ -1718,15 +1718,18 @@ const App = {
       });
     };
 
-    // 1단계: 로컬 캐시 즉시 렌더링
-    const localUsers = AuthService.getAllUsersLocal();
-    this.pastureFriends = buildList(localUsers);
-    this.applyPastureDisplay();
+    // 1단계: 이미 한 번 렌더링된 적이 있다면 로컬 재빌드 생략 (초고속 화면 전환)
+    if (!this._pastureInitialized) {
+      const localUsers = AuthService.getAllUsersLocal();
+      this.pastureFriends = buildList(localUsers);
+      this.applyPastureDisplay();
+      this._pastureInitialized = true;
+    }
 
     // 2단계: 최신 상태 비동기 동기화 (Supabase & 각 유저 스토리지 상태)
-    // ⚡ 10초 이내에 이미 동기화했다면 중복 네트워크 쿼리 방지
+    // ⚡ 15초 이내에 이미 동기화했다면 중복 네트워크 쿼리 방지
     const now = Date.now();
-    if (this._lastSocialFetchTime && now - this._lastSocialFetchTime < 10000) {
+    if (this._lastSocialFetchTime && now - this._lastSocialFetchTime < 15000) {
       return;
     }
     this._lastSocialFetchTime = now;
@@ -2043,6 +2046,9 @@ const App = {
   generateShelvesHtml(shelves) {
     const starredList = (typeof StorageService !== 'undefined') ? StorageService.getPastureStarredFriends() : [];
 
+    // ⚡ SVG 생성 캐시 맵 (동일 stage + item 조합 중복 연산 방지)
+    this._charlesVisualCache = this._charlesVisualCache || {};
+
     return shelves.map(shelf => {
       // 1) 캐릭터 슬롯 3개
       const charSlotsHtml = shelf.map(f => {
@@ -2054,7 +2060,14 @@ const App = {
           `;
         }
 
-        const visual = getCharlesVisual(f.stage || 1, 5, f.equipped || {});
+        const stage = f.stage || 1;
+        const eqStr = JSON.stringify(f.equipped || {});
+        const cacheKey = `${stage}_${eqStr}`;
+        if (!this._charlesVisualCache[cacheKey]) {
+          this._charlesVisualCache[cacheKey] = getCharlesVisual(stage, 5, f.equipped || {}).svg;
+        }
+        const sheepSvg = this._charlesVisualCache[cacheKey];
+
         const isMe = f.isMe;
         const hasBanner = !!(f.equipped && (f.equipped.banner || (f.equipped.hold && String(f.equipped.hold).startsWith('banner_'))));
         const isStarred = starredList.includes(String(f.id));
@@ -2071,7 +2084,7 @@ const App = {
                 </div>
               ` : ''}
               <div class="pasture-sheep-svg-wrap">
-                ${visual.svg}
+                ${sheepSvg}
               </div>
             </div>
           </div>
