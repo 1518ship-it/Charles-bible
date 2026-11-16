@@ -490,9 +490,10 @@ const AdminApp = {
     let users = [];
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
       try {
+        // 🛡️ 비밀번호 컬럼 제외하고 성도 목록 조회
         const { data, error } = await supabaseClient
           .from('members')
-          .select('*')
+          .select('id, name, nickname, cell, created_at, last_login_at')
           .order('created_at', { ascending: true });
         if (!error && Array.isArray(data)) {
           users = data;

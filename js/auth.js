@@ -154,9 +154,10 @@ const AuthService = {
     const db = this.getDb();
     if (db) {
       try {
+        // 🛡️ 비밀번호(password) 컬럼은 제외하고 공개 정보만 안전하게 조회
         const { data, error } = await db
           .from('members')
-          .select('*')
+          .select('id, name, nickname, cell, created_at, last_login_at')
           .order('created_at', { ascending: true });
 
         if (!error && Array.isArray(data)) {
@@ -422,10 +423,38 @@ const AuthService = {
     const db = this.getDb();
     if (db) {
       try {
-        // 1) 해시된 비밀번호 우선 조회 (보안 표준)
+        // 0) RPC 로그인 보안 함수 우선 시도 (비밀번호 컬럼 비공개 지원)
+        try {
+          const { data: rpcData, error: rpcErr } = await db.rpc('authenticate_member', {
+            p_id: cleanId,
+            p_password_hash: hashedPw
+          });
+          if (!rpcErr && rpcData && rpcData.length > 0) {
+            const u = rpcData[0];
+            const userSession = {
+              id: u.id,
+              name: u.name,
+              nickname: u.nickname || u.name,
+              cell: u.cell,
+              registeredAt: u.created_at,
+              lastLoginAt: new Date().toISOString()
+            };
+            db.from('members').update({ last_login_at: userSession.lastLoginAt }).eq('id', u.id).then();
+            localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_USER, JSON.stringify(userSession));
+            if (typeof StorageService !== 'undefined' && StorageService.syncFromCloud) {
+              await StorageService.syncFromCloud(userSession.id);
+            }
+            RetroAudio.success();
+            return { success: true, user: userSession };
+          }
+        } catch (rpcEx) {
+          // RPC 함수 미생성 시 기존 테이블 직접 조회로 부드럽게 폴백
+        }
+
+        // 1) 해시된 비밀번호 조회
         let { data, error } = await db
           .from('members')
-          .select('*')
+          .select('id, name, nickname, cell, created_at')
           .ilike('id', cleanId)
           .eq('password', hashedPw)
           .maybeSingle();
