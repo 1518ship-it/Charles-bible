@@ -544,6 +544,8 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
+  content-visibility: auto;
+  contain-intrinsic-size: 160px;
 }
 
 /* 정류장 푯말 (0층 좌측) */

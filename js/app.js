@@ -464,13 +464,23 @@ const App = {
       }
     });
 
-    // 하단 탭 버튼 클릭
+    // 하단 탭 버튼 클릭 (touchstart/pointerdown으로 300ms 터치 딜레이 제거)
+    const handleTabClick = (btn) => {
+      const tab = btn.dataset.tab;
+      this.closeReader();
+      this.closeTalentShop();
+      this.switchTab(tab);
+    };
+
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.dataset.tab;
-        this.closeReader();
-        this.closeTalentShop();
-        this.switchTab(tab);
+      btn.addEventListener('pointerdown', (e) => {
+        // 모바일/터치 환경에서 터치 시작 즉시 반응
+        if (e.pointerType === 'touch' || e.pointerType === 'mouse') {
+          handleTabClick(btn);
+        }
+      });
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
       });
     });
 
