@@ -1949,8 +1949,9 @@ function renderPixelArrayGeneric(pixels, scale) {
   let res = '';
   for (let i = 0; i < pixels.length; i++) {
     const p = pixels[i];
-    const sz = p[3] || 1;
-    res += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${sz * scale}" height="${sz * scale}" fill="${p[2]}" />`;
+    const w = p[3] || 1;
+    const h = p[4] || w;
+    res += `<rect x="${p[0] * scale}" y="${p[1] * scale}" width="${w * scale}" height="${h * scale}" fill="${p[2]}" />`;
   }
   return res;
 }
