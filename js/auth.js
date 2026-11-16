@@ -9,7 +9,8 @@ const AUTH_CONFIG = {
   STORAGE_KEY_USER: 'charles_current_user',
   STORAGE_KEY_ALL_USERS: 'charles_registered_users',
   STORAGE_KEY_CUSTOM_MASTER_KEY: 'charles_master_key',
-  STORAGE_KEY_CUSTOM_ADMIN_KEY: 'charles_admin_key'
+  STORAGE_KEY_CUSTOM_ADMIN_KEY: 'charles_admin_key',
+  PASSWORD_SALT: 'charles_bible_salt_v1:'
 };
 
 // 사운드 이펙트 모듈 (무음화 유지)
@@ -29,6 +30,31 @@ const AuthService = {
   // Supabase 클라이언트 참조
   getDb() {
     return (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : null;
+  },
+
+  // 비밀번호 안전 단방향 해시 (SHA-256 + Salt)
+  async hashPassword(password) {
+    if (!password) return '';
+    const cleanPw = String(password);
+    // 이미 64자리 16진수 해시인 경우 재해시 방지
+    if (/^[0-9a-f]{64}$/i.test(cleanPw)) {
+      return cleanPw.toLowerCase();
+    }
+    const salted = (AUTH_CONFIG.PASSWORD_SALT || '') + cleanPw;
+    if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+      const msgBuffer = new TextEncoder().encode(salted);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    // Node.js 또는 구형 환경 대응 폴백
+    if (typeof require !== 'undefined') {
+      try {
+        const c = require('crypto');
+        return c.createHash('sha256').update(salted).digest('hex');
+      } catch (e) { }
+    }
+    return cleanPw;
   },
 
   // 1. 일반 가입코드 조회 (기본: 123456)
@@ -333,13 +359,16 @@ const AuthService = {
       console.warn('Initial talent storage warning:', e);
     }
 
+    // 비밀번호 안전 단방향 해시 암호화
+    const hashedPw = await this.hashPassword(cleanPw);
+
     // Supabase members 테이블에 영구 저장
     const db = this.getDb();
     if (db) {
       try {
         const payload = {
           id: cleanId,
-          password: cleanPw,
+          password: hashedPw,
           name: cleanName,
           nickname: cleanNick,
           cell: cleanCell,
@@ -366,7 +395,7 @@ const AuthService = {
 
     // 로컬 세션 및 백업 저장
     const localUsers = this.getAllUsersLocal();
-    localUsers.push({ ...newUser, password: cleanPw });
+    localUsers.push({ ...newUser, password: hashedPw });
     localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_ALL_USERS, JSON.stringify(localUsers));
     localStorage.setItem(AUTH_CONFIG.STORAGE_KEY_USER, JSON.stringify(newUser));
 
@@ -388,17 +417,44 @@ const AuthService = {
       return { success: false, error: '아이디와 패스워드를 모두 입력해 주세요.' };
     }
 
+    const hashedPw = await this.hashPassword(cleanPw);
+
     const db = this.getDb();
     if (db) {
       try {
-        const { data, error } = await db
+        // 1) 해시된 비밀번호 우선 조회 (보안 표준)
+        let { data, error } = await db
           .from('members')
           .select('*')
           .ilike('id', cleanId)
-          .eq('password', cleanPw)
+          .eq('password', hashedPw)
           .maybeSingle();
 
-        if (!error && data) {
+        // 2) 해시 일치 실패 시: 기존 평문 비밀번호 사용자 1회 호환 확인 및 자동 해시 마이그레이션
+        if (!data) {
+          const legacyRes = await db
+            .from('members')
+            .select('*')
+            .ilike('id', cleanId)
+            .eq('password', cleanPw)
+            .maybeSingle();
+
+          if (!legacyRes.error && legacyRes.data) {
+            data = legacyRes.data;
+            // 🛡️ 로그인 성공 시 즉시 DB의 평문 비밀번호를 안전한 해시값으로 자동 교체 (Self-Healing Migration)
+            try {
+              await db
+                .from('members')
+                .update({ password: hashedPw })
+                .eq('id', data.id);
+              console.log(`🔐 [Password Migration] 성도 [${data.id}]님의 비밀번호가 안전한 보안 해시로 자동 전환되었습니다.`);
+            } catch (migErr) {
+              console.warn('비밀번호 해시 자동 마이그레이션 경고:', migErr);
+            }
+          }
+        }
+
+        if (data) {
           const userSession = {
             id: data.id,
             name: data.name,
@@ -432,7 +488,7 @@ const AuthService = {
     // Supabase 실패 시 로컬 스토리지 검증 (오프라인 지원)
     const localUsers = this.getAllUsersLocal();
     const matchedIdx = localUsers.findIndex(
-      u => (u.id || u.name || '').toLowerCase() === cleanId.toLowerCase() && u.password === cleanPw
+      u => (u.id || u.name || '').toLowerCase() === cleanId.toLowerCase() && (u.password === hashedPw || u.password === cleanPw)
     );
 
     if (matchedIdx === -1) {
@@ -441,6 +497,7 @@ const AuthService = {
     }
 
     const matchedUser = localUsers[matchedIdx];
+    matchedUser.password = hashedPw; // 로컬 캐시도 해시로 업그레이드
     matchedUser.lastLoginAt = new Date().toISOString();
     localUsers[matchedIdx] = matchedUser;
 

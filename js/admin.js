@@ -1388,7 +1388,12 @@ const AdminApp = {
       };
 
       if (newPassword && newPassword.length > 0) {
-        updatePayload.password = newPassword;
+        // 관리자가 비밀번호 변경 시에도 보안 해시 암호화 적용
+        if (typeof AuthService !== 'undefined' && AuthService.hashPassword) {
+          updatePayload.password = await AuthService.hashPassword(newPassword);
+        } else {
+          updatePayload.password = newPassword;
+        }
       }
 
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
