@@ -1588,7 +1588,7 @@ const AdminApp = {
   async triggerWebPushForAdminMessage({ target_type, target_user_id, title, content }) {
     if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.functions) return;
     try {
-      // 전체 발송(ALL)은 서버에서 관리자 코드를 검증하므로 함께 전달
+      // 전체 발송(ALL)은 서버에서 관리자 코드를 검증하므로 해시값 함께 전달
       const adminKey = (typeof AuthService !== 'undefined') ? await AuthService.getAdminKey() : '';
       await supabaseClient.functions.invoke('hyper-service', {
         body: {

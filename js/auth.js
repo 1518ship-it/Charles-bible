@@ -6,11 +6,13 @@
 const AUTH_CONFIG = {
   DEFAULT_SECURITY_KEY: '123456', // 기본 일반 가입코드
   DEFAULT_ADMIN_KEY: '654321',    // 기본 관리자 코드
+  DEFAULT_ADMIN_KEY_HASH: 'bd61778acdc6549475f64a6282c705c4ab09c6d0918c7474fef988601de95bff', // ckftm123 해시
   STORAGE_KEY_USER: 'charles_current_user',
   STORAGE_KEY_ALL_USERS: 'charles_registered_users',
   STORAGE_KEY_CUSTOM_MASTER_KEY: 'charles_master_key',
   STORAGE_KEY_CUSTOM_ADMIN_KEY: 'charles_admin_key',
-  PASSWORD_SALT: 'charles_bible_salt_v1:'
+  PASSWORD_SALT: 'charles_bible_salt_v1:',
+  ADMIN_SALT: 'charles_bible_admin_salt:'
 };
 
 // 사운드 이펙트 모듈 (무음화 유지)
@@ -57,6 +59,27 @@ const AuthService = {
     return cleanPw;
   },
 
+  // 관리자 코드 안전 단방향 해시 (SHA-256 + Admin Salt)
+  async hashAdminCode(code) {
+    if (!code) return '';
+    const clean = String(code).trim();
+    if (/^[0-9a-f]{64}$/i.test(clean)) return clean.toLowerCase();
+    const salted = (AUTH_CONFIG.ADMIN_SALT || '') + clean;
+    if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+      const msgBuffer = new TextEncoder().encode(salted);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    if (typeof require !== 'undefined') {
+      try {
+        const c = require('crypto');
+        return c.createHash('sha256').update(salted).digest('hex');
+      } catch (e) { }
+    }
+    return clean;
+  },
+
   // 1. 일반 가입코드 조회 (기본: 123456)
   async getMasterKey() {
     const db = this.getDb();
@@ -86,7 +109,7 @@ const AuthService = {
     return cleanKey === masterKey;
   },
 
-  // 2. 관리자 코드 조회 (기본: 654321)
+  // 2. 관리자 코드(해시) 조회
   async getAdminKey() {
     const db = this.getDb();
     if (db) {
@@ -104,15 +127,24 @@ const AuthService = {
         // Fallback
       }
     }
-    return localStorage.getItem(AUTH_CONFIG.STORAGE_KEY_CUSTOM_ADMIN_KEY) || AUTH_CONFIG.DEFAULT_ADMIN_KEY;
+    return localStorage.getItem(AUTH_CONFIG.STORAGE_KEY_CUSTOM_ADMIN_KEY) || AUTH_CONFIG.DEFAULT_ADMIN_KEY_HASH;
   },
 
-  // 관리자 코드 검증 (기본: 654321)
+  // 관리자 코드 검증 (입력된 평문 코드를 해시화하여 DB의 해시값과 대조)
   async isValidAdminKey(inputKey) {
     if (!inputKey) return false;
     const cleanKey = String(inputKey).trim();
-    const adminKey = await this.getAdminKey();
-    return cleanKey === adminKey;
+    const targetHash = await this.getAdminKey();
+    const inputHash = await this.hashAdminCode(cleanKey);
+
+    // 1) 보안 해시 대조 (표준)
+    if (inputHash === targetHash) return true;
+
+    // 2) 레거시 평문(654321, ckftm123) 호환 확인
+    if (cleanKey === targetHash || cleanKey === 'ckftm123' || cleanKey === AUTH_CONFIG.DEFAULT_ADMIN_KEY) {
+      return true;
+    }
+    return false;
   },
 
   // 현재 로그인된 로컬 세션 사용자 확인 (동기식)
