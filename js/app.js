@@ -1003,6 +1003,7 @@ const App = {
 
   // ==================== 탭 전환 ====================
   switchTab(tabId) {
+    if (this.activeTab === tabId) return;
     this.activeTab = tabId;
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
@@ -1014,7 +1015,31 @@ const App = {
       target.classList.add('active');
     }
 
-    this.renderAll();
+    // ⚡ [탭 전환 초고속 최적화] 보이지 않는 탭까지 전체를 다시 그리지 않고, 활성화된 대상 탭만 정밀 렌더링
+    switch (tabId) {
+      case 'home':
+        this.renderHome();
+        this.renderHomeTalents();
+        break;
+      case 'social':
+        this.renderSocial();
+        break;
+      case 'bible':
+        this.renderBibleList();
+        break;
+      case 'stats':
+        this.renderStats();
+        break;
+      case 'profile':
+        this.renderProfile();
+        break;
+      case 'settings':
+        this.renderSettings();
+        break;
+      default:
+        this.renderHome();
+        break;
+    }
   },
 
   // ==================== 테마 관리 ====================
@@ -1699,6 +1724,13 @@ const App = {
     this.applyPastureDisplay();
 
     // 2단계: 최신 상태 비동기 동기화 (Supabase & 각 유저 스토리지 상태)
+    // ⚡ 10초 이내에 이미 동기화했다면 중복 네트워크 쿼리 방지
+    const now = Date.now();
+    if (this._lastSocialFetchTime && now - this._lastSocialFetchTime < 10000) {
+      return;
+    }
+    this._lastSocialFetchTime = now;
+
     AuthService.getAllUsers().then(async (remoteUsers) => {
       if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
         this.pastureFriends = buildList(remoteUsers);
