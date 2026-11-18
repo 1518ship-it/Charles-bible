@@ -6519,4 +6519,226 @@ body {
   margin: 0;
 }
 
+/* ==================== 🏆 통독 트로피 & 뱃지 진열장 ==================== */
+.trophy-showcase-card {
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.92) 0%, var(--card-bg, #ffffff) 100%);
+  border: 1.5px solid #fde68a;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.08);
+}
+
+.trophy-showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.trophy-showcase-title {
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #78350f;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trophy-showcase-cycle-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.trophy-summary-pills {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.trophy-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.trophy-pill.gold {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.trophy-pill.red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.trophy-pill.blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.trophy-shelf-title {
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trophy-shelf-title.gold { color: #92400e; }
+.trophy-shelf-title.red { color: #991b1b; }
+.trophy-shelf-title.blue { color: #1e40af; }
+
+.trophy-shelf-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 9px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trophy-shelf-row.gold { border-bottom: 3.5px solid #d97706; }
+.trophy-shelf-row.red { border-bottom: 3.5px solid #f87171; }
+.trophy-shelf-row.blue { border-bottom: 3.5px solid #60a5fa; margin-bottom: 0; }
+
+.trophy-slot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 8px 10px;
+  min-width: 74px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.trophy-slot-item:active {
+  transform: scale(0.96);
+}
+
+.trophy-slot-item.gold {
+  background: linear-gradient(180deg, rgba(254, 249, 195, 0.78) 0%, #ffffff 100%);
+  border: 1.5px solid #fde047;
+  box-shadow: 0 3px 10px rgba(234, 179, 8, 0.14);
+}
+
+.trophy-slot-item.red {
+  background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);
+  border: 1.5px solid #fca5a5;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);
+}
+
+.trophy-slot-item.blue {
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  border: 1.5px solid #bfdbfe;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);
+}
+
+.trophy-slot-item.pending {
+  background: rgba(248, 250, 252, 0.85);
+  border: 1.5px dashed #cbd5e1;
+  min-width: 80px;
+}
+
+.trophy-slot-label {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.trophy-slot-label.gold {
+  color: #92400e;
+  background: #fef3c7;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.trophy-slot-label.red { color: #b91c1c; }
+.trophy-slot-label.blue { color: #1d4ed8; }
+.trophy-slot-label.pending { color: #475569; }
+
+.trophy-slot-date {
+  margin-top: 2px;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.trophy-mini-bar-wrap {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.trophy-mini-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.trophy-mini-bar-fill.gold { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.trophy-mini-bar-fill.red { background: #ef4444; }
+.trophy-mini-bar-fill.blue { background: #3b82f6; }
+
+.trophy-mini-pct {
+  margin-top: 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+}
+
+.trophy-mini-pct.gold { color: #d97706; }
+.trophy-mini-pct.red { color: #dc2626; }
+.trophy-mini-pct.blue { color: #2563eb; }
+
+.trophy-showcase-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #fde68a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-new-bible-cycle {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+}
+
+.btn-new-bible-cycle:active {
+  transform: scale(0.97);
+}
+
+.friend-trophies-box {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: rgba(254, 249, 195, 0.35);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+
 

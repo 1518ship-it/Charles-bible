@@ -394,7 +394,9 @@ const TalentService = {
       if (claims.daily_login) minEarned += 1;
       if (claims.daily_read_3) minEarned += 1;
       if (claims.weekly_streak_cycle) minEarned += Math.max(0, parseInt(claims.weekly_streak_cycle, 10) || 0);
-      if (claims.achieve_nt_complete) minEarned += 100;
+      if (claims.achieve_nt_first_talent_claimed || (claims.achieve_nt_complete && (!claims.bible_cycle || Number(claims.bible_cycle) === 1))) {
+        minEarned += 100;
+      }
 
       // 가을 특별 이벤트 미션 보상 반영
       if (claims.event_autumn_15 || claims.event_autumn_read_15) minEarned += 3;
@@ -886,6 +888,38 @@ const TalentService = {
     }
   },
 
+  // ==================== 3-1. 트로피 & 뱃지 진열장 조회 ====================
+  getTrophyShowcase() {
+    const claims = this.getClaimedRecord();
+    const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr)
+      ? StorageService.getTodayDateStr()
+      : new Date().toISOString().slice(0, 10);
+    const currentCycle = (typeof StorageService !== 'undefined' && StorageService.getBibleCycle)
+      ? StorageService.getBibleCycle()
+      : Math.max(1, parseInt(claims.bible_cycle || '1', 10));
+
+    const list = Array.isArray(claims.trophies) ? [...claims.trophies] : [];
+    const seen = new Set(list.map(t => `${t.type}_${t.cycle || 1}`));
+
+    // 기존 1독 신약 완독자 자동 뱃지 승계
+    if (claims.achieve_nt_complete && currentCycle === 1 && !seen.has('nt_badge_1')) {
+      list.push({ type: 'nt_badge', cycle: 1, date: claims.achieve_nt_claimed_at || todayStr });
+      seen.add('nt_badge_1');
+    }
+
+    const bibleTrophies = list.filter(t => t.type === 'bible_trophy').sort((a, b) => (a.cycle || 1) - (b.cycle || 1));
+    const ntBadges = list.filter(t => t.type === 'nt_badge').sort((a, b) => (a.cycle || 1) - (b.cycle || 1));
+    const otBadges = list.filter(t => t.type === 'ot_badge').sort((a, b) => (a.cycle || 1) - (b.cycle || 1));
+
+    return {
+      currentCycle,
+      all: list,
+      bibleTrophies,
+      ntBadges,
+      otBadges
+    };
+  },
+
   // ==================== 4. 퀘스트 목록 및 달성도 계산 ====================
   getQuestsList() {
     const todayStr = (typeof StorageService !== 'undefined' && StorageService.getTodayDateStr) 
@@ -903,8 +937,14 @@ const TalentService = {
 
     const stats = (typeof StorageService !== 'undefined' && StorageService.getStats) 
       ? StorageService.getStats() 
-      : { ntRead: 0, totalRead: 0 };
-    const ntRead = stats.ntRead || stats.totalRead || 0;
+      : { ntRead: 0, otRead: 0, totalRead: 0 };
+    const ntRead = stats.ntRead || 0;
+    const otRead = stats.otRead || 0;
+    const totalRead = stats.totalRead || 0;
+
+    const currentCycle = (typeof StorageService !== 'undefined' && StorageService.getBibleCycle)
+      ? StorageService.getBibleCycle()
+      : 1;
 
     const claims = this.getClaimedRecord();
 
@@ -929,11 +969,15 @@ const TalentService = {
       ? 'claimed' 
       : (streakEligible ? 'ready' : 'progress');
 
-    // 4) 업적: 신약 전체 완독 달성하기 (260장)
+    // 4) 영광의 업적 3종 (현 회독 기준: 신약 뱃지 / 구약 뱃지 / 신구약 황금 트로피)
     const ntClaimed = !!claims.achieve_nt_complete;
-    const ntStatus = ntClaimed 
-      ? 'claimed' 
-      : (ntRead >= 260 ? 'ready' : 'progress');
+    const ntStatus = ntClaimed ? 'claimed' : (ntRead >= 260 ? 'ready' : 'progress');
+
+    const otClaimed = !!claims.achieve_ot_complete;
+    const otStatus = otClaimed ? 'claimed' : (otRead >= 929 ? 'ready' : 'progress');
+
+    const bibleClaimed = !!claims.achieve_bible_complete;
+    const bibleStatus = bibleClaimed ? 'claimed' : (totalRead >= 1189 ? 'ready' : 'progress');
 
     // ==================== 5) 가을 특별 이벤트 미션 3종 ====================
     const eventMissions = this.getEventMissions();
@@ -1098,14 +1142,46 @@ const TalentService = {
         id: 'achieve_nt_complete',
         type: 'achievement',
         category: '영광의 업적',
-        title: '신약 전체 완독 달성하기',
-        desc: '마태복음부터 요한계시록까지 신약 260장 완독',
-        icon: '👑',
-        reward: 100,
+        title: currentCycle === 1 ? '신약 전체 완독 달성하기' : `제${currentCycle}독 신약 전체 완독하기`,
+        desc: '마태복음부터 요한계시록까지 신약 260장 완독 (신약 뱃지 진열)',
+        icon: '📕',
+        reward: (!claims.achieve_nt_first_talent_claimed && currentCycle === 1) ? 100 : 0,
+        rewardBadgeType: 'nt_badge',
+        rewardLabel: '신약통독 뱃지',
         current: Math.min(260, ntRead),
         target: 260,
         unit: '장',
         status: ntStatus
+      },
+      {
+        id: 'achieve_ot_complete',
+        type: 'achievement',
+        category: '영광의 업적',
+        title: `제${currentCycle}독 구약 전체 완독하기`,
+        desc: '창세기부터 말라기까지 구약 929장 완독 (구약 뱃지 진열)',
+        icon: '📘',
+        reward: 0,
+        rewardBadgeType: 'ot_badge',
+        rewardLabel: '구약통독 뱃지',
+        current: Math.min(929, otRead),
+        target: 929,
+        unit: '장',
+        status: otStatus
+      },
+      {
+        id: 'achieve_bible_complete',
+        type: 'achievement',
+        category: '영광의 업적',
+        title: `제${currentCycle}독 성경 66권 전체 완독하기`,
+        desc: '신구약 1,189장 대완독 달성 및 황금 어린양 트로피 수여',
+        icon: '🏆',
+        reward: 0,
+        rewardBadgeType: 'bible_trophy',
+        rewardLabel: '성경완독 트로피',
+        current: Math.min(1189, totalRead),
+        target: 1189,
+        unit: '장',
+        status: bibleStatus
       }
     ];
 
@@ -1135,6 +1211,19 @@ const TalentService = {
     
     const claims = this.getClaimedRecord();
 
+    const currentCycle = (typeof StorageService !== 'undefined' && StorageService.getBibleCycle)
+      ? StorageService.getBibleCycle()
+      : Math.max(1, parseInt(claims.bible_cycle || '1', 10));
+    if (!Array.isArray(claims.trophies)) claims.trophies = [];
+    let awardedTrophyType = null;
+
+    const addTrophyOnce = (type) => {
+      if (!claims.trophies.some(t => t && t.type === type && Number(t.cycle || 1) === currentCycle)) {
+        claims.trophies.push({ type, cycle: currentCycle, date: todayStr });
+      }
+      awardedTrophyType = type;
+    };
+
     if (questId === 'daily_login') {
       claims.daily_login = todayStr;
     } else if (questId === 'daily_read_3') {
@@ -1149,6 +1238,18 @@ const TalentService = {
     } else if (questId === 'achieve_nt_complete') {
       claims.achieve_nt_complete = true;
       claims.achieve_nt_claimed_at = todayStr;
+      if (quest.reward > 0) {
+        claims.achieve_nt_first_talent_claimed = true;
+      }
+      addTrophyOnce('nt_badge');
+    } else if (questId === 'achieve_ot_complete') {
+      claims.achieve_ot_complete = true;
+      claims.achieve_ot_claimed_at = todayStr;
+      addTrophyOnce('ot_badge');
+    } else if (questId === 'achieve_bible_complete') {
+      claims.achieve_bible_complete = true;
+      claims.achieve_bible_claimed_at = todayStr;
+      addTrophyOnce('bible_trophy');
     } else if (questId === 'event_autumn_15' || (quest && quest.rule_type === 'daily_count_15')) {
       claims.event_autumn_15 = todayStr;
       claims.event_autumn_read_15 = todayStr;
@@ -1195,6 +1296,8 @@ const TalentService = {
       success: true,
       reward: quest.reward,
       awardedItems: awardedItems,
+      awardedTrophyType: awardedTrophyType,
+      cycle: currentCycle,
       isNtComplete: questId === 'achieve_nt_complete',
       quest
     };

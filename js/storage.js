@@ -506,6 +506,64 @@ const StorageService = {
     return stats.ntRead >= stats.ntTotal && stats.ntTotal > 0;
   },
 
+  // 구약 39권 전체(929장) 완독 여부 확인
+  isOTComplete() {
+    const stats = this.getStats();
+    return stats.otRead >= stats.otTotal && stats.otTotal > 0;
+  },
+
+  // 신구약 66권 전체(1,189장) 완독 여부 확인
+  isBibleComplete() {
+    const stats = this.getStats();
+    return stats.totalRead >= stats.totalChapters && stats.totalChapters > 0;
+  },
+
+  // 현재 진행 중인 성경 통독 회독 차수 조회 (기본 1독)
+  getBibleCycle() {
+    try {
+      const claims = JSON.parse(localStorage.getItem(this.getUserKey('quest_claims')) || '{}');
+      return Math.max(1, parseInt(claims.bible_cycle || localStorage.getItem(this.getUserKey('bible_cycle')) || '1', 10));
+    } catch (e) {
+      return 1;
+    }
+  },
+
+  // 신구약 전체 완독 및 트로피 수령 후 다음 회독(N+1독) 새 출발
+  // (보유 트로피/뱃지 진열장, 일별 통독 캘린더, 스트릭, 찰스 단계, 달란트, 옷장 아이템은 100% 영구 보존!)
+  startNewBibleCycle() {
+    const uid = this.getCurrentUserId();
+    if (!uid || uid === 'guest') return { success: false, error: '로그인이 필요합니다.' };
+
+    const claimsKey = this.getUserKey('quest_claims');
+    let claims = {};
+    try {
+      claims = JSON.parse(localStorage.getItem(claimsKey) || '{}') || {};
+    } catch (e) {
+      claims = {};
+    }
+
+    const currentCycle = this.getBibleCycle();
+    const nextCycle = currentCycle + 1;
+
+    claims.bible_cycle = nextCycle;
+    claims.achieve_nt_complete = false;
+    claims.achieve_ot_complete = false;
+    claims.achieve_bible_complete = false;
+    claims.cycle_started_at = new Date().toISOString();
+
+    localStorage.setItem(claimsKey, JSON.stringify(claims));
+    localStorage.setItem(this.getUserKey('bible_cycle'), String(nextCycle));
+    localStorage.setItem(this.getUserKey('talents_updated_at'), new Date().toISOString());
+
+    // 성경 66권 장별 체크 현황만 새 회독을 위해 초기화
+    localStorage.setItem(this.getUserKey('progress'), JSON.stringify({}));
+
+    if (typeof this.saveToCloud === 'function') {
+      this.saveToCloud();
+    }
+    return { success: true, nextCycle };
+  },
+
   getAchievements() {
     const stats = this.getStats();
     const streak = this.getStreakInfo();
@@ -668,17 +726,7 @@ const StorageService = {
 
         let hasNewerLocalData = false;
 
-        // 1) 성경 진행도 (read_progress) 양방향 합집합 병합
-        const localProgress = this.getProgress();
-        const remoteProgress = (data.read_progress && typeof data.read_progress === 'object') ? data.read_progress : {};
-        const mergedProgress = { ...remoteProgress, ...localProgress };
-
-        if (Object.keys(mergedProgress).length > Object.keys(remoteProgress).length) {
-          hasNewerLocalData = true;
-        }
-        localStorage.setItem(`charles_user_${uid}_progress`, JSON.stringify(mergedProgress));
-
-        // 2) 일별 읽은 장수 (daily_counts) 날짜별 최대값 보존 병합 & 임베디드 달란트 메타데이터 추출
+        // 0) 일별/달란트/회독 메타데이터 사전 추출 (회독 차수 기반 progress 병합 판정용)
         const rawRemoteDaily = (data.daily_counts && typeof data.daily_counts === 'object') ? data.daily_counts : {};
         const remoteTalentMeta = (rawRemoteDaily && rawRemoteDaily.__talent_data__) || {
           talents: data.talents,
@@ -687,7 +735,32 @@ const StorageService = {
           quest_claims: data.quest_claims,
           updated_at: data.updated_at
         };
+        const remoteClaims = (remoteTalentMeta && remoteTalentMeta.quest_claims && typeof remoteTalentMeta.quest_claims === 'object')
+          ? remoteTalentMeta.quest_claims
+          : ((data.quest_claims && typeof data.quest_claims === 'object') ? data.quest_claims : {});
+        const localClaims = JSON.parse(localStorage.getItem(`charles_user_${uid}_quest_claims`) || '{}');
 
+        const localCycle = Math.max(1, parseInt(localClaims.bible_cycle || localStorage.getItem(`charles_user_${uid}_bible_cycle`) || '1', 10));
+        const remoteCycle = Math.max(1, parseInt(remoteClaims.bible_cycle || '1', 10));
+
+        // 1) 성경 진행도 (read_progress) 회독 차수 기반 안전 병합
+        const localProgress = this.getProgress();
+        const remoteProgress = (data.read_progress && typeof data.read_progress === 'object') ? data.read_progress : {};
+        let mergedProgress = {};
+        if (localCycle > remoteCycle) {
+          mergedProgress = { ...localProgress };
+          hasNewerLocalData = true;
+        } else if (remoteCycle > localCycle) {
+          mergedProgress = { ...remoteProgress };
+        } else {
+          mergedProgress = { ...remoteProgress, ...localProgress };
+          if (Object.keys(mergedProgress).length > Object.keys(remoteProgress).length) {
+            hasNewerLocalData = true;
+          }
+        }
+        localStorage.setItem(`charles_user_${uid}_progress`, JSON.stringify(mergedProgress));
+
+        // 2) 일별 읽은 장수 (daily_counts) 날짜별 최대값 보존 병합
         const localDaily = this.getDailyCounts();
         const mergedDaily = {};
         for (const [k, v] of Object.entries(rawRemoteDaily)) {
@@ -735,12 +808,8 @@ const StorageService = {
           hasNewerLocalData = true;
         }
 
-        // 7) 기기 간 퀘스트 수령 내역 완전 통합 (중복 수령 원천 방지)
+        // 7) 기기 간 퀘스트 수령 내역 및 트로피 진열장 완전 통합 (중복 수령 원천 방지)
         const todayStr = this.getTodayDateStr();
-        const remoteClaims = (remoteTalentMeta && remoteTalentMeta.quest_claims && typeof remoteTalentMeta.quest_claims === 'object')
-          ? remoteTalentMeta.quest_claims
-          : ((data.quest_claims && typeof data.quest_claims === 'object') ? data.quest_claims : {});
-        const localClaims = JSON.parse(localStorage.getItem(`charles_user_${uid}_quest_claims`) || '{}');
 
         // 🎁 2026-11-15 ~ 2026-11-22 가입자 신규 유저 웰컴 이벤트 체크 (클라우드 등록일 기준)
         if (data.created_at) {
@@ -750,7 +819,13 @@ const StorageService = {
           }
         }
 
-        const mergedClaims = { ...remoteClaims, ...localClaims };
+        const mergedClaims = (localCycle >= remoteCycle)
+          ? { ...remoteClaims, ...localClaims }
+          : { ...localClaims, ...remoteClaims };
+
+        mergedClaims.bible_cycle = Math.max(localCycle, remoteCycle);
+        localStorage.setItem(`charles_user_${uid}_bible_cycle`, String(mergedClaims.bible_cycle));
+
         if (remoteClaims.daily_login === todayStr || localClaims.daily_login === todayStr) {
           mergedClaims.daily_login = todayStr;
         }
@@ -764,10 +839,52 @@ const StorageService = {
         if (localClaims.weekly_streak_claimed_at || remoteClaims.weekly_streak_claimed_at) {
           mergedClaims.weekly_streak_claimed_at = localClaims.weekly_streak_claimed_at || remoteClaims.weekly_streak_claimed_at;
         }
-        if (localClaims.achieve_nt_complete || remoteClaims.achieve_nt_complete) {
-          mergedClaims.achieve_nt_complete = true;
-          mergedClaims.achieve_nt_claimed_at = localClaims.achieve_nt_claimed_at || remoteClaims.achieve_nt_claimed_at;
+
+        if (localCycle === remoteCycle) {
+          if (localClaims.achieve_nt_complete || remoteClaims.achieve_nt_complete) {
+            mergedClaims.achieve_nt_complete = true;
+            mergedClaims.achieve_nt_claimed_at = localClaims.achieve_nt_claimed_at || remoteClaims.achieve_nt_claimed_at;
+          }
+          if (localClaims.achieve_ot_complete || remoteClaims.achieve_ot_complete) {
+            mergedClaims.achieve_ot_complete = true;
+            mergedClaims.achieve_ot_claimed_at = localClaims.achieve_ot_claimed_at || remoteClaims.achieve_ot_claimed_at;
+          }
+          if (localClaims.achieve_bible_complete || remoteClaims.achieve_bible_complete) {
+            mergedClaims.achieve_bible_complete = true;
+            mergedClaims.achieve_bible_claimed_at = localClaims.achieve_bible_claimed_at || remoteClaims.achieve_bible_claimed_at;
+          }
         }
+        if (localClaims.achieve_nt_first_talent_claimed || remoteClaims.achieve_nt_first_talent_claimed ||
+            (mergedClaims.bible_cycle === 1 && mergedClaims.achieve_nt_complete)) {
+          mergedClaims.achieve_nt_first_talent_claimed = true;
+        }
+
+        // 🏆 트로피 & 뱃지 진열장 합집합 영구 병합 (중복 제거)
+        const trophyMap = new Map();
+        const combinedTrophies = [
+          ...(Array.isArray(remoteClaims.trophies) ? remoteClaims.trophies : []),
+          ...(Array.isArray(localClaims.trophies) ? localClaims.trophies : [])
+        ];
+        for (const tr of combinedTrophies) {
+          if (!tr || !tr.type) continue;
+          const cyc = Math.max(1, parseInt(tr.cycle || 1, 10));
+          const key = `${tr.type}_${cyc}`;
+          if (!trophyMap.has(key)) {
+            trophyMap.set(key, { type: tr.type, cycle: cyc, date: tr.date || todayStr });
+          }
+        }
+        // 기존 1독 신약 완독자 자동 뱃지 승계
+        if ((localClaims.achieve_nt_complete || remoteClaims.achieve_nt_complete) && mergedClaims.bible_cycle === 1 && !trophyMap.has('nt_badge_1')) {
+          trophyMap.set('nt_badge_1', {
+            type: 'nt_badge',
+            cycle: 1,
+            date: localClaims.achieve_nt_claimed_at || remoteClaims.achieve_nt_claimed_at || todayStr
+          });
+        }
+        if (trophyMap.size > 0) {
+          mergedClaims.trophies = Array.from(trophyMap.values());
+        }
+
         if (JSON.stringify(mergedClaims) !== JSON.stringify(remoteClaims)) {
           hasNewerLocalData = true;
         }
@@ -1241,6 +1358,11 @@ const StorageService = {
 
             const readInfo = this.getLastReadInfoFromDaily(dailyCounts, todayStr, row.last_read_date);
             const syncTime = row.updated_at || (dailyCounts.__talent_data__ && dailyCounts.__talent_data__.updated_at) || null;
+            const remoteQuestClaims = (dailyCounts && dailyCounts.__talent_data__ && dailyCounts.__talent_data__.quest_claims) || row.quest_claims || {};
+            const remoteTrophies = Array.isArray(remoteQuestClaims.trophies) ? [...remoteQuestClaims.trophies] : [];
+            if (remoteQuestClaims.achieve_nt_complete && !remoteTrophies.some(t => t && t.type === 'nt_badge')) {
+              remoteTrophies.push({ type: 'nt_badge', cycle: 1, date: remoteQuestClaims.achieve_nt_claimed_at || '' });
+            }
 
             stateMap[uid] = {
               userId: uid,
@@ -1250,6 +1372,7 @@ const StorageService = {
               talents,
               equipped,
               dailyCounts,
+              trophies: remoteTrophies,
               lastReadDate: readInfo.lastReadDate,
               daysSinceLastRead: readInfo.daysSinceLastRead,
               totalReadSum: readInfo.totalReadSum,

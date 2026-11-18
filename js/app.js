@@ -1229,9 +1229,25 @@ const App = {
         btnHtml = `<button class="btn-quest-action claimed" disabled type="button">수령 완료 ✓</button>`;
       } else if (q.status === 'ready') {
         const readyClass = isEvent ? 'ready event-ready' : 'ready';
-        btnHtml = `<button class="btn-quest-action ${readyClass}" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 ${this.getTalentCoinIcon('sm')}</button>`;
+        if (q.rewardBadgeType === 'bible_trophy') {
+          btnHtml = `<button class="btn-quest-action ${readyClass}" type="button" onclick="App.claimQuestReward('${q.id}')">🏆 트로피 받기</button>`;
+        } else if (q.rewardBadgeType) {
+          btnHtml = `<button class="btn-quest-action ${readyClass}" type="button" onclick="App.claimQuestReward('${q.id}')">${q.reward > 0 ? '달란트 & 뱃지 받기' : '🎖️ 뱃지 받기'}</button>`;
+        } else {
+          btnHtml = `<button class="btn-quest-action ${readyClass}" type="button" onclick="App.claimQuestReward('${q.id}')">달란트 받기 ${this.getTalentCoinIcon('sm')}</button>`;
+        }
       } else {
         btnHtml = `<button class="btn-quest-action progress" disabled type="button">${q.current}/${q.target} ${q.unit}</button>`;
+      }
+
+      let rewardHtml = `<span style="font-weight: 800; color: #D68910; display: inline-flex; align-items: center; gap: 4px;">+${q.reward} ${this.getTalentCoinIcon('sm')}</span>`;
+      if (q.rewardBadgeType) {
+        const badgeMini = q.rewardBadgeType === 'bible_trophy' ? '🏆' : (q.rewardBadgeType === 'nt_badge' ? '📕' : '📘');
+        if (q.reward > 0) {
+          rewardHtml = `<span style="font-weight: 800; color: #D68910; display: inline-flex; align-items: center; gap: 4px;">+${q.reward} ${this.getTalentCoinIcon('sm')} + ${badgeMini} ${q.rewardLabel}</span>`;
+        } else {
+          rewardHtml = `<span style="font-weight: 800; color: #b45309; display: inline-flex; align-items: center; gap: 3px;">${badgeMini} ${q.rewardLabel}</span>`;
+        }
       }
 
       const cardExtraClass = isEvent ? 'event-card' : '';
@@ -1247,7 +1263,7 @@ const App = {
             </div>
             <div class="quest-card-status-text">
               <span>진행도: ${q.current}/${q.target} ${q.unit} (${percent}%)</span>
-              <span style="font-weight: 800; color: #D68910; display: inline-flex; align-items: center; gap: 4px;">+${q.reward} ${this.getTalentCoinIcon('sm')}</span>
+              ${rewardHtml}
             </div>
           </div>
           ${btnHtml}
@@ -1326,12 +1342,9 @@ const App = {
       return;
     }
 
-    // 신약 완독 대업적 수령 시 특수 대형 축하 모달 오픈
-    if (res.isNtComplete) {
-      const ntModal = document.getElementById('nt-grand-celebration-modal');
-      if (ntModal) {
-        ntModal.style.display = 'flex';
-      }
+    // 신약/구약/전체 완독 대업적 수령 시 특수 대형 축하 모달 오픈
+    if (res.awardedTrophyType) {
+      this.openGrandCelebrationModal(res);
       RetroAudio.success();
     } else if (res.awardedItems && res.awardedItems.length > 0) {
       // 기간한정 이벤트 아이템 획득 시 전용 축하 팝업 모달 오픈
@@ -1350,6 +1363,7 @@ const App = {
     this.renderQuestsModal();
     this.renderHomeTalents();
     this.renderHome();
+    this.renderProfileStats();
   },
 
   openTalentShop(tab = 'store') {
@@ -2458,6 +2472,28 @@ const App = {
 
     if (streakEl) streakEl.textContent = `${state.streakCount}일`;
     if (todayEl) todayEl.textContent = `${state.todayRead}장`;
+
+    // 3. 친구가 모은 통독 트로피 & 뱃지 요약 표시
+    const trophyBox = document.getElementById('friend-modal-trophies-box');
+    if (trophyBox) {
+      const friendStateInPasture = (this.pastureFriends || []).find(f => String(f.id) === String(userId));
+      const trophies = (friendStateInPasture && Array.isArray(friendStateInPasture.trophies))
+        ? friendStateInPasture.trophies
+        : (Array.isArray(state.trophies) ? state.trophies : []);
+      if (trophies.length > 0) {
+        const tCount = trophies.filter(t => t.type === 'bible_trophy').length;
+        const ntCount = trophies.filter(t => t.type === 'nt_badge').length;
+        const otCount = trophies.filter(t => t.type === 'ot_badge').length;
+        trophyBox.innerHTML = `
+          <span class="trophy-pill gold">🏆 트로피 ${tCount}</span>
+          <span class="trophy-pill red">📕 신약 ${ntCount}</span>
+          <span class="trophy-pill blue">📘 구약 ${otCount}</span>
+        `;
+        trophyBox.style.display = 'flex';
+      } else {
+        trophyBox.style.display = 'none';
+      }
+    }
   },
 
   // 친구 상세 모달에서 즐겨찾기 토글
@@ -3269,13 +3305,266 @@ const App = {
     }
 
     const totalStatEl = document.getElementById('profile-stat-total');
+    const totalLabelEl = document.getElementById('profile-stat-total-label');
     if (totalStatEl) {
       const stats = StorageService.getStats();
-      totalStatEl.textContent = `${stats.ntRead} / 260장`;
+      const cycle = StorageService.getBibleCycle ? StorageService.getBibleCycle() : 1;
+      if (StorageService.isNTComplete()) {
+        totalStatEl.textContent = `${stats.totalRead} / 1,189장`;
+        if (totalLabelEl) totalLabelEl.textContent = `제${cycle}독 전체 📖`;
+      } else {
+        totalStatEl.textContent = `${stats.ntRead} / 260장`;
+        if (totalLabelEl) totalLabelEl.textContent = `제${cycle}독 신약 📖`;
+      }
     }
+
+    // 3-1) 🏆 통독 트로피 & 뱃지 진열장 렌더링
+    this.renderTrophyShowcase();
 
     // 4) 달력 렌더링
     this.renderReadingCalendar(this.calendarYear, this.calendarMonth);
+  },
+
+  // ==================== 🏆 성경 통독 트로피 & 뱃지 픽셀 아트 및 진열장 ====================
+  getTrophyBadgeSvg(type, heightPx = 38) {
+    const PIXELS = {
+      nt_badge: [
+        [7, 0, '#fbbf24'], [8, 0, '#fbbf24'],
+        [4, 1, '#18181b'], [5, 1, '#18181b'], [6, 1, '#18181b'], [7, 1, '#f59e0b'], [8, 1, '#f59e0b'], [9, 1, '#18181b'], [10, 1, '#18181b'], [11, 1, '#18181b'],
+        [3, 2, '#18181b'], [4, 2, '#f8fafc'], [5, 2, '#cbd5e1'], [6, 2, '#cbd5e1'], [7, 2, '#cbd5e1'], [8, 2, '#cbd5e1'], [9, 2, '#cbd5e1'], [10, 2, '#cbd5e1'], [11, 2, '#f8fafc'], [12, 2, '#18181b'],
+        [2, 3, '#18181b'], [3, 3, '#f8fafc'], [4, 3, '#ef4444'], [5, 3, '#ef4444'], [6, 3, '#dc2626'], [7, 3, '#fde047'], [8, 3, '#facc15'], [9, 3, '#dc2626'], [10, 3, '#dc2626'], [11, 3, '#b91c1c'], [12, 3, '#cbd5e1'], [13, 3, '#18181b'],
+        [2, 4, '#18181b'], [3, 4, '#cbd5e1'], [4, 4, '#ef4444'], [5, 4, '#ef4444'], [6, 4, '#dc2626'], [7, 4, '#fde047'], [8, 4, '#facc15'], [9, 4, '#dc2626'], [10, 4, '#b91c1c'], [11, 4, '#b91c1c'], [12, 4, '#cbd5e1'], [13, 4, '#18181b'],
+        [2, 5, '#18181b'], [3, 5, '#cbd5e1'], [4, 5, '#ef4444'], [5, 5, '#fde047'], [6, 5, '#fde047'], [7, 5, '#fef08a'], [8, 5, '#fde047'], [9, 5, '#facc15'], [10, 5, '#f59e0b'], [11, 5, '#b91c1c'], [12, 5, '#94a3b8'], [13, 5, '#18181b'],
+        [2, 6, '#18181b'], [3, 6, '#94a3b8'], [4, 6, '#dc2626'], [5, 6, '#dc2626'], [6, 6, '#dc2626'], [7, 6, '#fde047'], [8, 6, '#facc15'], [9, 6, '#b91c1c'], [10, 6, '#b91c1c'], [11, 6, '#991b1b'], [12, 6, '#94a3b8'], [13, 6, '#18181b'],
+        [2, 7, '#18181b'], [3, 7, '#94a3b8'], [4, 7, '#34d399'], [5, 7, '#dc2626'], [6, 7, '#dc2626'], [7, 7, '#facc15'], [8, 7, '#f59e0b'], [9, 7, '#b91c1c'], [10, 7, '#991b1b'], [11, 7, '#10b981'], [12, 7, '#94a3b8'], [13, 7, '#18181b'],
+        [3, 8, '#18181b'], [4, 8, '#cbd5e1'], [5, 8, '#10b981'], [6, 8, '#dc2626'], [7, 8, '#facc15'], [8, 8, '#d97706'], [9, 8, '#b91c1c'], [10, 8, '#059669'], [11, 8, '#cbd5e1'], [12, 8, '#18181b'],
+        [3, 9, '#18181b'], [4, 9, '#94a3b8'], [5, 9, '#b91c1c'], [6, 9, '#10b981'], [7, 9, '#991b1b'], [8, 9, '#991b1b'], [9, 9, '#059669'], [10, 9, '#991b1b'], [11, 9, '#94a3b8'], [12, 9, '#18181b'],
+        [4, 10, '#18181b'], [5, 10, '#cbd5e1'], [6, 10, '#991b1b'], [7, 10, '#34d399'], [8, 10, '#10b981'], [9, 10, '#991b1b'], [10, 10, '#94a3b8'], [11, 10, '#18181b'],
+        [5, 11, '#18181b'], [6, 11, '#cbd5e1'], [7, 11, '#991b1b'], [8, 11, '#991b1b'], [9, 11, '#94a3b8'], [10, 11, '#18181b'],
+        [6, 12, '#18181b'], [7, 12, '#f8fafc'], [8, 12, '#94a3b8'], [9, 12, '#18181b'],
+        [7, 13, '#18181b'], [8, 13, '#18181b'],
+        [1, 2, '#fde047'], [14, 10, '#fca5a5']
+      ],
+      ot_badge: [
+        [7, 0, '#fef08a'], [8, 0, '#facc15'],
+        [5, 1, '#18181b'], [6, 1, '#facc15'], [7, 1, '#fde047'], [8, 1, '#facc15'], [9, 1, '#f59e0b'], [10, 1, '#18181b'],
+        [4, 2, '#18181b'], [5, 2, '#fde047'], [6, 2, '#2563eb'], [7, 2, '#3b82f6'], [8, 2, '#2563eb'], [9, 2, '#1d4ed8'], [10, 2, '#f59e0b'], [11, 2, '#18181b'],
+        [3, 3, '#18181b'], [4, 3, '#facc15'], [5, 3, '#3b82f6'], [6, 3, '#2563eb'], [7, 3, '#fef3c7'], [8, 3, '#fde68a'], [9, 3, '#1d4ed8'], [10, 3, '#1e40af'], [11, 3, '#d97706'], [12, 3, '#18181b'],
+        [2, 4, '#18181b'], [3, 4, '#fde047'], [4, 4, '#3b82f6'], [5, 4, '#fffbeb'], [6, 4, '#fef3c7'], [7, 4, '#d97706'], [8, 4, '#fffbeb'], [9, 4, '#fef3c7'], [10, 4, '#fffbeb'], [11, 4, '#1d4ed8'], [12, 4, '#d97706'], [13, 4, '#18181b'],
+        [2, 5, '#18181b'], [3, 5, '#facc15'], [4, 5, '#2563eb'], [5, 5, '#fef3c7'], [6, 5, '#92400e'], [7, 5, '#d97706'], [8, 5, '#fef3c7'], [9, 5, '#92400e'], [10, 5, '#fde68a'], [11, 5, '#1d4ed8'], [12, 5, '#d97706'], [13, 5, '#18181b'],
+        [2, 6, '#18181b'], [3, 6, '#facc15'], [4, 6, '#2563eb'], [5, 6, '#fffbeb'], [6, 6, '#fef3c7'], [7, 6, '#d97706'], [8, 6, '#fffbeb'], [9, 6, '#fef3c7'], [10, 6, '#fde68a'], [11, 6, '#1e40af'], [12, 6, '#b45309'], [13, 6, '#18181b'],
+        [2, 7, '#18181b'], [3, 7, '#f59e0b'], [4, 7, '#1d4ed8'], [5, 7, '#fef3c7'], [6, 7, '#92400e'], [7, 7, '#d97706'], [8, 7, '#fef3c7'], [9, 7, '#92400e'], [10, 7, '#fde68a'], [11, 7, '#1e40af'], [12, 7, '#b45309'], [13, 7, '#18181b'],
+        [2, 8, '#18181b'], [3, 8, '#f59e0b'], [4, 8, '#1d4ed8'], [5, 8, '#fde68a'], [6, 8, '#fef3c7'], [7, 8, '#b45309'], [8, 8, '#fde68a'], [9, 8, '#fef3c7'], [10, 8, '#f59e0b'], [11, 8, '#1e40af'], [12, 8, '#b45309'], [13, 8, '#18181b'],
+        [3, 9, '#18181b'], [4, 9, '#facc15'], [5, 9, '#1d4ed8'], [6, 9, '#1e40af'], [7, 9, '#facc15'], [8, 9, '#f59e0b'], [9, 9, '#1e40af'], [10, 9, '#1e3a8a'], [11, 9, '#b45309'], [12, 9, '#18181b'],
+        [4, 10, '#18181b'], [5, 10, '#f59e0b'], [6, 10, '#1e40af'], [7, 10, '#1e3a8a'], [8, 10, '#1e3a8a'], [9, 10, '#1e3a8a'], [10, 10, '#b45309'], [11, 10, '#18181b'],
+        [5, 11, '#18181b'], [6, 11, '#f59e0b'], [7, 11, '#d97706'], [8, 11, '#b45309'], [9, 11, '#92400e'], [10, 11, '#18181b'],
+        [6, 12, '#18181b'], [7, 12, '#18181b'], [8, 12, '#18181b'], [9, 12, '#18181b'],
+        [1, 3, '#7dd3fc'], [14, 2, '#fde047']
+      ],
+      bible_trophy: [
+        [7, 0, '#fef08a'], [8, 0, '#fde047'], [9, 0, '#fde047'],
+        [6, 1, '#fef08a'], [7, 1, '#ffffff'], [8, 1, '#fde047'], [9, 1, '#facc15'], [10, 1, '#f59e0b'],
+        [6, 2, '#facc15'], [7, 2, '#fde047'], [8, 2, '#facc15'], [9, 2, '#f59e0b'],
+        [7, 3, '#d97706'], [9, 3, '#d97706'],
+        [3, 4, '#18181b'], [4, 4, '#fde047'], [5, 4, '#fef08a'], [6, 4, '#fde047'], [7, 4, '#facc15'], [8, 4, '#facc15'], [9, 4, '#facc15'], [10, 4, '#f59e0b'], [11, 4, '#f59e0b'], [12, 4, '#d97706'], [13, 4, '#18181b'],
+        [1, 5, '#facc15'], [2, 5, '#fde047'], [3, 5, '#18181b'], [4, 5, '#fef08a'], [5, 5, '#facc15'], [6, 5, '#facc15'], [7, 5, '#ef4444'], [8, 5, '#f87171'], [9, 5, '#facc15'], [10, 5, '#f59e0b'], [11, 5, '#d97706'], [12, 5, '#b45309'], [13, 5, '#18181b'], [14, 5, '#facc15'], [15, 5, '#f59e0b'],
+        [1, 6, '#f59e0b'], [3, 6, '#18181b'], [4, 6, '#fde047'], [5, 6, '#facc15'], [6, 6, '#facc15'], [7, 6, '#dc2626'], [8, 6, '#ef4444'], [9, 6, '#f59e0b'], [10, 6, '#f59e0b'], [11, 6, '#d97706'], [12, 6, '#b45309'], [13, 6, '#18181b'], [15, 6, '#d97706'],
+        [1, 7, '#d97706'], [2, 7, '#f59e0b'], [3, 7, '#18181b'], [4, 7, '#facc15'], [5, 7, '#facc15'], [6, 7, '#f59e0b'], [7, 7, '#f59e0b'], [8, 7, '#d97706'], [9, 7, '#d97706'], [10, 7, '#b45309'], [11, 7, '#b45309'], [12, 7, '#18181b'], [14, 7, '#d97706'], [15, 7, '#b45309'],
+        [4, 8, '#18181b'], [5, 8, '#facc15'], [6, 8, '#f59e0b'], [7, 8, '#f59e0b'], [8, 8, '#d97706'], [9, 8, '#b45309'], [10, 8, '#b45309'], [11, 8, '#18181b'],
+        [5, 9, '#18181b'], [6, 9, '#fde047'], [7, 9, '#facc15'], [8, 9, '#d97706'], [9, 9, '#b45309'], [10, 9, '#18181b'],
+        [7, 10, '#fde047'], [8, 10, '#f59e0b'], [9, 10, '#b45309'],
+        [7, 11, '#facc15'], [8, 11, '#d97706'], [9, 11, '#92400e'],
+        [6, 12, '#fde047'], [7, 12, '#facc15'], [8, 12, '#f59e0b'], [9, 12, '#d97706'], [10, 12, '#b45309'],
+        [4, 13, '#18181b'], [5, 13, '#78350f'], [6, 13, '#92400e'], [7, 13, '#78350f'], [8, 13, '#78350f'], [9, 13, '#78350f'], [10, 13, '#78350f'], [11, 13, '#451a03'], [12, 13, '#18181b'],
+        [3, 14, '#18181b'], [4, 14, '#78350f'], [5, 14, '#78350f'], [6, 14, '#fde047'], [7, 14, '#facc15'], [8, 14, '#fde047'], [9, 14, '#facc15'], [10, 14, '#f59e0b'], [11, 14, '#451a03'], [12, 14, '#451a03'], [13, 14, '#18181b'],
+        [3, 15, '#18181b'], [4, 15, '#451a03'], [5, 15, '#451a03'], [6, 15, '#451a03'], [7, 15, '#451a03'], [8, 15, '#451a03'], [9, 15, '#451a03'], [10, 15, '#451a03'], [11, 15, '#451a03'], [12, 15, '#451a03'], [13, 15, '#18181b'],
+        [2, 1, '#fde047'], [14, 2, '#fef08a'], [0, 10, '#fde047'], [16, 9, '#fef08a']
+      ]
+    };
+    const px = PIXELS[type] || PIXELS.bible_trophy;
+    const rects = px.map(p => `<rect x="${p[0]}" y="${p[1]}" width="1" height="1" fill="${p[2]}" />`).join('');
+    const vbW = type === 'bible_trophy' ? 17 : 16;
+    const vbH = type === 'bible_trophy' ? 16 : 14;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" shape-rendering="crispEdges" style="height: ${heightPx}px; width: auto; display: block;">${rects}</svg>`;
+  },
+
+  renderTrophyShowcase() {
+    const container = document.getElementById('profile-trophy-showcase');
+    if (!container || typeof TalentService === 'undefined' || typeof StorageService === 'undefined') return;
+
+    const showcase = TalentService.getTrophyShowcase();
+    const stats = StorageService.getStats();
+    const cycle = showcase.currentCycle || 1;
+    const claims = TalentService.getClaimedRecord();
+
+    const ntSvg = this.getTrophyBadgeSvg('nt_badge', 36);
+    const otSvg = this.getTrophyBadgeSvg('ot_badge', 36);
+    const trophySvg = this.getTrophyBadgeSvg('bible_trophy', 46);
+
+    // 1. 트로피 선반
+    let trophyHtml = showcase.bibleTrophies.map(t => `
+      <div class="trophy-slot-item gold" onclick="App.showToast('🏆 ${t.date || ''} 제${t.cycle}독 성경 66권 완독!')">
+        <div style="filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.3));">${trophySvg}</div>
+        <div class="trophy-slot-label gold">제${t.cycle}독 완독</div>
+        <div class="trophy-slot-date">${t.date || '달성'}</div>
+      </div>
+    `).join('');
+
+    const hasCurrentTrophy = showcase.bibleTrophies.some(t => Number(t.cycle) === cycle);
+    if (!hasCurrentTrophy) {
+      trophyHtml += `
+        <div class="trophy-slot-item pending" onclick="App.showToast('제${cycle}독 성경 66권 완독 진행률: ${stats.percent}% (${stats.totalRead}/1,189장)')">
+          <div style="font-size: 22px; filter: grayscale(1); opacity: 0.4;">🏆</div>
+          <div class="trophy-slot-label pending">제${cycle}독 진행중</div>
+          <div class="trophy-mini-bar-wrap"><div class="trophy-mini-bar-fill gold" style="width: ${stats.percent}%;"></div></div>
+          <div class="trophy-mini-pct gold">${stats.percent}%</div>
+        </div>
+      `;
+    }
+
+    // 2. 신약 뱃지 선반 (붉은색)
+    let ntHtml = showcase.ntBadges.map(t => `
+      <div class="trophy-slot-item red" onclick="App.showToast('📕 ${t.date || ''} ${t.cycle}독 신약통독 뱃지 획득!')">
+        ${ntSvg}
+        <div class="trophy-slot-label red">${t.cycle}독 신약</div>
+        <div class="trophy-slot-date">${t.date || '획득'}</div>
+      </div>
+    `).join('');
+
+    const hasCurrentNt = showcase.ntBadges.some(t => Number(t.cycle) === cycle);
+    if (!hasCurrentNt) {
+      ntHtml += `
+        <div class="trophy-slot-item pending" onclick="App.showToast('${cycle}독 신약 진행률: ${stats.ntPercent}% (${stats.ntRead}/260장)')">
+          <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📕</div>
+          <div class="trophy-slot-label pending">${cycle}독 신약</div>
+          <div class="trophy-mini-bar-wrap"><div class="trophy-mini-bar-fill red" style="width: ${stats.ntPercent}%;"></div></div>
+          <div class="trophy-mini-pct red">${stats.ntPercent}%</div>
+        </div>
+      `;
+    }
+
+    // 3. 구약 뱃지 선반 (푸른색)
+    let otHtml = showcase.otBadges.map(t => `
+      <div class="trophy-slot-item blue" onclick="App.showToast('📘 ${t.date || ''} ${t.cycle}독 구약통독 뱃지 획득!')">
+        ${otSvg}
+        <div class="trophy-slot-label blue">${t.cycle}독 구약</div>
+        <div class="trophy-slot-date">${t.date || '획득'}</div>
+      </div>
+    `).join('');
+
+    const hasCurrentOt = showcase.otBadges.some(t => Number(t.cycle) === cycle);
+    if (!hasCurrentOt) {
+      otHtml += `
+        <div class="trophy-slot-item pending" onclick="App.showToast('${cycle}독 구약 진행률: ${stats.otPercent}% (${stats.otRead}/929장)')">
+          <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📘</div>
+          <div class="trophy-slot-label pending">${cycle}독 구약</div>
+          <div class="trophy-mini-bar-wrap"><div class="trophy-mini-bar-fill blue" style="width: ${stats.otPercent}%;"></div></div>
+          <div class="trophy-mini-pct blue">${stats.otPercent}%</div>
+        </div>
+      `;
+    }
+
+    const canStartNewCycle = StorageService.isBibleComplete() && !!claims.achieve_bible_complete;
+    const cycleBtnHtml = canStartNewCycle
+      ? `<button type="button" class="btn-new-bible-cycle" onclick="App.handleStartNewBibleCycle()">🔄 제${cycle + 1}독 새 출발하기</button>`
+      : (StorageService.isBibleComplete()
+        ? `<button type="button" class="btn-new-bible-cycle" onclick="App.openQuestsModal()">🏆 퀘스트에서 트로피 수령하기</button>`
+        : '');
+
+    container.innerHTML = `
+      <div class="trophy-showcase-header">
+        <div class="trophy-showcase-title">
+          <span>🏆</span> 나의 성경 통독 진열장
+          <span class="trophy-showcase-cycle-tag">(현재 제${cycle}독)</span>
+        </div>
+        <div class="trophy-summary-pills">
+          <span class="trophy-pill gold">🏆 트로피 ${showcase.bibleTrophies.length}</span>
+          <span class="trophy-pill red">📕 신약 ${showcase.ntBadges.length}</span>
+          <span class="trophy-pill blue">📘 구약 ${showcase.otBadges.length}</span>
+        </div>
+      </div>
+
+      <div class="trophy-shelf-title gold"><span>👑 신구약 완독 트로피 선반</span><span>1,189장</span></div>
+      <div class="trophy-shelf-row gold">${trophyHtml}</div>
+
+      <div class="trophy-shelf-title red"><span>📕 신약통독 뱃지 선반</span><span>260장</span></div>
+      <div class="trophy-shelf-row red">${ntHtml}</div>
+
+      <div class="trophy-shelf-title blue"><span>📘 구약통독 뱃지 선반</span><span>929장</span></div>
+      <div class="trophy-shelf-row blue">${otHtml}</div>
+
+      <div class="trophy-showcase-footer">
+        <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">💡 통독을 완료할 때마다 진열장에 트로피와 뱃지가 평생 쌓입니다!</span>
+        ${cycleBtnHtml}
+      </div>
+    `;
+  },
+
+  handleStartNewBibleCycle() {
+    if (typeof StorageService === 'undefined') return;
+    const currentCycle = StorageService.getBibleCycle ? StorageService.getBibleCycle() : 1;
+    const ok = confirm(
+      `🎉 제${currentCycle}독 성경 전체 완독을 축하드립니다!\n\n` +
+      `[제${currentCycle + 1}독 새 출발]을 시작하시겠습니까?\n` +
+      `• 지금까지 모은 트로피·뱃지 진열장, 일별 통독 캘린더, 연속 통독, 찰스 단계, 달란트·아이템은 100% 그대로 유지됩니다.\n` +
+      `• 성경 66권 장별 체크만 새 회독을 위해 초기화됩니다.`
+    );
+    if (!ok) return;
+
+    const res = StorageService.startNewBibleCycle();
+    if (res && res.success) {
+      if (typeof RetroAudio !== 'undefined') RetroAudio.success();
+      this.showToast(`🔄 제${res.nextCycle}독 성경 통독이 시작되었습니다! 힘차게 도전해요! 🐑✨`);
+      this.renderProfileStats();
+      this.renderBibleList();
+      this.renderHomeTalents();
+    }
+  },
+
+  openGrandCelebrationModal(res) {
+    const modal = document.getElementById('nt-grand-celebration-modal');
+    if (!modal) return;
+    const iconEl = document.getElementById('grand-celebration-icon');
+    const titleEl = document.getElementById('grand-celebration-title');
+    const verseEl = document.getElementById('grand-celebration-verse');
+    const rewardBox = document.getElementById('grand-celebration-reward-box');
+    const otUnlockEl = document.getElementById('grand-celebration-ot-unlock');
+
+    const type = res.awardedTrophyType || 'nt_badge';
+    const cycle = res.cycle || 1;
+    const badgeSvg = this.getTrophyBadgeSvg(type, 64);
+
+    if (type === 'nt_badge') {
+      if (iconEl) iconEl.innerHTML = badgeSvg;
+      if (titleEl) titleEl.textContent = `할렐루야! 제${cycle}독 신약 260장 완독!`;
+      if (verseEl) verseEl.innerHTML = `"잘하였도다 착하고 충성된 종아<br>네가 적은 일에 충성하였으매<br>내가 많은 것을 네게 맡기리니<br>네 주인의 즐거움에 참여할지어다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 마태복음 25:21 -</span>`;
+      if (rewardBox) {
+        rewardBox.innerHTML = res.reward > 0
+          ? `<span>🎉 완독 특별 보상:</span> <span>+${res.reward} 달란트 & 📕 신약통독 뱃지 진열!</span>`
+          : `<span>🎉 완독 특별 보상:</span> <span>📕 ${cycle}독 신약통독 뱃지 진열장 추가!</span>`;
+      }
+      if (otUnlockEl) {
+        otUnlockEl.style.display = 'block';
+        otUnlockEl.textContent = '📖 구약 성경 39권(929장)도 이어서 정복해 보세요!';
+      }
+    } else if (type === 'ot_badge') {
+      if (iconEl) iconEl.innerHTML = badgeSvg;
+      if (titleEl) titleEl.textContent = `놀라워요! 제${cycle}독 구약 929장 완독!`;
+      if (verseEl) verseEl.innerHTML = `"주의 말씀은 내 발에 등이요<br>내 길에 빛이니이다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 시편 119:105 -</span>`;
+      if (rewardBox) rewardBox.innerHTML = `<span>🎉 완독 특별 보상:</span> <span>📘 ${cycle}독 구약통독 뱃지 진열장 추가!</span>`;
+      if (otUnlockEl) otUnlockEl.style.display = 'none';
+    } else {
+      if (iconEl) iconEl.innerHTML = badgeSvg;
+      if (titleEl) titleEl.textContent = `영광의 대완독! 제${cycle}독 성경 66권 완독!`;
+      if (verseEl) verseEl.innerHTML = `"나는 선한 싸움을 싸우고<br>나의 달려갈 길을 마치고<br>믿음을 지켰으니"<br><span style="font-size: 10.5px; opacity: 0.8;">- 디모데후서 4:7 -</span>`;
+      if (rewardBox) rewardBox.innerHTML = `<span>🎉 대완독 영예 보상:</span> <span>🏆 제${cycle}독 황금 어린양 트로피 진열장 등록!</span>`;
+      if (otUnlockEl) {
+        otUnlockEl.style.display = 'block';
+        otUnlockEl.textContent = `🔄 [내 정보 > 트로피 진열장]에서 제${cycle + 1}독 새 출발을 시작할 수 있어요!`;
+      }
+    }
+
+    modal.style.display = 'flex';
   },
 
   renderReadingCalendar(year, month) {
