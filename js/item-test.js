@@ -354,41 +354,41 @@ var PROTOTYPE_ITEM_PIXELS = {
 
       const px = 0.2; // 0.2px 울트라 슬림 선형 픽셀
       return [
-        // 1. 큰 6각 선형 눈꽃 (2중 V가지, 여백 있게 배치)
-        ...makeThinSnowflake(2.6, 1.4, 1.55, px, '#3b82f6', true, true),
-        ...makeThinSnowflake(20.6, 2.2, 1.55, px, '#2563eb', true, true),
-        ...makeThinSnowflake(2.8, 13.6, 1.45, px, '#3b82f6', true, true),
-        ...makeThinSnowflake(21.2, 14.2, 1.45, px, '#2563eb', true, true),
+        // 1. 큰 6각 선형 눈꽃 (맑은 하늘색 + 일부 반투명)
+        ...makeThinSnowflake(2.6, 1.4, 1.55, px, '#38bdf8', true, true),
+        ...makeThinSnowflake(20.6, 2.2, 1.55, px, 'rgba(56, 189, 248, 0.72)', true, true),
+        ...makeThinSnowflake(2.8, 13.6, 1.45, px, 'rgba(14, 165, 233, 0.75)', true, true),
+        ...makeThinSnowflake(21.2, 14.2, 1.45, px, '#38bdf8', true, true),
 
-        // 2. 중간 6각 선형 눈꽃 (1중 V가지)
-        ...makeThinSnowflake(11.6, -2.0, 1.05, px, '#60a5fa', true, false),
-        ...makeThinSnowflake(1.2, 7.6, 1.05, px, '#60a5fa', true, false),
-        ...makeThinSnowflake(22.6, 8.2, 1.05, px, '#3b82f6', true, false),
-        ...makeThinSnowflake(6.2, -1.2, 0.90, px, '#93c5fd', true, false),
-        ...makeThinSnowflake(16.8, -1.4, 0.90, px, '#60a5fa', true, false),
+        // 2. 중간 6각 선형 눈꽃 (하늘색 & 반투명 아이스블루)
+        ...makeThinSnowflake(11.6, -2.0, 1.05, px, 'rgba(125, 211, 252, 0.75)', true, false),
+        ...makeThinSnowflake(1.2, 7.6, 1.05, px, '#7dd3fc', true, false),
+        ...makeThinSnowflake(22.6, 8.2, 1.05, px, 'rgba(56, 189, 248, 0.55)', true, false),
+        ...makeThinSnowflake(6.2, -1.2, 0.90, px, 'rgba(186, 230, 253, 0.7)', true, false),
+        ...makeThinSnowflake(16.8, -1.4, 0.90, px, 'rgba(125, 211, 252, 0.65)', true, false),
 
-        // 3. 작은 심플 별 눈꽃 (가지 없는 6각 별)
-        ...makeThinSnowflake(4.6, 4.6, 0.65, px, '#93c5fd', false, false),
-        ...makeThinSnowflake(19.2, 5.4, 0.65, px, '#60a5fa', false, false),
-        ...makeThinSnowflake(3.8, 10.6, 0.65, px, '#60a5fa', false, false),
-        ...makeThinSnowflake(20.4, 11.2, 0.65, px, '#93c5fd', false, false),
-        ...makeThinSnowflake(6.4, 16.4, 0.60, px, '#60a5fa', false, false),
-        ...makeThinSnowflake(18.0, 16.8, 0.60, px, '#93c5fd', false, false),
+        // 3. 작은 심플 별 눈꽃 (은은한 반투명 하늘빛)
+        ...makeThinSnowflake(4.6, 4.6, 0.65, px, 'rgba(125, 211, 252, 0.5)', false, false),
+        ...makeThinSnowflake(19.2, 5.4, 0.65, px, '#7dd3fc', false, false),
+        ...makeThinSnowflake(3.8, 10.6, 0.65, px, 'rgba(56, 189, 248, 0.45)', false, false),
+        ...makeThinSnowflake(20.4, 11.2, 0.65, px, 'rgba(186, 230, 253, 0.8)', false, false),
+        ...makeThinSnowflake(6.4, 16.4, 0.60, px, 'rgba(125, 211, 252, 0.55)', false, false),
+        ...makeThinSnowflake(18.0, 16.8, 0.60, px, '#7dd3fc', false, false),
 
         // 4. 작은 동그라미/도넛 눈 결정 (◎)
-        ...makeRingFlake(0.8, 3.8, 0.42, px, '#3b82f6'),
-        ...makeRingFlake(18.2, 0.4, 0.42, px, '#60a5fa'),
-        ...makeRingFlake(23.0, 4.8, 0.42, px, '#3b82f6'),
-        ...makeRingFlake(1.6, 16.8, 0.42, px, '#60a5fa'),
-        ...makeRingFlake(22.8, 17.2, 0.42, px, '#3b82f6'),
+        ...makeRingFlake(0.8, 3.8, 0.42, px, 'rgba(56, 189, 248, 0.7)'),
+        ...makeRingFlake(18.2, 0.4, 0.42, px, 'rgba(125, 211, 252, 0.5)'),
+        ...makeRingFlake(23.0, 4.8, 0.42, px, '#38bdf8'),
+        ...makeRingFlake(1.6, 16.8, 0.42, px, 'rgba(125, 211, 252, 0.65)'),
+        ...makeRingFlake(22.8, 17.2, 0.42, px, 'rgba(56, 189, 248, 0.55)'),
 
-        // 5. 공중에 흩날리는 아주 작은 1도트 눈가루 점들
-        [0.4, 0.4, '#60a5fa', 0.25], [4.8, -1.8, '#3b82f6', 0.2],
-        [9.0, -2.4, '#93c5fd', 0.25], [14.2, -2.2, '#3b82f6', 0.2],
-        [22.4, -0.8, '#60a5fa', 0.25], [0.2, 5.8, '#93c5fd', 0.2],
-        [23.4, 6.4, '#60a5fa', 0.25], [0.6, 11.8, '#3b82f6', 0.2],
-        [23.2, 12.6, '#93c5fd', 0.25], [4.6, 15.2, '#60a5fa', 0.2],
-        [19.2, 15.6, '#3b82f6', 0.25], [11.8, 17.6, '#93c5fd', 0.2]
+        // 5. 공중에 흩날리는 아주 작은 1도트 눈가루 점들 (선명 + 반투명 믹스)
+        [0.4, 0.4, 'rgba(125, 211, 252, 0.7)', 0.25], [4.8, -1.8, '#38bdf8', 0.2],
+        [9.0, -2.4, 'rgba(186, 230, 253, 0.6)', 0.25], [14.2, -2.2, 'rgba(56, 189, 248, 0.5)', 0.2],
+        [22.4, -0.8, '#7dd3fc', 0.25], [0.2, 5.8, 'rgba(186, 230, 253, 0.75)', 0.2],
+        [23.4, 6.4, 'rgba(125, 211, 252, 0.5)', 0.25], [0.6, 11.8, '#38bdf8', 0.2],
+        [23.2, 12.6, 'rgba(186, 230, 253, 0.65)', 0.25], [4.6, 15.2, 'rgba(125, 211, 252, 0.45)', 0.2],
+        [19.2, 15.6, '#38bdf8', 0.25], [11.8, 17.6, 'rgba(186, 230, 253, 0.6)', 0.2]
       ];
     })()
   }
