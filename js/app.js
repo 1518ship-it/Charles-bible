@@ -3251,21 +3251,7 @@ const App = {
     const streakEl = document.getElementById('stats-streak-val');
     if (streakEl) streakEl.textContent = `${streak.count}일 연속 (최대 ${streak.maxStreak}일)`;
 
-    const badgeContainer = document.getElementById('stats-badge-list');
-    if (badgeContainer) {
-      badgeContainer.innerHTML = achievements.map(ach => `
-        <div class="badge-clean-item ${ach.unlocked ? '' : 'locked'}">
-          <div class="badge-header">
-            <span class="badge-icon">${ach.icon}</span>
-            <span class="badge-name">${ach.name}</span>
-          </div>
-          <span class="badge-desc">${ach.desc}</span>
-          <span style="font-size: 10px; font-weight: 700; color: ${ach.unlocked ? '#000' : '#888'};">
-            ${ach.unlocked ? '✓ 획득 완료' : '🔒 잠김'}
-          </span>
-        </div>
-      `).join('');
-    }
+    this.renderTrophyShowcase();
   },
 
   // ==================== 5. 내 정보 (프로필 & 달력) 탭 렌더링 ====================
@@ -3515,6 +3501,7 @@ const App = {
     if (res && res.success) {
       if (typeof RetroAudio !== 'undefined') RetroAudio.success();
       this.showToast(`🔄 제${res.nextCycle}독 성경 통독이 시작되었습니다! 힘차게 도전해요! 🐑✨`);
+      this.renderStats();
       this.renderProfileStats();
       this.renderBibleList();
       this.renderHomeTalents();
