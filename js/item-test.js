@@ -388,7 +388,15 @@ var PROTOTYPE_ITEM_PIXELS = {
         [22.4, -0.8, '#7dd3fc', 0.25], [0.2, 5.8, 'rgba(186, 230, 253, 0.75)', 0.2],
         [23.4, 6.4, 'rgba(125, 211, 252, 0.5)', 0.25], [0.6, 11.8, '#38bdf8', 0.2],
         [23.2, 12.6, 'rgba(186, 230, 253, 0.65)', 0.25], [4.6, 15.2, 'rgba(125, 211, 252, 0.45)', 0.2],
-        [19.2, 15.6, '#38bdf8', 0.25], [11.8, 17.6, 'rgba(186, 230, 253, 0.6)', 0.2]
+        [19.2, 15.6, '#38bdf8', 0.25], [11.8, 17.6, 'rgba(186, 230, 253, 0.6)', 0.2],
+
+        // 6. 포근하고 따뜻한 겨울빛 보케(빛망울) 포인트 (크림/웜골드 반투명)
+        [3.6, -1.6, 'rgba(254, 249, 195, 0.65)', 0.45],
+        [19.4, -1.8, 'rgba(254, 243, 199, 0.6)', 0.45],
+        [1.4, 5.2, 'rgba(255, 251, 235, 0.65)', 0.4],
+        [22.2, 4.6, 'rgba(254, 249, 195, 0.55)', 0.4],
+        [4.2, 12.2, 'rgba(254, 243, 199, 0.55)', 0.4],
+        [19.6, 12.8, 'rgba(255, 251, 235, 0.6)', 0.45]
       ];
     })()
   }
@@ -1157,11 +1165,25 @@ const ItemStudio = {
       bannerRects += renderAccessoryHeaderBanner(bannerId, scale);
     }
 
+    const isSnowFall = (backItem === 'back_snow_fall');
+    const snowDefs = isSnowFall ? `
+      <defs>
+        <filter id="snow-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="${(scale * 0.14).toFixed(2)}" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+    ` : '';
+
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
            class="charles-svg ${this.animClass}" 
            style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '300px' : '220px'}; display: block; margin: 0 auto;">
-        <g class="layer-back">${backRects}</g>
+        ${snowDefs}
+        <g class="layer-back"${isSnowFall ? ' filter="url(#snow-soft-glow)"' : ''}>${backRects}</g>
         <g class="layer-grass">${grassRects}</g>
         <g class="layer-body">${bodyRects}</g>
         <g class="layer-side">${sideRects}</g>
