@@ -907,6 +907,53 @@ const ItemStudio = {
     this.renderTrophyShowcaseLab();
   },
 
+  openDemoCelebration(type) {
+    const modal = document.getElementById('studio-celebration-modal');
+    if (!modal) return;
+    const iconEl = document.getElementById('studio-celeb-icon');
+    const titleEl = document.getElementById('studio-celeb-title');
+    const verseEl = document.getElementById('studio-celeb-verse');
+    const rewardEl = document.getElementById('studio-celeb-reward');
+    const subEl = document.getElementById('studio-celeb-sub');
+
+    const designs = this.getTrophyDesignPrototypes();
+    const map = {
+      nt_badge: designs[0],
+      ot_badge: designs[1],
+      bible_trophy: designs[2]
+    };
+    const item = map[type] || designs[2];
+    const svg = this.generateItemSvg(item.pixels, 4, 68);
+    const n = this.demoTrophyCycles || 1;
+
+    if (iconEl) iconEl.innerHTML = svg;
+
+    if (type === 'nt_badge') {
+      if (titleEl) titleEl.textContent = `할렐루야! 제${n}독 신약 260장 완독!`;
+      if (verseEl) verseEl.innerHTML = `"잘하였도다 착하고 충성된 종아<br>네가 적은 일에 충성하였으매<br>내가 많은 것을 네게 맡기리니<br>네 주인의 즐거움에 참여할지어다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 마태복음 25:21 -</span>`;
+      if (rewardEl) rewardEl.innerHTML = `<span>🎉 완독 특별 보상:</span> <span>+100 달란트 & 📕 신약통독 뱃지!</span>`;
+      if (subEl) {
+        subEl.style.display = 'block';
+        subEl.textContent = '📖 구약 성경 39권(929장)도 이어서 정복해 보세요!';
+      }
+    } else if (type === 'ot_badge') {
+      if (titleEl) titleEl.textContent = `놀라워요! 제${n}독 구약 929장 완독!`;
+      if (verseEl) verseEl.innerHTML = `"주의 말씀은 내 발에 등이요<br>내 길에 빛이니이다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 시편 119:105 -</span>`;
+      if (rewardEl) rewardEl.innerHTML = `<span>🎉 완독 특별 보상:</span> <span>📘 ${n}독 구약통독 뱃지 진열장 추가!</span>`;
+      if (subEl) subEl.style.display = 'none';
+    } else {
+      if (titleEl) titleEl.textContent = `영광의 대완독! 제${n}독 성경 66권 완독!`;
+      if (verseEl) verseEl.innerHTML = `"나는 선한 싸움을 싸우고<br>나의 달려갈 길을 마치고<br>믿음을 지켰으니"<br><span style="font-size: 10.5px; opacity: 0.8;">- 디모데후서 4:7 -</span>`;
+      if (rewardEl) rewardEl.innerHTML = `<span>🎉 대완독 영예 보상:</span> <span>🏆 제${n}독 황금 어린양 트로피 진열장 등록!</span>`;
+      if (subEl) {
+        subEl.style.display = 'block';
+        subEl.textContent = `🔄 [통계 > 통독 진열장]에서 제${n + 1}독 새 출발을 시작할 수 있어요!`;
+      }
+    }
+
+    modal.style.display = 'flex';
+  },
+
   renderTrophyShowcaseLab() {
     const designsEl = document.getElementById('trophy-designs-container');
     const previewEl = document.getElementById('trophy-showcase-preview');
