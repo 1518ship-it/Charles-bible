@@ -267,21 +267,21 @@ var PROTOTYPE_ITEM_PIXELS = {
     ]
   },
 
-  // 13. 은혜의 흩날리는 눈꽃 배경 (Back: 첨부 이미지 기반 정밀 6각 덴드라이트 & 플레이트 눈꽃 결정)
+  // 13. 은혜의 흩날리는 눈꽃 배경 (Back: 첨부 이미지 스타일의 가늘고 섬세한 파란/하늘빛 눈꽃 결정 & 미세 눈가루 패턴)
   'back_snow_fall': {
     slot: 'back',
     name: '은혜의 눈꽃 배경',
     category: '배경',
     icon: '❄️',
-    desc: '말씀을 사모하는 찰스 위로 하늘의 크신 평강과 은혜가 하얀 눈꽃처럼 소복이 내려앉아요',
+    desc: '말씀을 사모하는 찰스 위로 가늘고 섬세한 은혜의 눈꽃 결정들이 소복이 내려앉아요',
     pixels: (function() {
       const math = Math;
 
-      // 6각 덴드라이트 가지 눈꽃 (첨부 이미지 좌상단 1번 스타일)
-      function makeDendriteSnowflake(cx, cy, radius, pixelSize, color, coreColor) {
+      // 가늘고 섬세한 1겹 선형 6각 눈꽃 (첨부 이미지의 큰/중간 눈꽃 스타일)
+      function makeThinSnowflake(cx, cy, radius, pixelSize, color, hasOuterV = true, hasInnerV = false) {
         const pixels = new Map();
         const angles = [0, math.PI/3, 2*math.PI/3, math.PI, 4*math.PI/3, 5*math.PI/3];
-        const step = pixelSize * 0.35;
+        const step = pixelSize * 0.45;
 
         function addPx(x, y, col) {
           const qx = Math.round(x / pixelSize) * pixelSize;
@@ -292,161 +292,103 @@ var PROTOTYPE_ITEM_PIXELS = {
           }
         }
 
-        // 중심 6각 핵 & 링 홀
-        const outerCoreR = radius * 0.28;
-        const innerHoleR = radius * 0.08;
-        for (let r = innerHoleR; r <= outerCoreR; r += step) {
-          for (let th = 0; th < 2 * math.PI; th += 0.06) {
-            addPx(cx + r * math.cos(th), cy + r * math.sin(th), coreColor || color);
-          }
-        }
-
-        // 6개 주축 가지 + V자 깃털 곁가지 (Dendrites) + 화살촉 팁
         for (const a of angles) {
           const cosA = math.cos(a);
           const sinA = math.sin(a);
-          
-          // 주축 줄기
-          for (let d = outerCoreR * 0.8; d <= radius; d += step) {
+
+          // 1겹의 가느다란 주축
+          for (let d = 0; d <= radius; d += step) {
             addPx(cx + d * cosA, cy + d * sinA, color);
-            addPx(cx + d * cosA - pixelSize * 0.5 * sinA, cy + d * sinA + pixelSize * 0.5 * cosA, color);
-            addPx(cx + d * cosA + pixelSize * 0.5 * sinA, cy + d * sinA - pixelSize * 0.5 * cosA, color);
           }
 
-          // 안쪽 V자 깃털 곁가지 (1단)
-          const w1Pos = radius * 0.50;
-          const w1Len = radius * 0.45;
-          for (const wa of [a + math.PI/3, a - math.PI/3]) {
-            const wCos = math.cos(wa);
-            const wSin = math.sin(wa);
-            const ox = cx + w1Pos * cosA;
-            const oy = cy + w1Pos * sinA;
-            for (let wd = 0; wd <= w1Len; wd += step) {
-              addPx(ox + wd * wCos, oy + wd * wSin, color);
-              addPx(ox + wd * wCos - pixelSize * 0.4 * wSin, oy + wd * wSin + pixelSize * 0.4 * wCos, color);
-            }
-            // 곁가지 위 미세 서브 바브
-            const subPos = w1Len * 0.5;
-            const subLen = radius * 0.20;
-            const subAngle = (wa === a + math.PI/3) ? wa + math.PI/3 : wa - math.PI/3;
-            const sox = ox + subPos * wCos;
-            const soy = oy + subPos * wSin;
-            for (let sd = 0; sd <= subLen; sd += step) {
-              addPx(sox + sd * math.cos(subAngle), soy + sd * math.sin(subAngle), color);
-            }
-          }
-
-          // 바깥쪽 V자 깃털 곁가지 (2단)
-          const w2Pos = radius * 0.78;
-          const w2Len = radius * 0.32;
-          for (const wa of [a + math.PI/3, a - math.PI/3]) {
-            const wCos = math.cos(wa);
-            const wSin = math.sin(wa);
-            const ox = cx + w2Pos * cosA;
-            const oy = cy + w2Pos * sinA;
-            for (let wd = 0; wd <= w2Len; wd += step) {
-              addPx(ox + wd * wCos, oy + wd * wSin, color);
-            }
-          }
-
-          // 끝단 다이아몬드 스피어 팁
-          const tipX = cx + radius * cosA;
-          const tipY = cy + radius * sinA;
-          for (let td = 0; td <= radius * 0.24; td += step) {
-            addPx(tipX + td * cosA, tipY + td * sinA, color);
-          }
-          for (const ta of [a + math.PI/4, a - math.PI/4]) {
-            const tCos = math.cos(ta);
-            const tSin = math.sin(ta);
-            for (let td = 0; td <= radius * 0.20; td += step) {
-              addPx(tipX + td * tCos, tipY + td * tSin, color);
-            }
-          }
-        }
-        return Array.from(pixels.values());
-      }
-
-      // 6각 플레이트 덴드라이트 눈꽃 (첨부 이미지 중앙 5번 스타일: 넓은 6각 중심판 + 톱니 날개)
-      function makePlateSnowflake(cx, cy, radius, pixelSize, color) {
-        const pixels = new Map();
-        const angles = [0, math.PI/3, 2*math.PI/3, math.PI, 4*math.PI/3, 5*math.PI/3];
-        const step = pixelSize * 0.35;
-
-        function addPx(x, y, col) {
-          const qx = Math.round(x / pixelSize) * pixelSize;
-          const qy = Math.round(y / pixelSize) * pixelSize;
-          const key = qx.toFixed(3) + '_' + qy.toFixed(3);
-          if (!pixels.has(key)) {
-            pixels.set(key, [parseFloat(qx.toFixed(3)), parseFloat(qy.toFixed(3)), col, pixelSize]);
-          }
-        }
-
-        // 넓은 중심 6각 판 (Plate)
-        const plateR = radius * 0.45;
-        for (let r = 0; r <= plateR; r += step) {
-          for (let th = 0; th < 2 * math.PI; th += 0.05) {
-            addPx(cx + r * math.cos(th), cy + r * math.sin(th), color);
-          }
-        }
-
-        // 6개 두툼한 가지 + 쉐브론 날개
-        for (const a of angles) {
-          const cosA = math.cos(a);
-          const sinA = math.sin(a);
-          for (let d = plateR; d <= radius; d += step) {
-            addPx(cx + d * cosA, cy + d * sinA, color);
-            addPx(cx + d * cosA - pixelSize * 0.6 * sinA, cy + d * sinA + pixelSize * 0.6 * cosA, color);
-            addPx(cx + d * cosA + pixelSize * 0.6 * sinA, cy + d * sinA - pixelSize * 0.6 * cosA, color);
-          }
-          const wPos = radius * 0.72;
-          const wLen = radius * 0.35;
-          for (const wa of [a + math.PI/3, a - math.PI/3]) {
+          // 바깥쪽 V자 곁가지
+          if (hasOuterV) {
+            const wPos = radius * 0.62;
+            const wLen = radius * 0.34;
             const ox = cx + wPos * cosA;
             const oy = cy + wPos * sinA;
-            for (let wd = 0; wd <= wLen; wd += step) {
-              addPx(ox + wd * math.cos(wa), oy + wd * math.sin(wa), color);
+            for (const wa of [a + math.PI/3, a - math.PI/3]) {
+              const wCos = math.cos(wa);
+              const wSin = math.sin(wa);
+              for (let wd = 0; wd <= wLen; wd += step) {
+                addPx(ox + wd * wCos, oy + wd * wSin, color);
+              }
             }
           }
-          const tipX = cx + radius * cosA;
-          const tipY = cy + radius * sinA;
-          for (let td = 0; td <= radius * 0.25; td += step) {
-            addPx(tipX + td * cosA, tipY + td * sinA, color);
-          }
-          for (const ta of [a + math.PI/3, a - math.PI/3]) {
-            for (let td = 0; td <= radius * 0.20; td += step) {
-              addPx(tipX + td * math.cos(ta), tipY + td * math.sin(ta), color);
+
+          // 안쪽 V자 곁가지 (큰 눈꽃용)
+          if (hasInnerV) {
+            const wPos = radius * 0.36;
+            const wLen = radius * 0.24;
+            const ox = cx + wPos * cosA;
+            const oy = cy + wPos * sinA;
+            for (const wa of [a + math.PI/3, a - math.PI/3]) {
+              const wCos = math.cos(wa);
+              const wSin = math.sin(wa);
+              for (let wd = 0; wd <= wLen; wd += step) {
+                addPx(ox + wd * wCos, oy + wd * wSin, color);
+              }
             }
           }
         }
         return Array.from(pixels.values());
       }
 
+      // 작은 도넛/링 눈 결정 (◎ 스타일)
+      function makeRingFlake(cx, cy, radius, pixelSize, color) {
+        const pixels = new Map();
+        function addPx(x, y, col) {
+          const qx = Math.round(x / pixelSize) * pixelSize;
+          const qy = Math.round(y / pixelSize) * pixelSize;
+          const key = qx.toFixed(3) + '_' + qy.toFixed(3);
+          if (!pixels.has(key)) {
+            pixels.set(key, [parseFloat(qx.toFixed(3)), parseFloat(qy.toFixed(3)), col, pixelSize]);
+          }
+        }
+        addPx(cx, cy, color);
+        for (let th = 0; th < 2 * math.PI; th += 0.25) {
+          addPx(cx + radius * math.cos(th), cy + radius * math.sin(th), color);
+        }
+        return Array.from(pixels.values());
+      }
+
+      const px = 0.2; // 0.2px 울트라 슬림 선형 픽셀
       return [
-        // 1. 좌상단: 대형 6각 덴드라이트 눈꽃 (스카이블루 #38bdf8 + 코어 화이트)
-        ...makeDendriteSnowflake(3.6, 0.4, 3.2, 0.25, '#38bdf8', '#ffffff'),
-        // 2. 우상단: 플레이트 덴드라이트 눈꽃 (아이스블루 #7dd3fc)
-        ...makePlateSnowflake(20.5, -0.6, 3.0, 0.25, '#7dd3fc'),
-        // 3. 중앙 상단 공중: 맑고 투명한 화이트 눈꽃
-        ...makeDendriteSnowflake(12.0, -1.8, 2.0, 0.25, '#ffffff', '#bae6fd'),
-        // 4. 좌측 외곽: 덴드라이트 눈송이
-        ...makeDendriteSnowflake(1.5, 7.5, 2.3, 0.25, '#38bdf8', '#ffffff'),
-        // 5. 우측 외곽: 플레이트 눈송이
-        ...makePlateSnowflake(22.0, 7.0, 2.3, 0.25, '#38bdf8'),
-        // 6. 좌측 하단 눈송이
-        ...makeDendriteSnowflake(2.0, 13.8, 1.8, 0.25, '#7dd3fc', '#ffffff'),
-        // 7. 우측 하단 눈송이
-        ...makeDendriteSnowflake(21.5, 13.8, 1.8, 0.25, '#7dd3fc', '#ffffff'),
-        // 8. 찰스 주변 공중 흩날리는 미세 스파클 & 작은 눈꽃 가루
-        [7.5, -1.0, '#ffffff', 0.25], [7.75, -1.0, '#ffffff', 0.25],
-        [15.0, -1.5, '#ffffff', 0.25], [15.25, -1.5, '#bae6fd', 0.25],
-        [0.0, 3.0, '#7dd3fc', 0.25], [0.25, 3.25, '#ffffff', 0.25],
-        [23.0, 2.0, '#38bdf8', 0.25], [23.25, 2.25, '#ffffff', 0.25],
-        [6.0, 3.5, '#ffffff', 0.25], [6.25, 3.5, '#e0f2fe', 0.25],
-        [17.0, 3.0, '#ffffff', 0.25], [17.25, 3.25, '#bae6fd', 0.25],
-        [0.0, 10.0, '#ffffff', 0.25], [0.25, 10.25, '#bae6fd', 0.25],
-        [23.0, 10.5, '#ffffff', 0.25], [23.25, 10.0, '#7dd3fc', 0.25],
-        [1.0, 15.5, '#bae6fd', 0.25], [1.25, 15.0, '#ffffff', 0.25],
-        [22.0, 15.5, '#bae6fd', 0.25], [22.25, 15.0, '#ffffff', 0.25]
+        // 1. 큰 6각 선형 눈꽃 (2중 V가지, 여백 있게 배치)
+        ...makeThinSnowflake(2.6, 1.4, 1.55, px, '#3b82f6', true, true),
+        ...makeThinSnowflake(20.6, 2.2, 1.55, px, '#2563eb', true, true),
+        ...makeThinSnowflake(2.8, 13.6, 1.45, px, '#3b82f6', true, true),
+        ...makeThinSnowflake(21.2, 14.2, 1.45, px, '#2563eb', true, true),
+
+        // 2. 중간 6각 선형 눈꽃 (1중 V가지)
+        ...makeThinSnowflake(11.6, -2.0, 1.05, px, '#60a5fa', true, false),
+        ...makeThinSnowflake(1.2, 7.6, 1.05, px, '#60a5fa', true, false),
+        ...makeThinSnowflake(22.6, 8.2, 1.05, px, '#3b82f6', true, false),
+        ...makeThinSnowflake(6.2, -1.2, 0.90, px, '#93c5fd', true, false),
+        ...makeThinSnowflake(16.8, -1.4, 0.90, px, '#60a5fa', true, false),
+
+        // 3. 작은 심플 별 눈꽃 (가지 없는 6각 별)
+        ...makeThinSnowflake(4.6, 4.6, 0.65, px, '#93c5fd', false, false),
+        ...makeThinSnowflake(19.2, 5.4, 0.65, px, '#60a5fa', false, false),
+        ...makeThinSnowflake(3.8, 10.6, 0.65, px, '#60a5fa', false, false),
+        ...makeThinSnowflake(20.4, 11.2, 0.65, px, '#93c5fd', false, false),
+        ...makeThinSnowflake(6.4, 16.4, 0.60, px, '#60a5fa', false, false),
+        ...makeThinSnowflake(18.0, 16.8, 0.60, px, '#93c5fd', false, false),
+
+        // 4. 작은 동그라미/도넛 눈 결정 (◎)
+        ...makeRingFlake(0.8, 3.8, 0.42, px, '#3b82f6'),
+        ...makeRingFlake(18.2, 0.4, 0.42, px, '#60a5fa'),
+        ...makeRingFlake(23.0, 4.8, 0.42, px, '#3b82f6'),
+        ...makeRingFlake(1.6, 16.8, 0.42, px, '#60a5fa'),
+        ...makeRingFlake(22.8, 17.2, 0.42, px, '#3b82f6'),
+
+        // 5. 공중에 흩날리는 아주 작은 1도트 눈가루 점들
+        [0.4, 0.4, '#60a5fa', 0.25], [4.8, -1.8, '#3b82f6', 0.2],
+        [9.0, -2.4, '#93c5fd', 0.25], [14.2, -2.2, '#3b82f6', 0.2],
+        [22.4, -0.8, '#60a5fa', 0.25], [0.2, 5.8, '#93c5fd', 0.2],
+        [23.4, 6.4, '#60a5fa', 0.25], [0.6, 11.8, '#3b82f6', 0.2],
+        [23.2, 12.6, '#93c5fd', 0.25], [4.6, 15.2, '#60a5fa', 0.2],
+        [19.2, 15.6, '#3b82f6', 0.25], [11.8, 17.6, '#93c5fd', 0.2]
       ];
     })()
   }
