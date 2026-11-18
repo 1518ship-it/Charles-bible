@@ -938,10 +938,10 @@ const ItemStudio = {
     const otSvg = this.generateItemSvg(designs[1].pixels, 3, 42);
     const trophySvg = this.generateItemSvg(designs[2].pixels, 3, 54);
 
-    // 시뮬레이션용 현재 진행도 (%)
+    // 시뮬레이션용 현재 진행도 (%): n+1독 진행 중이며 신약은 이미 100% 달성하여 (n+1)독 신약 뱃지까지 획득한 상태!
     const demoTotalPct = 64.2;
-    const demoNtPct = 100.0;
     const demoOtPct = 54.1;
+    const ntCount = n + 1; // (n+1)독 신약은 100% 완독했으므로 뱃지 이미 획득!
 
     let trophySlotsHtml = '';
     for (let i = 1; i <= n; i++) {
@@ -965,29 +965,20 @@ const ItemStudio = {
       </div>
     `;
 
-    // 신약 뱃지 슬롯 (따로 분리)
+    // 신약 뱃지 슬롯 (1독 ~ n+1독까지 획득 완료!)
     let ntBadgeSlotsHtml = '';
-    for (let i = 1; i <= n; i++) {
+    for (let i = 1; i <= ntCount; i++) {
+      const isCurrentCycle = (i === ntCount);
       ntBadgeSlotsHtml += `
-        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);">
+        <div style="display: flex; flex-direction: column; align-items: center; background: ${isCurrentCycle ? 'linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)' : '#ffffff'}; border: 1.5px solid ${isCurrentCycle ? '#60a5fa' : '#bfdbfe'}; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);">
           ${ntSvg}
           <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #1d4ed8;">${i}독 신약</div>
-          <div style="font-size: 9px; color: #60a5fa; font-weight: 600;">2026.11.19</div>
+          <div style="font-size: 9px; color: ${isCurrentCycle ? '#2563eb' : '#60a5fa'}; font-weight: 700;">${isCurrentCycle ? '방금 획득! ✓' : '2026.11.19'}</div>
         </div>
       `;
     }
-    ntBadgeSlotsHtml += `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 8px 10px; min-width: 76px;">
-        <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📘</div>
-        <div style="margin-top: 4px; font-size: 9.5px; font-weight: 800; color: #475569;">${n + 1}독 신약</div>
-        <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 4px;">
-          <div style="width: ${demoNtPct}%; height: 100%; background: #3b82f6; border-radius: 999px;"></div>
-        </div>
-        <div style="margin-top: 2px; font-size: 9.5px; font-weight: 800; color: #2563eb;">${demoNtPct}%</div>
-      </div>
-    `;
 
-    // 구약 뱃지 슬롯 (따로 분리)
+    // 구약 뱃지 슬롯 (1독 ~ n독 획득 + n+1독 진행 중)
     let otBadgeSlotsHtml = '';
     for (let i = 1; i <= n; i++) {
       otBadgeSlotsHtml += `
@@ -1013,11 +1004,11 @@ const ItemStudio = {
       <div style="background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); border: 2px solid #fde68a; border-radius: 16px; padding: 16px; box-shadow: 0 6px 18px rgba(245, 158, 11, 0.08);">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
           <div style="font-size: 14px; font-weight: 900; color: #78350f; display: flex; align-items: center; gap: 6px;">
-            <span>🏆</span> 나의 성경 통독 진열장 <span style="font-size: 11px; color: #b45309; font-weight: 700;">(${n}독 달성 시뮬레이션)</span>
+            <span>🏆</span> 나의 성경 통독 진열장 <span style="font-size: 11px; color: #b45309; font-weight: 700;">(${n}독 완독 · ${n + 1}독 진행중)</span>
           </div>
           <div style="display: flex; gap: 6px; font-size: 11px; font-weight: 800;">
             <span style="background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 999px;">🏆 트로피 ${n}</span>
-            <span style="background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 999px;">📘 신약 ${n}</span>
+            <span style="background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 999px;">📘 신약 ${ntCount}</span>
             <span style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 999px;">📕 구약 ${n}</span>
           </div>
         </div>
