@@ -3571,30 +3571,30 @@ const App = {
 
     if (type === 'nt_badge') {
       if (iconEl) iconEl.innerHTML = badgeSvg;
-      if (titleEl) titleEl.textContent = `할렐루야! 제${cycle}독 신약 260장 완독!`;
+      if (titleEl) titleEl.textContent = `할렐루야! 제${cycle}독 신약 완독!`;
       if (verseEl) verseEl.innerHTML = `"잘하였도다 착하고 충성된 종아<br>네가 적은 일에 충성하였으매<br>내가 많은 것을 네게 맡기리니<br>네 주인의 즐거움에 참여할지어다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 마태복음 25:21 -</span>`;
       if (rewardBox) {
         rewardBox.innerHTML = res.reward > 0
-          ? `<span>🎉 완독 특별 보상:</span> <span>+${res.reward} 달란트 & 📕 신약통독 뱃지 진열!</span>`
-          : `<span>🎉 완독 특별 보상:</span> <span>📕 ${cycle}독 신약통독 뱃지 진열장 추가!</span>`;
+          ? `<span>🎉 완독 보상:</span> <span>+${res.reward} 달란트 & 📕 신약 뱃지!</span>`
+          : `<span>🎉 완독 보상:</span> <span>📕 신약통독 뱃지 획득!</span>`;
       }
       if (otUnlockEl) {
         otUnlockEl.style.display = 'none';
       }
     } else if (type === 'ot_badge') {
       if (iconEl) iconEl.innerHTML = badgeSvg;
-      if (titleEl) titleEl.textContent = `놀라워요! 제${cycle}독 구약 929장 완독!`;
+      if (titleEl) titleEl.textContent = `놀라워요! 제${cycle}독 구약 완독!`;
       if (verseEl) verseEl.innerHTML = `"주의 말씀은 내 발에 등이요<br>내 길에 빛이니이다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 시편 119:105 -</span>`;
-      if (rewardBox) rewardBox.innerHTML = `<span>🎉 완독 특별 보상:</span> <span>📘 ${cycle}독 구약통독 뱃지 진열장 추가!</span>`;
+      if (rewardBox) rewardBox.innerHTML = `<span>🎉 완독 보상:</span> <span>📘 구약통독 뱃지 획득!</span>`;
       if (otUnlockEl) otUnlockEl.style.display = 'none';
     } else {
       if (iconEl) iconEl.innerHTML = badgeSvg;
-      if (titleEl) titleEl.textContent = `영광의 대완독! 제${cycle}독 성경 66권 완독!`;
+      if (titleEl) titleEl.textContent = `영광의 완독! 제${cycle}독 성경 66권!`;
       if (verseEl) verseEl.innerHTML = `"나는 선한 싸움을 싸우고<br>나의 달려갈 길을 마치고<br>믿음을 지켰으니"<br><span style="font-size: 10.5px; opacity: 0.8;">- 디모데후서 4:7 -</span>`;
-      if (rewardBox) rewardBox.innerHTML = `<span>🎉 대완독 영예 보상:</span> <span>🏆 제${cycle}독 황금 어린양 트로피 진열장 등록!</span>`;
+      if (rewardBox) rewardBox.innerHTML = `<span>🎉 완독 보상:</span> <span>🏆 어린양 트로피 획득!</span>`;
       if (otUnlockEl) {
         otUnlockEl.style.display = 'block';
-        otUnlockEl.textContent = `🔄 [통계 > 통독 진열장]에서 제${cycle + 1}독 새 출발을 시작할 수 있어요!`;
+        otUnlockEl.textContent = `🔄 [통계 > 진열장]에서 제${cycle + 1}독 새 출발 가능!`;
       }
     }
 
