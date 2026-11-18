@@ -265,6 +265,73 @@ var PROTOTYPE_ITEM_PIXELS = {
       // 하단 그림자/얼음빛 층
       [2, 19, '#e0f2fe'], [3, 19, '#e0f2fe'], [4, 19, '#bae6fd'], [5, 19, '#e0f2fe'], [6, 19, '#bae6fd'], [7, 19, '#e0f2fe'], [8, 19, '#e0f2fe'], [9, 19, '#bae6fd'], [10, 19, '#e0f2fe'], [11, 19, '#e0f2fe'], [12, 19, '#bae6fd'], [13, 19, '#e0f2fe'], [14, 19, '#bae6fd'], [15, 19, '#e0f2fe'], [16, 19, '#e0f2fe'], [17, 19, '#bae6fd'], [18, 19, '#e0f2fe'], [19, 19, '#bae6fd'], [20, 19, '#e0f2fe']
     ]
+  },
+
+  // 13. 은혜의 흩날리는 눈꽃 배경 (Back: 공중에서 춤추듯 소복소복 흩날리는 크고 작은 픽셀 눈꽃 결정과 얼음별)
+  'back_snow_fall': {
+    slot: 'back',
+    name: '은혜의 눈꽃 배경',
+    category: '배경',
+    icon: '❄️',
+    desc: '말씀을 사모하는 찰스 위로 하늘의 크신 평강과 은혜가 하얀 눈꽃처럼 소복이 내려앉아요',
+    pixels: [
+      // 1. 좌상단 화려한 6각 눈꽃 결정 (중심 x:3, y:1)
+      [3, -1, '#ffffff'],
+      [3, 0, '#bae6fd'],
+      [1, 1, '#ffffff'], [2, 1, '#bae6fd'], [3, 1, '#ffffff'], [4, 1, '#bae6fd'], [5, 1, '#ffffff'],
+      [3, 2, '#bae6fd'],
+      [3, 3, '#ffffff'],
+      // 대각선 서브 포인트
+      [2, 0, '#e0f2fe'], [4, 0, '#e0f2fe'],
+      [2, 2, '#e0f2fe'], [4, 2, '#e0f2fe'],
+
+      // 2. 우상단 다이아몬드 스노우 크리스털 (중심 x:20, y:0)
+      [20, -2, '#ffffff'],
+      [20, -1, '#bae6fd'],
+      [18, 0, '#ffffff'], [19, 0, '#bae6fd'], [20, 0, '#ffffff'], [21, 0, '#bae6fd'], [22, 0, '#ffffff'],
+      [20, 1, '#bae6fd'],
+      [20, 2, '#ffffff'],
+      // 스노우 글로우 포인트
+      [19, -1, '#e0f2fe'], [21, -1, '#e0f2fe'],
+      [19, 1, '#e0f2fe'], [21, 1, '#e0f2fe'],
+
+      // 3. 중앙 상단 공중에 맺힌 작은 십자 눈꽃 (중심 x:11, y:-1)
+      [11, -2, '#ffffff'],
+      [10, -1, '#ffffff'], [11, -1, '#e0f2fe'], [12, -1, '#ffffff'],
+      [11, 0, '#ffffff'],
+
+      // 4. 좌측 외곽 눈꽃 송이 (중심 x:1, y:7)
+      [1, 6, '#e0f2fe'],
+      [0, 7, '#e0f2fe'], [1, 7, '#ffffff'], [2, 7, '#e0f2fe'],
+      [1, 8, '#e0f2fe'],
+
+      // 5. 우측 외곽 스노우 결정 (중심 x:22, y:6)
+      [22, 5, '#e0f2fe'],
+      [21, 6, '#e0f2fe'], [22, 6, '#ffffff'], [23, 6, '#e0f2fe'],
+      [22, 7, '#e0f2fe'],
+
+      // 6. 좌측 하단 살포시 내려앉는 눈송이 (x:2, y:12)
+      [2, 11, '#bae6fd'],
+      [1, 12, '#bae6fd'], [2, 12, '#ffffff'], [3, 12, '#bae6fd'],
+      [2, 13, '#bae6fd'],
+
+      // 7. 우측 하단 눈송이 (x:21, y:12)
+      [21, 11, '#bae6fd'],
+      [20, 12, '#bae6fd'], [21, 12, '#ffffff'], [22, 12, '#bae6fd'],
+      [21, 13, '#bae6fd'],
+
+      // 8. 찰스 주변 공중에 반짝이는 얼음빛 스파클과 포근한 1px 함박눈 점들
+      [7, -1, '#ffffff'],   // 상단 왼쪽 1px 눈송이
+      [15, -1, '#e0f2fe'],  // 상단 오른쪽 1px 눈송이
+      [0, 3, '#7dd3fc'],    // 좌측 상단 푸른 얼음빛 스파클
+      [23, 2, '#38bdf8'],   // 우측 상단 하늘빛 스파클
+      [6, 3, '#ffffff'],    // 찰스 귀 위 맑은 눈점
+      [17, 3, '#ffffff'],   // 찰스 오른쪽 귀 위 맑은 눈점
+      [0, 10, '#ffffff'],   // 좌측 중앙 1px 눈
+      [23, 10, '#ffffff'],  // 우측 중앙 1px 눈
+      [1, 15, '#e0f2fe'],   // 좌하단 눈가루
+      [22, 15, '#e0f2fe']   // 우하단 눈가루
+    ]
   }
 };
 
@@ -900,7 +967,7 @@ const ItemStudio = {
     // 1. 배너 및 상단 장식 착용 여부에 따른 동적 뷰포트 헤드룸(상단 여백) 계산
     const hasBanner = !!(this.equipped && this.equipped.banner);
     const bannerId = this.equipped ? this.equipped.banner : null;
-    const hasMelody = this.equipped && this.equipped.back === 'back_melody_aura';
+    const hasMelody = this.equipped && (this.equipped.back === 'back_melody_aura' || this.equipped.back === 'back_snow_fall');
     const hasChurchBg = !!(this.equipped && ((this.equipped.back && String(this.equipped.back).startsWith('church_seowonkyung_')) || (this.equipped.side && String(this.equipped.side).includes('church_'))));
     const hasLeftFullChurch = !!(this.equipped && this.equipped.side && (this.equipped.side === 'side_church_full_left' || this.equipped.side === 'side_church_glow_full_left'));
 
@@ -908,12 +975,12 @@ const ItemStudio = {
     const canvasWidth = 24;
     const canvasHeight = 24;
 
-    // 상단 돌출 아이템(배너: -6.0, 서원경교회 종탑 십자가: -4.5, 멜로디: -3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
+    // 상단 돌출 아이템(배너: -6.0, 서원경교회 종탑 십자가: -4.5, 멜로디/눈꽃: -2.0~-3.0, 왕관/산타모/귀도리: 0~2)을 위해 넉넉한 헤드룸 확보
     let topPaddingGrid = 4.0; // 기본 헤드룸: 왕관(y:0), 모자, 귀도리가 위로 닿지 않고 40px 여유 확보
     if (hasBanner) {
       topPaddingGrid = 9.0; // 배너 착용 시: -9.0까지 상단 확장 (배너가 -6.0에 위치하므로 상단 30px 완전 여유)
     } else if (hasChurchBg || hasMelody) {
-      topPaddingGrid = 6.0; // 서원경교회 종탑 십자가 / 멜로디 음표 착용 시 여유 확보
+      topPaddingGrid = 6.0; // 서원경교회 종탑 십자가 / 멜로디 음표 / 눈꽃 배경 착용 시 여유 확보
     }
 
     const leftPaddingGrid = hasLeftFullChurch ? 10.0 : 0;

@@ -1980,8 +1980,8 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
     topPaddingGrid = 8.5; // 배너 착용 시 상단 여백 대폭 확장 (배너가 -6.0에 위치하므로 2.5 그리드 완전 여유)
   } else if (hasChurchBg) {
     topPaddingGrid = 5.5; // 서원경교회 3D 조감도 종탑 십자가(y:-4.5) 상단 여유 확보
-  } else if (equipped && (equipped.back === 'back_melody_aura' || equipped.grass === 'back_melody_aura')) {
-    topPaddingGrid = 4.5; // 찬양 음표 아우라 착용 시 상단 여백 추가 확보
+  } else if (equipped && (equipped.back === 'back_melody_aura' || equipped.grass === 'back_melody_aura' || equipped.back === 'back_snow_fall' || equipped.grass === 'back_snow_fall')) {
+    topPaddingGrid = 4.5; // 찬양 음표 / 눈꽃 배경 착용 시 상단 여백 추가 확보
   }
   const bottomPaddingGrid = 1.5; // 하단 바닥 잔디/그림자 여유 공간
   const viewBoxMinY = Math.round(-topPaddingGrid * scale);
