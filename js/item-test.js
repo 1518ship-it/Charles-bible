@@ -938,38 +938,76 @@ const ItemStudio = {
     const otSvg = this.generateItemSvg(designs[1].pixels, 3, 42);
     const trophySvg = this.generateItemSvg(designs[2].pixels, 3, 54);
 
+    // 시뮬레이션용 현재 진행도 (%)
+    const demoTotalPct = 64.2;
+    const demoNtPct = 100.0;
+    const demoOtPct = 54.1;
+
     let trophySlotsHtml = '';
     for (let i = 1; i <= n; i++) {
       trophySlotsHtml += `
-        <div style="display: flex; flex-direction: column; align-items: center; background: linear-gradient(180deg, rgba(254, 249, 195, 0.7) 0%, rgba(255,255,255,0.9) 100%); border: 1.5px solid #fde047; border-radius: 12px; padding: 10px 12px 8px; min-width: 78px; box-shadow: 0 4px 12px rgba(234, 179, 8, 0.15);">
+        <div style="display: flex; flex-direction: column; align-items: center; background: linear-gradient(180deg, rgba(254, 249, 195, 0.7) 0%, rgba(255,255,255,0.9) 100%); border: 1.5px solid #fde047; border-radius: 12px; padding: 10px 12px 8px; min-width: 82px; box-shadow: 0 4px 12px rgba(234, 179, 8, 0.15);">
           <div style="filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.35));">${trophySvg}</div>
           <div style="margin-top: 6px; font-size: 11px; font-weight: 900; color: #92400e; background: #fef3c7; padding: 2px 7px; border-radius: 999px; border: 1px solid #fcd34d;">제${i}독 완독</div>
           <div style="margin-top: 2px; font-size: 9.5px; color: #b45309; font-weight: 600;">2026.11.19</div>
         </div>
       `;
     }
-    // 다음 도전 빈 슬롯 1개 미리보기
+    // 다음 도전 빈 슬롯 1개 (퍼센테이지 + 미니 프로그레스 바 포함)
     trophySlotsHtml += `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(248, 250, 252, 0.8); border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 10px 12px 8px; min-width: 78px; opacity: 0.75;">
-        <div style="font-size: 24px; filter: grayscale(1); opacity: 0.45;">🏆</div>
-        <div style="margin-top: 6px; font-size: 10.5px; font-weight: 800; color: #64748b;">제${n + 1}독 도전</div>
-        <div style="margin-top: 2px; font-size: 9.5px; color: #94a3b8;">진행 중...</div>
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(248, 250, 252, 0.9); border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 10px 12px 8px; min-width: 86px;">
+        <div style="font-size: 24px; filter: grayscale(1); opacity: 0.4;">🏆</div>
+        <div style="margin-top: 5px; font-size: 10.5px; font-weight: 800; color: #475569;">제${n + 1}독 진행중</div>
+        <div style="width: 100%; height: 5px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 5px;">
+          <div style="width: ${demoTotalPct}%; height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 999px;"></div>
+        </div>
+        <div style="margin-top: 3px; font-size: 10px; font-weight: 800; color: #d97706;">${demoTotalPct}%</div>
       </div>
     `;
 
-    let badgeSlotsHtml = '';
+    // 신약 뱃지 슬롯 (따로 분리)
+    let ntBadgeSlotsHtml = '';
     for (let i = 1; i <= n; i++) {
-      badgeSlotsHtml += `
-        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 8px 10px; min-width: 66px;">
+      ntBadgeSlotsHtml += `
+        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);">
           ${ntSvg}
           <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #1d4ed8;">${i}독 신약</div>
-        </div>
-        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #fecaca; border-radius: 10px; padding: 8px 10px; min-width: 66px;">
-          ${otSvg}
-          <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #b91c1c;">${i}독 구약</div>
+          <div style="font-size: 9px; color: #60a5fa; font-weight: 600;">2026.11.19</div>
         </div>
       `;
     }
+    ntBadgeSlotsHtml += `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 8px 10px; min-width: 76px;">
+        <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📘</div>
+        <div style="margin-top: 4px; font-size: 9.5px; font-weight: 800; color: #475569;">${n + 1}독 신약</div>
+        <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 4px;">
+          <div style="width: ${demoNtPct}%; height: 100%; background: #3b82f6; border-radius: 999px;"></div>
+        </div>
+        <div style="margin-top: 2px; font-size: 9.5px; font-weight: 800; color: #2563eb;">${demoNtPct}%</div>
+      </div>
+    `;
+
+    // 구약 뱃지 슬롯 (따로 분리)
+    let otBadgeSlotsHtml = '';
+    for (let i = 1; i <= n; i++) {
+      otBadgeSlotsHtml += `
+        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1.5px solid #fecaca; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
+          ${otSvg}
+          <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #b91c1c;">${i}독 구약</div>
+          <div style="font-size: 9px; color: #f87171; font-weight: 600;">2026.11.19</div>
+        </div>
+      `;
+    }
+    otBadgeSlotsHtml += `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 8px 10px; min-width: 76px;">
+        <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📕</div>
+        <div style="margin-top: 4px; font-size: 9.5px; font-weight: 800; color: #475569;">${n + 1}독 구약</div>
+        <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 4px;">
+          <div style="width: ${demoOtPct}%; height: 100%; background: #ef4444; border-radius: 999px;"></div>
+        </div>
+        <div style="margin-top: 2px; font-size: 9.5px; font-weight: 800; color: #dc2626;">${demoOtPct}%</div>
+      </div>
+    `;
 
     previewEl.innerHTML = `
       <div style="background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); border: 2px solid #fde68a; border-radius: 16px; padding: 16px; box-shadow: 0 6px 18px rgba(245, 158, 11, 0.08);">
@@ -990,14 +1028,20 @@ const ItemStudio = {
           ${trophySlotsHtml}
         </div>
 
-        <!-- 2단 선반: 신약/구약 통독 뱃지 케이스 -->
-        <div style="font-size: 11.5px; font-weight: 800; color: #475569; margin-bottom: 6px;">🎖️ 신약 · 구약 통독 뱃지 케이스</div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 4px solid #94a3b8;">
-          ${badgeSlotsHtml}
+        <!-- 2단 선반: 신약통독 뱃지 케이스 (분리) -->
+        <div style="font-size: 11.5px; font-weight: 800; color: #1e40af; margin-bottom: 6px;">📘 신약통독 뱃지 선반 (260장)</div>
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 4px solid #60a5fa; margin-bottom: 14px;">
+          ${ntBadgeSlotsHtml}
+        </div>
+
+        <!-- 3단 선반: 구약통독 뱃지 케이스 (분리) -->
+        <div style="font-size: 11.5px; font-weight: 800; color: #991b1b; margin-bottom: 6px;">📕 구약통독 뱃지 선반 (929장)</div>
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 4px solid #f87171;">
+          ${otBadgeSlotsHtml}
         </div>
 
         <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-          <span style="font-size: 11.5px; color: #64748b; font-weight: 600;">💡 통독을 완료할 때마다 진열장에 트로피와 뱃지가 평생 차곡차곡 쌓입니다!</span>
+          <span style="font-size: 11.5px; color: #64748b; font-weight: 600;">💡 통독을 완료할 때마다 각 선반에 트로피와 뱃지가 차곡차곡 쌓입니다!</span>
           <button type="button" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);">
             🔄 제${n + 1}독 새 출발하기
           </button>
