@@ -506,6 +506,11 @@ const StorageService = {
     return stats.ntRead >= stats.ntTotal && stats.ntTotal > 0;
   },
 
+  // 구약 성경 열람 가능 여부 (1독은 신약 완독 시, 2독 이상 재도전자는 처음부터 자유 열람)
+  isOTUnlocked() {
+    return this.getBibleCycle() >= 2 || this.isNTComplete();
+  },
+
   // 구약 39권 전체(929장) 완독 여부 확인
   isOTComplete() {
     const stats = this.getStats();

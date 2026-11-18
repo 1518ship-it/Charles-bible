@@ -932,10 +932,7 @@ const ItemStudio = {
       if (titleEl) titleEl.textContent = `할렐루야! 제${n}독 신약 260장 완독!`;
       if (verseEl) verseEl.innerHTML = `"잘하였도다 착하고 충성된 종아<br>네가 적은 일에 충성하였으매<br>내가 많은 것을 네게 맡기리니<br>네 주인의 즐거움에 참여할지어다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 마태복음 25:21 -</span>`;
       if (rewardEl) rewardEl.innerHTML = `<span>🎉 완독 특별 보상:</span> <span>+100 달란트 & 📕 신약통독 뱃지!</span>`;
-      if (subEl) {
-        subEl.style.display = 'block';
-        subEl.textContent = '📖 구약 성경 39권(929장)도 이어서 정복해 보세요!';
-      }
+      if (subEl) subEl.style.display = 'none';
     } else if (type === 'ot_badge') {
       if (titleEl) titleEl.textContent = `놀라워요! 제${n}독 구약 929장 완독!`;
       if (verseEl) verseEl.innerHTML = `"주의 말씀은 내 발에 등이요<br>내 길에 빛이니이다"<br><span style="font-size: 10.5px; opacity: 0.8;">- 시편 119:105 -</span>`;

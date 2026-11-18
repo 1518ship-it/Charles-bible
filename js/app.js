@@ -794,8 +794,8 @@ const App = {
     document.querySelectorAll('.testament-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const test = btn.dataset.testament;
-        const isNTComplete = StorageService.isNTComplete();
-        if (test === 'OT' && !isNTComplete) {
+        const isOTUnlocked = StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete();
+        if (test === 'OT' && !isOTUnlocked) {
           this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒🐑');
         }
         document.querySelectorAll('.testament-tab-btn').forEach(b => b.classList.remove('active'));
@@ -2747,8 +2747,8 @@ const App = {
       if (nextBook) break;
     }
 
-    // 신약 완독 시: 구약(OT) 이어 읽기 탐색 (구약 잠금 해제)
-    if (!nextBook && StorageService.isNTComplete()) {
+    // 신약 완독 또는 2독 이상 재도전 시: 구약(OT) 이어 읽기 탐색 (구약 잠금 해제)
+    if (!nextBook && (StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) {
       const otBooks = BIBLE_BOOKS.filter(b => b.testament === 'OT');
       for (const book of otBooks) {
         for (let c = 1; c <= book.chapters; c++) {
@@ -2779,10 +2779,10 @@ const App = {
   },
 
   updateTestamentTabButtons() {
-    const isNTComplete = StorageService.isNTComplete();
+    const isOTUnlocked = StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete();
     const otBtn = document.querySelector('.testament-tab-btn[data-testament="OT"]');
     if (otBtn) {
-      otBtn.textContent = isNTComplete ? '구약 (39) 📖' : '구약 (39) 🔒';
+      otBtn.textContent = isOTUnlocked ? '구약 (39) 📖' : '구약 (39) 🔒';
     }
   },
 
@@ -2808,11 +2808,11 @@ const App = {
     }
 
     const stats = StorageService.getStats();
-    const isNTComplete = StorageService.isNTComplete();
+    const isOTUnlocked = StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete();
 
     container.innerHTML = filtered.map(book => {
       const isOT = book.testament === 'OT';
-      const isLocked = isOT && !isNTComplete;
+      const isLocked = isOT && !isOTUnlocked;
       const readInBook = stats.bookProgress[book.id] || 0;
       const isComplete = readInBook === book.chapters;
 
@@ -2844,7 +2844,7 @@ const App = {
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book) return;
 
-    if (book.testament === 'OT' && !StorageService.isNTComplete()) {
+    if (book.testament === 'OT' && !(StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) {
       this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒🐑');
       RetroAudio.click();
       return;
@@ -2923,7 +2923,7 @@ const App = {
     if (!book) return;
 
     // 구약 차단 (신약 미완독 시)
-    if (book.testament === 'OT' && !StorageService.isNTComplete()) {
+    if (book.testament === 'OT' && !(StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) {
       this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒🐑');
       return;
     }
@@ -3035,7 +3035,7 @@ const App = {
     const chapter = this.currentReadingChapter;
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book) return;
-    if (book.testament === 'OT' && !StorageService.isNTComplete()) return;
+    if (book.testament === 'OT' && !(StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) return;
 
     const wasNTCompleteBefore = StorageService.isNTComplete();
     const wasOTCompleteBefore = StorageService.isOTComplete();
@@ -3105,7 +3105,7 @@ const App = {
       const bookId = this.currentReadingBookId;
       const chapter = this.currentReadingChapter;
       const book = BIBLE_BOOKS.find(b => b.id === bookId);
-      if (book && (book.testament !== 'OT' || StorageService.isNTComplete())) {
+      if (book && (book.testament !== 'OT' || (StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete()))) {
         const wasNTCompleteBefore = StorageService.isNTComplete();
         const wasOTCompleteBefore = StorageService.isOTComplete();
         const alreadyRead = StorageService.isChapterRead(bookId, chapter);
@@ -3153,7 +3153,7 @@ const App = {
       const currentIdx = BIBLE_BOOKS.findIndex(b => b.id === this.currentReadingBookId);
       if (currentIdx < BIBLE_BOOKS.length - 1) {
         const nextBook = BIBLE_BOOKS[currentIdx + 1];
-        if (nextBook.testament === 'OT' && !StorageService.isNTComplete()) {
+        if (nextBook.testament === 'OT' && !(StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) {
           this.showToast('신약을 다 읽으면 구약을 읽을 수 있어요 🔒');
           return;
         }
@@ -3175,7 +3175,7 @@ const App = {
       const currentIdx = BIBLE_BOOKS.findIndex(b => b.id === this.currentReadingBookId);
       if (currentIdx > 0) {
         const prevBook = BIBLE_BOOKS[currentIdx - 1];
-        if (prevBook.testament === 'OT' && !StorageService.isNTComplete()) {
+        if (prevBook.testament === 'OT' && !(StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) {
           this.showToast('신약의 첫 장(마태복음 1장)입니다! 신약을 다 읽으면 구약을 읽을 수 있어요 🔒');
           return;
         }
@@ -3209,7 +3209,7 @@ const App = {
     const chapter = this.currentReadingChapter;
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     if (!book) return;
-    if (book.testament === 'OT' && !StorageService.isNTComplete()) return;
+    if (book.testament === 'OT' && !(StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) return;
 
     const wasNTCompleteBefore = StorageService.isNTComplete();
     const wasOTCompleteBefore = StorageService.isOTComplete();
@@ -3579,8 +3579,7 @@ const App = {
           : `<span>🎉 완독 특별 보상:</span> <span>📕 ${cycle}독 신약통독 뱃지 진열장 추가!</span>`;
       }
       if (otUnlockEl) {
-        otUnlockEl.style.display = 'block';
-        otUnlockEl.textContent = '📖 구약 성경 39권(929장)도 이어서 정복해 보세요!';
+        otUnlockEl.style.display = 'none';
       }
     } else if (type === 'ot_badge') {
       if (iconEl) iconEl.innerHTML = badgeSvg;
@@ -4208,8 +4207,8 @@ const App = {
         if (nextBook) break;
       }
 
-      // 신약 완독 시: 구약 다음 장 탐색
-      if (!nextBook && StorageService.isNTComplete()) {
+      // 신약 완독 또는 2독 이상 재도전 시: 구약 다음 장 탐색
+      if (!nextBook && (StorageService.isOTUnlocked ? StorageService.isOTUnlocked() : StorageService.isNTComplete())) {
         const otBooks = BIBLE_BOOKS.filter(b => b.testament === 'OT');
         for (const book of otBooks) {
           for (let c = 1; c <= book.chapters; c++) {
