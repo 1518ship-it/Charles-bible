@@ -267,160 +267,188 @@ var PROTOTYPE_ITEM_PIXELS = {
     ]
   },
 
-  // 13. 은혜의 흩날리는 눈꽃 배경 (Back: 0.5px HD 서브픽셀 정밀 6각 결정 + 흩날리는 얼음꽃)
+  // 13. 은혜의 흩날리는 눈꽃 배경 (Back: 첨부 이미지 기반 정밀 6각 덴드라이트 & 플레이트 눈꽃 결정)
   'back_snow_fall': {
     slot: 'back',
     name: '은혜의 눈꽃 배경',
     category: '배경',
     icon: '❄️',
     desc: '말씀을 사모하는 찰스 위로 하늘의 크신 평강과 은혜가 하얀 눈꽃처럼 소복이 내려앉아요',
-    pixels: [
-      // ==========================================
-      // ❄️ 1. 좌상단 정밀 6각 눈꽃 결정 (중심 x: 3.5, y: 1.0 / HD 0.5px)
-      // ==========================================
-      // 중심 핵 (1x1)
-      [3.0, 0.5, '#ffffff', 0.5], [3.5, 0.5, '#ffffff', 0.5],
-      [3.0, 1.0, '#ffffff', 0.5], [3.5, 1.0, '#ffffff', 0.5],
-      // 상하 축 (Vertical stem)
-      [3.0, -1.0, '#ffffff', 0.5], [3.5, -1.0, '#ffffff', 0.5], // 위쪽 끝
-      [3.0, -0.5, '#bae6fd', 0.5], [3.5, -0.5, '#bae6fd', 0.5],
-      [3.0, 0.0, '#e0f2fe', 0.5], [3.5, 0.0, '#e0f2fe', 0.5],
-      [3.0, 1.5, '#e0f2fe', 0.5], [3.5, 1.5, '#e0f2fe', 0.5],
-      [3.0, 2.0, '#bae6fd', 0.5], [3.5, 2.0, '#bae6fd', 0.5],
-      [3.0, 2.5, '#ffffff', 0.5], [3.5, 2.5, '#ffffff', 0.5], // 아래쪽 끝
-      // 좌우 축 (Horizontal stem)
-      [1.5, 0.5, '#ffffff', 0.5], [1.5, 1.0, '#ffffff', 0.5], // 왼쪽 끝
-      [2.0, 0.5, '#bae6fd', 0.5], [2.0, 1.0, '#bae6fd', 0.5],
-      [2.5, 0.5, '#e0f2fe', 0.5], [2.5, 1.0, '#e0f2fe', 0.5],
-      [4.0, 0.5, '#e0f2fe', 0.5], [4.0, 1.0, '#e0f2fe', 0.5],
-      [4.5, 0.5, '#bae6fd', 0.5], [4.5, 1.0, '#bae6fd', 0.5],
-      [5.0, 0.5, '#ffffff', 0.5], [5.0, 1.0, '#ffffff', 0.5], // 오른쪽 끝
-      // 대각선 4방향 가지 (V-바브 곁가지)
-      // 상좌 곁가지
-      [2.0, -0.5, '#ffffff', 0.5], [2.5, 0.0, '#bae6fd', 0.5],
-      // 상우 곁가지
-      [4.5, -0.5, '#ffffff', 0.5], [4.0, 0.0, '#bae6fd', 0.5],
-      // 하좌 곁가지
-      [2.0, 2.0, '#ffffff', 0.5], [2.5, 1.5, '#bae6fd', 0.5],
-      // 하우 곁가지
-      [4.5, 2.0, '#ffffff', 0.5], [4.0, 1.5, '#bae6fd', 0.5],
-      // 축 곁가지 미세 화살촉 (Chevrons)
-      [2.0, -0.0, '#e0f2fe', 0.5], [4.5, -0.0, '#e0f2fe', 0.5],
-      [2.0, 1.5, '#e0f2fe', 0.5], [4.5, 1.5, '#e0f2fe', 0.5],
+    pixels: (function() {
+      const math = Math;
 
-      // ==========================================
-      // ❄️ 2. 우상단 영롱한 6각 스노우 스타 (중심 x: 20.5, y: 0.0 / HD 0.5px)
-      // ==========================================
-      // 중심 핵
-      [20.0, -0.5, '#ffffff', 0.5], [20.5, -0.5, '#ffffff', 0.5],
-      [20.0, 0.0, '#ffffff', 0.5], [20.5, 0.0, '#ffffff', 0.5],
-      // 상하 축
-      [20.0, -2.0, '#ffffff', 0.5], [20.5, -2.0, '#ffffff', 0.5],
-      [20.0, -1.5, '#bae6fd', 0.5], [20.5, -1.5, '#bae6fd', 0.5],
-      [20.0, -1.0, '#e0f2fe', 0.5], [20.5, -1.0, '#e0f2fe', 0.5],
-      [20.0, 0.5, '#e0f2fe', 0.5], [20.5, 0.5, '#e0f2fe', 0.5],
-      [20.0, 1.0, '#bae6fd', 0.5], [20.5, 1.0, '#bae6fd', 0.5],
-      [20.0, 1.5, '#ffffff', 0.5], [20.5, 1.5, '#ffffff', 0.5],
-      // 좌우 축
-      [18.5, -0.5, '#ffffff', 0.5], [18.5, 0.0, '#ffffff', 0.5],
-      [19.0, -0.5, '#bae6fd', 0.5], [19.0, 0.0, '#bae6fd', 0.5],
-      [19.5, -0.5, '#e0f2fe', 0.5], [19.5, 0.0, '#e0f2fe', 0.5],
-      [21.0, -0.5, '#e0f2fe', 0.5], [21.0, 0.0, '#e0f2fe', 0.5],
-      [21.5, -0.5, '#bae6fd', 0.5], [21.5, 0.0, '#bae6fd', 0.5],
-      [22.0, -0.5, '#ffffff', 0.5], [22.0, 0.0, '#ffffff', 0.5],
-      // 대각선 4방향 다이아몬드 포인트
-      [19.0, -1.5, '#ffffff', 0.5], [19.5, -1.0, '#bae6fd', 0.5],
-      [21.5, -1.5, '#ffffff', 0.5], [21.0, -1.0, '#bae6fd', 0.5],
-      [19.0, 1.0, '#ffffff', 0.5], [19.5, 0.5, '#bae6fd', 0.5],
-      [21.5, 1.0, '#ffffff', 0.5], [21.0, 0.5, '#bae6fd', 0.5],
-      // 결정 끝 빗살
-      [19.0, -0.5, '#e0f2fe', 0.5], [21.5, 0.0, '#e0f2fe', 0.5],
+      // 6각 덴드라이트 가지 눈꽃 (첨부 이미지 좌상단 1번 스타일)
+      function makeDendriteSnowflake(cx, cy, radius, pixelSize, color, coreColor) {
+        const pixels = new Map();
+        const angles = [0, math.PI/3, 2*math.PI/3, math.PI, 4*math.PI/3, 5*math.PI/3];
+        const step = pixelSize * 0.35;
 
-      // ==========================================
-      // ❄️ 3. 중앙 상단 공중에 맺힌 섬세한 스노우 플라워 (중심 x: 11.5, y: -1.0 / HD 0.5px)
-      // ==========================================
-      [11.0, -1.0, '#ffffff', 0.5], [11.5, -1.0, '#ffffff', 0.5],
-      // 상하
-      [11.0, -2.5, '#ffffff', 0.5], [11.5, -2.5, '#ffffff', 0.5],
-      [11.0, -2.0, '#bae6fd', 0.5], [11.5, -2.0, '#bae6fd', 0.5],
-      [11.0, -1.5, '#e0f2fe', 0.5], [11.5, -1.5, '#e0f2fe', 0.5],
-      [11.0, -0.5, '#e0f2fe', 0.5], [11.5, -0.5, '#e0f2fe', 0.5],
-      [11.0, 0.0, '#bae6fd', 0.5], [11.5, 0.0, '#bae6fd', 0.5],
-      [11.0, 0.5, '#ffffff', 0.5], [11.5, 0.5, '#ffffff', 0.5],
-      // 좌우
-      [9.5, -1.0, '#ffffff', 0.5], [10.0, -1.0, '#bae6fd', 0.5], [10.5, -1.0, '#e0f2fe', 0.5],
-      [12.0, -1.0, '#e0f2fe', 0.5], [12.5, -1.0, '#bae6fd', 0.5], [13.0, -1.0, '#ffffff', 0.5],
-      // 대각선 팁
-      [10.0, -2.0, '#ffffff', 0.5], [12.5, -2.0, '#ffffff', 0.5],
-      [10.0, 0.0, '#ffffff', 0.5], [12.5, 0.0, '#ffffff', 0.5],
+        function addPx(x, y, col) {
+          const qx = Math.round(x / pixelSize) * pixelSize;
+          const qy = Math.round(y / pixelSize) * pixelSize;
+          const key = qx.toFixed(3) + '_' + qy.toFixed(3);
+          if (!pixels.has(key)) {
+            pixels.set(key, [parseFloat(qx.toFixed(3)), parseFloat(qy.toFixed(3)), col, pixelSize]);
+          }
+        }
 
-      // ==========================================
-      // ❄️ 4. 좌측 외곽 눈꽃 크리스털 송이 (중심 x: 1.5, y: 7.0 / HD 0.5px)
-      // ==========================================
-      [1.0, 7.0, '#ffffff', 0.5], [1.5, 7.0, '#ffffff', 0.5],
-      [1.0, 5.5, '#ffffff', 0.5], [1.5, 5.5, '#ffffff', 0.5],
-      [1.0, 6.0, '#bae6fd', 0.5], [1.5, 6.0, '#bae6fd', 0.5],
-      [1.0, 6.5, '#e0f2fe', 0.5], [1.5, 6.5, '#e0f2fe', 0.5],
-      [1.0, 7.5, '#e0f2fe', 0.5], [1.5, 7.5, '#e0f2fe', 0.5],
-      [1.0, 8.0, '#bae6fd', 0.5], [1.5, 8.0, '#bae6fd', 0.5],
-      [1.0, 8.5, '#ffffff', 0.5], [1.5, 8.5, '#ffffff', 0.5],
-      [0.0, 7.0, '#ffffff', 0.5], [0.5, 7.0, '#bae6fd', 0.5],
-      [2.0, 7.0, '#bae6fd', 0.5], [2.5, 7.0, '#ffffff', 0.5],
-      [0.5, 6.0, '#ffffff', 0.5], [2.0, 6.0, '#ffffff', 0.5],
-      [0.5, 8.0, '#ffffff', 0.5], [2.0, 8.0, '#ffffff', 0.5],
+        // 중심 6각 핵 & 링 홀
+        const outerCoreR = radius * 0.28;
+        const innerHoleR = radius * 0.08;
+        for (let r = innerHoleR; r <= outerCoreR; r += step) {
+          for (let th = 0; th < 2 * math.PI; th += 0.06) {
+            addPx(cx + r * math.cos(th), cy + r * math.sin(th), coreColor || color);
+          }
+        }
 
-      // ==========================================
-      // ❄️ 5. 우측 외곽 눈꽃 크리스털 송이 (중심 x: 22.0, y: 6.5 / HD 0.5px)
-      // ==========================================
-      [21.5, 6.5, '#ffffff', 0.5], [22.0, 6.5, '#ffffff', 0.5],
-      [21.5, 5.0, '#ffffff', 0.5], [22.0, 5.0, '#ffffff', 0.5],
-      [21.5, 5.5, '#bae6fd', 0.5], [22.0, 5.5, '#bae6fd', 0.5],
-      [21.5, 6.0, '#e0f2fe', 0.5], [22.0, 6.0, '#e0f2fe', 0.5],
-      [21.5, 7.0, '#e0f2fe', 0.5], [22.0, 7.0, '#e0f2fe', 0.5],
-      [21.5, 7.5, '#bae6fd', 0.5], [22.0, 7.5, '#bae6fd', 0.5],
-      [21.5, 8.0, '#ffffff', 0.5], [22.0, 8.0, '#ffffff', 0.5],
-      [20.0, 6.5, '#ffffff', 0.5], [20.5, 6.5, '#bae6fd', 0.5], [21.0, 6.5, '#e0f2fe', 0.5],
-      [22.5, 6.5, '#e0f2fe', 0.5], [23.0, 6.5, '#bae6fd', 0.5], [23.5, 6.5, '#ffffff', 0.5],
-      [20.5, 5.5, '#ffffff', 0.5], [23.0, 5.5, '#ffffff', 0.5],
-      [20.5, 7.5, '#ffffff', 0.5], [23.0, 7.5, '#ffffff', 0.5],
+        // 6개 주축 가지 + V자 깃털 곁가지 (Dendrites) + 화살촉 팁
+        for (const a of angles) {
+          const cosA = math.cos(a);
+          const sinA = math.sin(a);
+          
+          // 주축 줄기
+          for (let d = outerCoreR * 0.8; d <= radius; d += step) {
+            addPx(cx + d * cosA, cy + d * sinA, color);
+            addPx(cx + d * cosA - pixelSize * 0.5 * sinA, cy + d * sinA + pixelSize * 0.5 * cosA, color);
+            addPx(cx + d * cosA + pixelSize * 0.5 * sinA, cy + d * sinA - pixelSize * 0.5 * cosA, color);
+          }
 
-      // ==========================================
-      // ❄️ 6. 좌측 하단 살포시 내려앉는 눈송이 (중심 x: 2.0, y: 12.5 / HD 0.5px)
-      // ==========================================
-      [2.0, 12.5, '#ffffff', 0.5],
-      [2.0, 11.5, '#ffffff', 0.5], [2.0, 12.0, '#bae6fd', 0.5],
-      [2.0, 13.0, '#bae6fd', 0.5], [2.0, 13.5, '#ffffff', 0.5],
-      [1.0, 12.5, '#ffffff', 0.5], [1.5, 12.5, '#bae6fd', 0.5],
-      [2.5, 12.5, '#bae6fd', 0.5], [3.0, 12.5, '#ffffff', 0.5],
-      [1.5, 12.0, '#e0f2fe', 0.5], [2.5, 12.0, '#e0f2fe', 0.5],
-      [1.5, 13.0, '#e0f2fe', 0.5], [2.5, 13.0, '#e0f2fe', 0.5],
+          // 안쪽 V자 깃털 곁가지 (1단)
+          const w1Pos = radius * 0.50;
+          const w1Len = radius * 0.45;
+          for (const wa of [a + math.PI/3, a - math.PI/3]) {
+            const wCos = math.cos(wa);
+            const wSin = math.sin(wa);
+            const ox = cx + w1Pos * cosA;
+            const oy = cy + w1Pos * sinA;
+            for (let wd = 0; wd <= w1Len; wd += step) {
+              addPx(ox + wd * wCos, oy + wd * wSin, color);
+              addPx(ox + wd * wCos - pixelSize * 0.4 * wSin, oy + wd * wSin + pixelSize * 0.4 * wCos, color);
+            }
+            // 곁가지 위 미세 서브 바브
+            const subPos = w1Len * 0.5;
+            const subLen = radius * 0.20;
+            const subAngle = (wa === a + math.PI/3) ? wa + math.PI/3 : wa - math.PI/3;
+            const sox = ox + subPos * wCos;
+            const soy = oy + subPos * wSin;
+            for (let sd = 0; sd <= subLen; sd += step) {
+              addPx(sox + sd * math.cos(subAngle), soy + sd * math.sin(subAngle), color);
+            }
+          }
 
-      // ==========================================
-      // ❄️ 7. 우측 하단 살포시 내려앉는 눈송이 (중심 x: 21.5, y: 12.5 / HD 0.5px)
-      // ==========================================
-      [21.5, 12.5, '#ffffff', 0.5],
-      [21.5, 11.5, '#ffffff', 0.5], [21.5, 12.0, '#bae6fd', 0.5],
-      [21.5, 13.0, '#bae6fd', 0.5], [21.5, 13.5, '#ffffff', 0.5],
-      [20.5, 12.5, '#ffffff', 0.5], [21.0, 12.5, '#bae6fd', 0.5],
-      [22.0, 12.5, '#bae6fd', 0.5], [22.5, 12.5, '#ffffff', 0.5],
-      [21.0, 12.0, '#e0f2fe', 0.5], [22.0, 12.0, '#e0f2fe', 0.5],
-      [21.0, 13.0, '#e0f2fe', 0.5], [22.0, 13.0, '#e0f2fe', 0.5],
+          // 바깥쪽 V자 깃털 곁가지 (2단)
+          const w2Pos = radius * 0.78;
+          const w2Len = radius * 0.32;
+          for (const wa of [a + math.PI/3, a - math.PI/3]) {
+            const wCos = math.cos(wa);
+            const wSin = math.sin(wa);
+            const ox = cx + w2Pos * cosA;
+            const oy = cy + w2Pos * sinA;
+            for (let wd = 0; wd <= w2Len; wd += step) {
+              addPx(ox + wd * wCos, oy + wd * wSin, color);
+            }
+          }
 
-      // ==========================================
-      // ✨ 8. 공중에 반짝반짝 흩날리는 미세 스노우 스파클 & 0.5px 눈꽃 가루
-      // ==========================================
-      [7.5, -1.0, '#ffffff', 0.5], [8.0, -1.0, '#ffffff', 0.5],
-      [15.0, -1.5, '#ffffff', 0.5], [15.5, -1.5, '#bae6fd', 0.5],
-      [0.0, 3.0, '#7dd3fc', 0.5], [0.5, 3.5, '#ffffff', 0.5],
-      [23.0, 2.0, '#38bdf8', 0.5], [23.5, 2.5, '#ffffff', 0.5],
-      [6.0, 3.5, '#ffffff', 0.5], [6.5, 3.5, '#e0f2fe', 0.5],
-      [17.0, 3.0, '#ffffff', 0.5], [17.5, 3.5, '#bae6fd', 0.5],
-      [0.0, 10.0, '#ffffff', 0.5], [0.5, 10.5, '#bae6fd', 0.5],
-      [23.0, 10.5, '#ffffff', 0.5], [23.5, 10.0, '#7dd3fc', 0.5],
-      [1.0, 15.5, '#bae6fd', 0.5], [1.5, 15.0, '#ffffff', 0.5],
-      [22.0, 15.5, '#bae6fd', 0.5], [22.5, 15.0, '#ffffff', 0.5],
-      [5.0, 16.5, '#ffffff', 0.5], [18.5, 16.5, '#ffffff', 0.5]
-    ]
+          // 끝단 다이아몬드 스피어 팁
+          const tipX = cx + radius * cosA;
+          const tipY = cy + radius * sinA;
+          for (let td = 0; td <= radius * 0.24; td += step) {
+            addPx(tipX + td * cosA, tipY + td * sinA, color);
+          }
+          for (const ta of [a + math.PI/4, a - math.PI/4]) {
+            const tCos = math.cos(ta);
+            const tSin = math.sin(ta);
+            for (let td = 0; td <= radius * 0.20; td += step) {
+              addPx(tipX + td * tCos, tipY + td * tSin, color);
+            }
+          }
+        }
+        return Array.from(pixels.values());
+      }
+
+      // 6각 플레이트 덴드라이트 눈꽃 (첨부 이미지 중앙 5번 스타일: 넓은 6각 중심판 + 톱니 날개)
+      function makePlateSnowflake(cx, cy, radius, pixelSize, color) {
+        const pixels = new Map();
+        const angles = [0, math.PI/3, 2*math.PI/3, math.PI, 4*math.PI/3, 5*math.PI/3];
+        const step = pixelSize * 0.35;
+
+        function addPx(x, y, col) {
+          const qx = Math.round(x / pixelSize) * pixelSize;
+          const qy = Math.round(y / pixelSize) * pixelSize;
+          const key = qx.toFixed(3) + '_' + qy.toFixed(3);
+          if (!pixels.has(key)) {
+            pixels.set(key, [parseFloat(qx.toFixed(3)), parseFloat(qy.toFixed(3)), col, pixelSize]);
+          }
+        }
+
+        // 넓은 중심 6각 판 (Plate)
+        const plateR = radius * 0.45;
+        for (let r = 0; r <= plateR; r += step) {
+          for (let th = 0; th < 2 * math.PI; th += 0.05) {
+            addPx(cx + r * math.cos(th), cy + r * math.sin(th), color);
+          }
+        }
+
+        // 6개 두툼한 가지 + 쉐브론 날개
+        for (const a of angles) {
+          const cosA = math.cos(a);
+          const sinA = math.sin(a);
+          for (let d = plateR; d <= radius; d += step) {
+            addPx(cx + d * cosA, cy + d * sinA, color);
+            addPx(cx + d * cosA - pixelSize * 0.6 * sinA, cy + d * sinA + pixelSize * 0.6 * cosA, color);
+            addPx(cx + d * cosA + pixelSize * 0.6 * sinA, cy + d * sinA - pixelSize * 0.6 * cosA, color);
+          }
+          const wPos = radius * 0.72;
+          const wLen = radius * 0.35;
+          for (const wa of [a + math.PI/3, a - math.PI/3]) {
+            const ox = cx + wPos * cosA;
+            const oy = cy + wPos * sinA;
+            for (let wd = 0; wd <= wLen; wd += step) {
+              addPx(ox + wd * math.cos(wa), oy + wd * math.sin(wa), color);
+            }
+          }
+          const tipX = cx + radius * cosA;
+          const tipY = cy + radius * sinA;
+          for (let td = 0; td <= radius * 0.25; td += step) {
+            addPx(tipX + td * cosA, tipY + td * sinA, color);
+          }
+          for (const ta of [a + math.PI/3, a - math.PI/3]) {
+            for (let td = 0; td <= radius * 0.20; td += step) {
+              addPx(tipX + td * math.cos(ta), tipY + td * math.sin(ta), color);
+            }
+          }
+        }
+        return Array.from(pixels.values());
+      }
+
+      return [
+        // 1. 좌상단: 대형 6각 덴드라이트 눈꽃 (스카이블루 #38bdf8 + 코어 화이트)
+        ...makeDendriteSnowflake(3.6, 0.4, 3.2, 0.25, '#38bdf8', '#ffffff'),
+        // 2. 우상단: 플레이트 덴드라이트 눈꽃 (아이스블루 #7dd3fc)
+        ...makePlateSnowflake(20.5, -0.6, 3.0, 0.25, '#7dd3fc'),
+        // 3. 중앙 상단 공중: 맑고 투명한 화이트 눈꽃
+        ...makeDendriteSnowflake(12.0, -1.8, 2.0, 0.25, '#ffffff', '#bae6fd'),
+        // 4. 좌측 외곽: 덴드라이트 눈송이
+        ...makeDendriteSnowflake(1.5, 7.5, 2.3, 0.25, '#38bdf8', '#ffffff'),
+        // 5. 우측 외곽: 플레이트 눈송이
+        ...makePlateSnowflake(22.0, 7.0, 2.3, 0.25, '#38bdf8'),
+        // 6. 좌측 하단 눈송이
+        ...makeDendriteSnowflake(2.0, 13.8, 1.8, 0.25, '#7dd3fc', '#ffffff'),
+        // 7. 우측 하단 눈송이
+        ...makeDendriteSnowflake(21.5, 13.8, 1.8, 0.25, '#7dd3fc', '#ffffff'),
+        // 8. 찰스 주변 공중 흩날리는 미세 스파클 & 작은 눈꽃 가루
+        [7.5, -1.0, '#ffffff', 0.25], [7.75, -1.0, '#ffffff', 0.25],
+        [15.0, -1.5, '#ffffff', 0.25], [15.25, -1.5, '#bae6fd', 0.25],
+        [0.0, 3.0, '#7dd3fc', 0.25], [0.25, 3.25, '#ffffff', 0.25],
+        [23.0, 2.0, '#38bdf8', 0.25], [23.25, 2.25, '#ffffff', 0.25],
+        [6.0, 3.5, '#ffffff', 0.25], [6.25, 3.5, '#e0f2fe', 0.25],
+        [17.0, 3.0, '#ffffff', 0.25], [17.25, 3.25, '#bae6fd', 0.25],
+        [0.0, 10.0, '#ffffff', 0.25], [0.25, 10.25, '#bae6fd', 0.25],
+        [23.0, 10.5, '#ffffff', 0.25], [23.25, 10.0, '#7dd3fc', 0.25],
+        [1.0, 15.5, '#bae6fd', 0.25], [1.25, 15.0, '#ffffff', 0.25],
+        [22.0, 15.5, '#bae6fd', 0.25], [22.25, 15.0, '#ffffff', 0.25]
+      ];
+    })()
   }
 };
 
