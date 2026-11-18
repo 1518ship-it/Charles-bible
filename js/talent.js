@@ -897,14 +897,42 @@ const TalentService = {
     const currentCycle = (typeof StorageService !== 'undefined' && StorageService.getBibleCycle)
       ? StorageService.getBibleCycle()
       : Math.max(1, parseInt(claims.bible_cycle || '1', 10));
+    const stats = (typeof StorageService !== 'undefined' && StorageService.getStats)
+      ? StorageService.getStats()
+      : { ntRead: 0, otRead: 0, totalRead: 0 };
 
     const list = Array.isArray(claims.trophies) ? [...claims.trophies] : [];
     const seen = new Set(list.map(t => `${t.type}_${t.cycle || 1}`));
+    let changed = false;
+
+    const ensureTrophy = (type, cycleNum, dateStr) => {
+      const k = `${type}_${cycleNum}`;
+      if (!seen.has(k)) {
+        list.push({ type, cycle: cycleNum, date: dateStr });
+        seen.add(k);
+        changed = true;
+      }
+    };
 
     // 기존 1독 신약 완독자 자동 뱃지 승계
-    if (claims.achieve_nt_complete && currentCycle === 1 && !seen.has('nt_badge_1')) {
-      list.push({ type: 'nt_badge', cycle: 1, date: claims.achieve_nt_claimed_at || todayStr });
-      seen.add('nt_badge_1');
+    if (claims.achieve_nt_complete && currentCycle === 1) {
+      ensureTrophy('nt_badge', 1, claims.achieve_nt_claimed_at || todayStr);
+    }
+
+    // 현재 회독 실시간 달성 체크 (퀘스트 수령 없이도 완독 즉시 진열장 자동 등재)
+    if ((stats.ntRead || 0) >= 260) {
+      ensureTrophy('nt_badge', currentCycle, todayStr);
+    }
+    if ((stats.otRead || 0) >= 929) {
+      ensureTrophy('ot_badge', currentCycle, todayStr);
+    }
+    if ((stats.totalRead || 0) >= 1189) {
+      ensureTrophy('bible_trophy', currentCycle, todayStr);
+    }
+
+    if (changed) {
+      claims.trophies = list;
+      this.saveClaimedRecord(claims);
     }
 
     const bibleTrophies = list.filter(t => t.type === 'bible_trophy').sort((a, b) => (a.cycle || 1) - (b.cycle || 1));
@@ -969,15 +997,9 @@ const TalentService = {
       ? 'claimed' 
       : (streakEligible ? 'ready' : 'progress');
 
-    // 4) 영광의 업적 3종 (현 회독 기준: 신약 뱃지 / 구약 뱃지 / 신구약 황금 트로피)
-    const ntClaimed = !!claims.achieve_nt_complete;
+    // 4) 업적: 신약 전체 완독 달성하기 (260장, 최초 1회 +100 달란트)
+    const ntClaimed = !!claims.achieve_nt_first_talent_claimed || (!!claims.achieve_nt_complete && currentCycle === 1);
     const ntStatus = ntClaimed ? 'claimed' : (ntRead >= 260 ? 'ready' : 'progress');
-
-    const otClaimed = !!claims.achieve_ot_complete;
-    const otStatus = otClaimed ? 'claimed' : (otRead >= 929 ? 'ready' : 'progress');
-
-    const bibleClaimed = !!claims.achieve_bible_complete;
-    const bibleStatus = bibleClaimed ? 'claimed' : (totalRead >= 1189 ? 'ready' : 'progress');
 
     // ==================== 5) 가을 특별 이벤트 미션 3종 ====================
     const eventMissions = this.getEventMissions();
@@ -1142,46 +1164,14 @@ const TalentService = {
         id: 'achieve_nt_complete',
         type: 'achievement',
         category: '영광의 업적',
-        title: currentCycle === 1 ? '신약 전체 완독 달성하기' : `제${currentCycle}독 신약 전체 완독하기`,
-        desc: '마태복음부터 요한계시록까지 신약 260장 완독 (신약 뱃지 진열)',
-        icon: '📕',
-        reward: (!claims.achieve_nt_first_talent_claimed && currentCycle === 1) ? 100 : 0,
-        rewardBadgeType: 'nt_badge',
-        rewardLabel: '신약통독 뱃지',
+        title: '신약 전체 완독 달성하기',
+        desc: '마태복음부터 요한계시록까지 신약 260장 완독',
+        icon: '👑',
+        reward: 100,
         current: Math.min(260, ntRead),
         target: 260,
         unit: '장',
         status: ntStatus
-      },
-      {
-        id: 'achieve_ot_complete',
-        type: 'achievement',
-        category: '영광의 업적',
-        title: `제${currentCycle}독 구약 전체 완독하기`,
-        desc: '창세기부터 말라기까지 구약 929장 완독 (구약 뱃지 진열)',
-        icon: '📘',
-        reward: 0,
-        rewardBadgeType: 'ot_badge',
-        rewardLabel: '구약통독 뱃지',
-        current: Math.min(929, otRead),
-        target: 929,
-        unit: '장',
-        status: otStatus
-      },
-      {
-        id: 'achieve_bible_complete',
-        type: 'achievement',
-        category: '영광의 업적',
-        title: `제${currentCycle}독 성경 66권 전체 완독하기`,
-        desc: '신구약 1,189장 대완독 달성 및 황금 어린양 트로피 수여',
-        icon: '🏆',
-        reward: 0,
-        rewardBadgeType: 'bible_trophy',
-        rewardLabel: '성경완독 트로피',
-        current: Math.min(1189, totalRead),
-        target: 1189,
-        unit: '장',
-        status: bibleStatus
       }
     ];
 

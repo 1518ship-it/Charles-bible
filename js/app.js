@@ -1342,8 +1342,8 @@ const App = {
       return;
     }
 
-    // 신약/구약/전체 완독 대업적 수령 시 특수 대형 축하 모달 오픈
-    if (res.awardedTrophyType) {
+    // 신약 완독 대업적 수령 시 특수 대형 축하 모달 오픈
+    if (res.isNtComplete) {
       this.openGrandCelebrationModal(res);
       RetroAudio.success();
     } else if (res.awardedItems && res.awardedItems.length > 0) {
@@ -3450,12 +3450,10 @@ const App = {
       `;
     }
 
-    const canStartNewCycle = StorageService.isBibleComplete() && !!claims.achieve_bible_complete;
+    const canStartNewCycle = StorageService.isBibleComplete();
     const cycleBtnHtml = canStartNewCycle
       ? `<button type="button" class="btn-new-bible-cycle" onclick="App.handleStartNewBibleCycle()">🔄 제${cycle + 1}독 새 출발하기</button>`
-      : (StorageService.isBibleComplete()
-        ? `<button type="button" class="btn-new-bible-cycle" onclick="App.openQuestsModal()">🏆 퀘스트에서 트로피 수령하기</button>`
-        : '');
+      : '';
 
     container.innerHTML = `
       <div class="trophy-showcase-header">
