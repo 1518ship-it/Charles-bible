@@ -811,59 +811,59 @@ const ItemStudio = {
         id: 'badge_nt',
         name: '신약통독 뱃지',
         subtitle: '신약 27권 (260장) 완독 기념',
-        tag: '📘 신약 완독 뱃지',
-        tagBg: '#eff6ff',
-        tagColor: '#1d4ed8',
-        desc: '로열 블루 & 실버 방패 위에 복음의 황금 십자가와 월계수 잎이 새겨진 훈장 뱃지입니다.',
+        tag: '📕 신약 완독 뱃지',
+        tagBg: '#fef2f2',
+        tagColor: '#b91c1c',
+        desc: '예수 그리스도의 보혈을 상징하는 크림슨 레드 & 실버 방패 위에 황금 십자가와 월계수 잎이 새겨진 훈장입니다.',
         pixels: [
           // 상단 고리 (실버/골드)
           [7, 0, '#fbbf24'], [8, 0, '#fbbf24'],
-          // 방패 외곽선 (#1e293b) & 실버 프레임 (#e2e8f0)
-          [4, 1, '#1e293b'], [5, 1, '#1e293b'], [6, 1, '#1e293b'], [7, 1, '#f59e0b'], [8, 1, '#f59e0b'], [9, 1, '#1e293b'], [10, 1, '#1e293b'], [11, 1, '#1e293b'],
-          [3, 2, '#1e293b'], [4, 2, '#f8fafc'], [5, 2, '#cbd5e1'], [6, 2, '#cbd5e1'], [7, 2, '#cbd5e1'], [8, 2, '#cbd5e1'], [9, 2, '#cbd5e1'], [10, 2, '#cbd5e1'], [11, 2, '#f8fafc'], [12, 2, '#1e293b'],
-          // 방패 본체 (로열 블루 #2563eb / #3b82f6) + 황금 십자가 (#facc15)
-          [2, 3, '#1e293b'], [3, 3, '#f8fafc'], [4, 3, '#3b82f6'], [5, 3, '#3b82f6'], [6, 3, '#2563eb'], [7, 3, '#fde047'], [8, 3, '#facc15'], [9, 3, '#2563eb'], [10, 3, '#2563eb'], [11, 3, '#1d4ed8'], [12, 3, '#cbd5e1'], [13, 3, '#1e293b'],
-          [2, 4, '#1e293b'], [3, 4, '#cbd5e1'], [4, 4, '#3b82f6'], [5, 4, '#3b82f6'], [6, 4, '#2563eb'], [7, 4, '#fde047'], [8, 4, '#facc15'], [9, 4, '#2563eb'], [10, 4, '#1d4ed8'], [11, 4, '#1d4ed8'], [12, 4, '#cbd5e1'], [13, 4, '#1e293b'],
-          [2, 5, '#1e293b'], [3, 5, '#cbd5e1'], [4, 5, '#3b82f6'], [5, 5, '#fde047'], [6, 5, '#fde047'], [7, 5, '#fef08a'], [8, 5, '#fde047'], [9, 5, '#facc15'], [10, 5, '#f59e0b'], [11, 5, '#1d4ed8'], [12, 5, '#94a3b8'], [13, 5, '#1e293b'],
-          [2, 6, '#1e293b'], [3, 6, '#94a3b8'], [4, 6, '#2563eb'], [5, 6, '#2563eb'], [6, 6, '#2563eb'], [7, 6, '#fde047'], [8, 6, '#facc15'], [9, 6, '#1d4ed8'], [10, 6, '#1d4ed8'], [11, 6, '#1e40af'], [12, 6, '#94a3b8'], [13, 6, '#1e293b'],
-          [2, 7, '#1e293b'], [3, 7, '#94a3b8'], [4, 7, '#34d399'], [5, 7, '#2563eb'], [6, 7, '#2563eb'], [7, 7, '#facc15'], [8, 7, '#f59e0b'], [9, 7, '#1d4ed8'], [10, 7, '#1e40af'], [11, 7, '#10b981'], [12, 7, '#94a3b8'], [13, 7, '#1e293b'],
-          [3, 8, '#1e293b'], [4, 8, '#cbd5e1'], [5, 8, '#10b981'], [6, 8, '#2563eb'], [7, 8, '#facc15'], [8, 8, '#d97706'], [9, 8, '#1d4ed8'], [10, 8, '#059669'], [11, 8, '#cbd5e1'], [12, 8, '#1e293b'],
-          [3, 9, '#1e293b'], [4, 9, '#94a3b8'], [5, 9, '#1d4ed8'], [6, 9, '#10b981'], [7, 9, '#1e40af'], [8, 9, '#1e40af'], [9, 9, '#059669'], [10, 9, '#1e40af'], [11, 9, '#94a3b8'], [12, 9, '#1e293b'],
-          [4, 10, '#1e293b'], [5, 10, '#cbd5e1'], [6, 10, '#1e40af'], [7, 10, '#34d399'], [8, 10, '#10b981'], [9, 10, '#1e40af'], [10, 10, '#94a3b8'], [11, 10, '#1e293b'],
-          [5, 11, '#1e293b'], [6, 11, '#cbd5e1'], [7, 11, '#1e40af'], [8, 11, '#1e40af'], [9, 11, '#94a3b8'], [10, 11, '#1e293b'],
-          [6, 12, '#1e293b'], [7, 12, '#f8fafc'], [8, 12, '#94a3b8'], [9, 12, '#1e293b'],
-          [7, 13, '#1e293b'], [8, 13, '#1e293b'],
+          // 방패 외곽선 (#18181b) & 실버 프레임 (#e2e8f0)
+          [4, 1, '#18181b'], [5, 1, '#18181b'], [6, 1, '#18181b'], [7, 1, '#f59e0b'], [8, 1, '#f59e0b'], [9, 1, '#18181b'], [10, 1, '#18181b'], [11, 1, '#18181b'],
+          [3, 2, '#18181b'], [4, 2, '#f8fafc'], [5, 2, '#cbd5e1'], [6, 2, '#cbd5e1'], [7, 2, '#cbd5e1'], [8, 2, '#cbd5e1'], [9, 2, '#cbd5e1'], [10, 2, '#cbd5e1'], [11, 2, '#f8fafc'], [12, 2, '#18181b'],
+          // 방패 본체 (크림슨 레드 #dc2626 / #ef4444) + 황금 십자가 (#fde047)
+          [2, 3, '#18181b'], [3, 3, '#f8fafc'], [4, 3, '#ef4444'], [5, 3, '#ef4444'], [6, 3, '#dc2626'], [7, 3, '#fde047'], [8, 3, '#facc15'], [9, 3, '#dc2626'], [10, 3, '#dc2626'], [11, 3, '#b91c1c'], [12, 3, '#cbd5e1'], [13, 3, '#18181b'],
+          [2, 4, '#18181b'], [3, 4, '#cbd5e1'], [4, 4, '#ef4444'], [5, 4, '#ef4444'], [6, 4, '#dc2626'], [7, 4, '#fde047'], [8, 4, '#facc15'], [9, 4, '#dc2626'], [10, 4, '#b91c1c'], [11, 4, '#b91c1c'], [12, 4, '#cbd5e1'], [13, 4, '#18181b'],
+          [2, 5, '#18181b'], [3, 5, '#cbd5e1'], [4, 5, '#ef4444'], [5, 5, '#fde047'], [6, 5, '#fde047'], [7, 5, '#fef08a'], [8, 5, '#fde047'], [9, 5, '#facc15'], [10, 5, '#f59e0b'], [11, 5, '#b91c1c'], [12, 5, '#94a3b8'], [13, 5, '#18181b'],
+          [2, 6, '#18181b'], [3, 6, '#94a3b8'], [4, 6, '#dc2626'], [5, 6, '#dc2626'], [6, 6, '#dc2626'], [7, 6, '#fde047'], [8, 6, '#facc15'], [9, 6, '#b91c1c'], [10, 6, '#b91c1c'], [11, 6, '#991b1b'], [12, 6, '#94a3b8'], [13, 6, '#18181b'],
+          [2, 7, '#18181b'], [3, 7, '#94a3b8'], [4, 7, '#34d399'], [5, 7, '#dc2626'], [6, 7, '#dc2626'], [7, 7, '#facc15'], [8, 7, '#f59e0b'], [9, 7, '#b91c1c'], [10, 7, '#991b1b'], [11, 7, '#10b981'], [12, 7, '#94a3b8'], [13, 7, '#18181b'],
+          [3, 8, '#18181b'], [4, 8, '#cbd5e1'], [5, 8, '#10b981'], [6, 8, '#dc2626'], [7, 8, '#facc15'], [8, 8, '#d97706'], [9, 8, '#b91c1c'], [10, 8, '#059669'], [11, 8, '#cbd5e1'], [12, 8, '#18181b'],
+          [3, 9, '#18181b'], [4, 9, '#94a3b8'], [5, 9, '#b91c1c'], [6, 9, '#10b981'], [7, 9, '#991b1b'], [8, 9, '#991b1b'], [9, 9, '#059669'], [10, 9, '#991b1b'], [11, 9, '#94a3b8'], [12, 9, '#18181b'],
+          [4, 10, '#18181b'], [5, 10, '#cbd5e1'], [6, 10, '#991b1b'], [7, 10, '#34d399'], [8, 10, '#10b981'], [9, 10, '#991b1b'], [10, 10, '#94a3b8'], [11, 10, '#18181b'],
+          [5, 11, '#18181b'], [6, 11, '#cbd5e1'], [7, 11, '#991b1b'], [8, 11, '#991b1b'], [9, 11, '#94a3b8'], [10, 11, '#18181b'],
+          [6, 12, '#18181b'], [7, 12, '#f8fafc'], [8, 12, '#94a3b8'], [9, 12, '#18181b'],
+          [7, 13, '#18181b'], [8, 13, '#18181b'],
           // 하단 반짝이 스파클
-          [1, 2, '#fde047'], [14, 10, '#7dd3fc']
+          [1, 2, '#fde047'], [14, 10, '#fca5a5']
         ]
       },
       {
         id: 'badge_ot',
         name: '구약통독 뱃지',
         subtitle: '구약 39권 (929장) 완독 기념',
-        tag: '📕 구약 완독 뱃지',
-        tagBg: '#fef2f2',
-        tagColor: '#b91c1c',
-        desc: '크림슨 레드 & 앤틱 골드 육각 엠블럼 위에 언약의 두루마리와 성령의 불꽃이 새겨진 훈장입니다.',
+        tag: '📘 구약 완독 뱃지',
+        tagBg: '#eff6ff',
+        tagColor: '#1d4ed8',
+        desc: '깊고 변함없는 언약을 상징하는 로열 블루 & 앤틱 골드 육각 엠블럼 위에 말씀의 두루마리가 새겨진 훈장입니다.',
         pixels: [
           // 상단 불꽃/별 장식
           [7, 0, '#fef08a'], [8, 0, '#facc15'],
-          // 육각 골드 프레임 & 크림슨 레드 본체
+          // 육각 골드 프레임 & 로열 블루 본체 (#2563eb / #3b82f6 / #1e40af)
           [5, 1, '#18181b'], [6, 1, '#facc15'], [7, 1, '#fde047'], [8, 1, '#facc15'], [9, 1, '#f59e0b'], [10, 1, '#18181b'],
-          [4, 2, '#18181b'], [5, 2, '#fde047'], [6, 2, '#dc2626'], [7, 2, '#ef4444'], [8, 2, '#dc2626'], [9, 2, '#b91c1c'], [10, 2, '#f59e0b'], [11, 2, '#18181b'],
-          [3, 3, '#18181b'], [4, 3, '#facc15'], [5, 3, '#ef4444'], [6, 3, '#dc2626'], [7, 3, '#fef3c7'], [8, 3, '#fde68a'], [9, 3, '#b91c1c'], [10, 3, '#991b1b'], [11, 3, '#d97706'], [12, 3, '#18181b'],
+          [4, 2, '#18181b'], [5, 2, '#fde047'], [6, 2, '#2563eb'], [7, 2, '#3b82f6'], [8, 2, '#2563eb'], [9, 2, '#1d4ed8'], [10, 2, '#f59e0b'], [11, 2, '#18181b'],
+          [3, 3, '#18181b'], [4, 3, '#facc15'], [5, 3, '#3b82f6'], [6, 3, '#2563eb'], [7, 3, '#fef3c7'], [8, 3, '#fde68a'], [9, 3, '#1d4ed8'], [10, 3, '#1e40af'], [11, 3, '#d97706'], [12, 3, '#18181b'],
           // 중앙 언약의 두루마리/돌판 (#fef3c7 / #f59e0b)
-          [2, 4, '#18181b'], [3, 4, '#fde047'], [4, 4, '#ef4444'], [5, 4, '#fffbeb'], [6, 4, '#fef3c7'], [7, 4, '#d97706'], [8, 4, '#fffbeb'], [9, 4, '#fef3c7'], [10, 4, '#fffbeb'], [11, 4, '#b91c1c'], [12, 4, '#d97706'], [13, 4, '#18181b'],
-          [2, 5, '#18181b'], [3, 5, '#facc15'], [4, 5, '#dc2626'], [5, 5, '#fef3c7'], [6, 5, '#92400e'], [7, 5, '#d97706'], [8, 5, '#fef3c7'], [9, 5, '#92400e'], [10, 5, '#fde68a'], [11, 5, '#b91c1c'], [12, 5, '#d97706'], [13, 5, '#18181b'],
-          [2, 6, '#18181b'], [3, 6, '#facc15'], [4, 6, '#dc2626'], [5, 6, '#fffbeb'], [6, 6, '#fef3c7'], [7, 6, '#d97706'], [8, 6, '#fffbeb'], [9, 6, '#fef3c7'], [10, 6, '#fde68a'], [11, 6, '#991b1b'], [12, 6, '#b45309'], [13, 6, '#18181b'],
-          [2, 7, '#18181b'], [3, 7, '#f59e0b'], [4, 7, '#b91c1c'], [5, 7, '#fef3c7'], [6, 7, '#92400e'], [7, 7, '#d97706'], [8, 7, '#fef3c7'], [9, 7, '#92400e'], [10, 7, '#fde68a'], [11, 7, '#991b1b'], [12, 7, '#b45309'], [13, 7, '#18181b'],
-          [2, 8, '#18181b'], [3, 8, '#f59e0b'], [4, 8, '#b91c1c'], [5, 8, '#fde68a'], [6, 8, '#fef3c7'], [7, 8, '#b45309'], [8, 8, '#fde68a'], [9, 8, '#fef3c7'], [10, 8, '#f59e0b'], [11, 8, '#991b1b'], [12, 8, '#b45309'], [13, 8, '#18181b'],
-          [3, 9, '#18181b'], [4, 9, '#facc15'], [5, 9, '#b91c1c'], [6, 9, '#991b1b'], [7, 9, '#facc15'], [8, 9, '#f59e0b'], [9, 9, '#991b1b'], [10, 9, '#7f1d1d'], [11, 9, '#b45309'], [12, 9, '#18181b'],
-          [4, 10, '#18181b'], [5, 10, '#f59e0b'], [6, 10, '#991b1b'], [7, 10, '#7f1d1d'], [8, 10, '#7f1d1d'], [9, 10, '#7f1d1d'], [10, 10, '#b45309'], [11, 10, '#18181b'],
+          [2, 4, '#18181b'], [3, 4, '#fde047'], [4, 4, '#3b82f6'], [5, 4, '#fffbeb'], [6, 4, '#fef3c7'], [7, 4, '#d97706'], [8, 4, '#fffbeb'], [9, 4, '#fef3c7'], [10, 4, '#fffbeb'], [11, 4, '#1d4ed8'], [12, 4, '#d97706'], [13, 4, '#18181b'],
+          [2, 5, '#18181b'], [3, 5, '#facc15'], [4, 5, '#2563eb'], [5, 5, '#fef3c7'], [6, 5, '#92400e'], [7, 5, '#d97706'], [8, 5, '#fef3c7'], [9, 5, '#92400e'], [10, 5, '#fde68a'], [11, 5, '#1d4ed8'], [12, 5, '#d97706'], [13, 5, '#18181b'],
+          [2, 6, '#18181b'], [3, 6, '#facc15'], [4, 6, '#2563eb'], [5, 6, '#fffbeb'], [6, 6, '#fef3c7'], [7, 6, '#d97706'], [8, 6, '#fffbeb'], [9, 6, '#fef3c7'], [10, 6, '#fde68a'], [11, 6, '#1e40af'], [12, 6, '#b45309'], [13, 6, '#18181b'],
+          [2, 7, '#18181b'], [3, 7, '#f59e0b'], [4, 7, '#1d4ed8'], [5, 7, '#fef3c7'], [6, 7, '#92400e'], [7, 7, '#d97706'], [8, 7, '#fef3c7'], [9, 7, '#92400e'], [10, 7, '#fde68a'], [11, 7, '#1e40af'], [12, 7, '#b45309'], [13, 7, '#18181b'],
+          [2, 8, '#18181b'], [3, 8, '#f59e0b'], [4, 8, '#1d4ed8'], [5, 8, '#fde68a'], [6, 8, '#fef3c7'], [7, 8, '#b45309'], [8, 8, '#fde68a'], [9, 8, '#fef3c7'], [10, 8, '#f59e0b'], [11, 8, '#1e40af'], [12, 8, '#b45309'], [13, 8, '#18181b'],
+          [3, 9, '#18181b'], [4, 9, '#facc15'], [5, 9, '#1d4ed8'], [6, 9, '#1e40af'], [7, 9, '#facc15'], [8, 9, '#f59e0b'], [9, 9, '#1e40af'], [10, 9, '#1e3a8a'], [11, 9, '#b45309'], [12, 9, '#18181b'],
+          [4, 10, '#18181b'], [5, 10, '#f59e0b'], [6, 10, '#1e40af'], [7, 10, '#1e3a8a'], [8, 10, '#1e3a8a'], [9, 10, '#1e3a8a'], [10, 10, '#b45309'], [11, 10, '#18181b'],
           [5, 11, '#18181b'], [6, 11, '#f59e0b'], [7, 11, '#d97706'], [8, 11, '#b45309'], [9, 11, '#92400e'], [10, 11, '#18181b'],
           [6, 12, '#18181b'], [7, 12, '#18181b'], [8, 12, '#18181b'], [9, 12, '#18181b'],
-          // 불꽃 스파클
-          [1, 3, '#fb923c'], [14, 2, '#fde047']
+          // 별빛 스파클
+          [1, 3, '#7dd3fc'], [14, 2, '#fde047']
         ]
       },
       {
@@ -965,38 +965,38 @@ const ItemStudio = {
       </div>
     `;
 
-    // 신약 뱃지 슬롯 (1독 ~ n+1독까지 획득 완료!)
+    // 신약 뱃지 슬롯 (1독 ~ n+1독까지 획득 완료! - 붉은색 성경 테마)
     let ntBadgeSlotsHtml = '';
     for (let i = 1; i <= ntCount; i++) {
       const isCurrentCycle = (i === ntCount);
       ntBadgeSlotsHtml += `
-        <div style="display: flex; flex-direction: column; align-items: center; background: ${isCurrentCycle ? 'linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)' : '#ffffff'}; border: 1.5px solid ${isCurrentCycle ? '#60a5fa' : '#bfdbfe'}; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);">
+        <div style="display: flex; flex-direction: column; align-items: center; background: ${isCurrentCycle ? 'linear-gradient(180deg, #fef2f2 0%, #ffffff 100%)' : '#ffffff'}; border: 1.5px solid ${isCurrentCycle ? '#f87171' : '#fecaca'}; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
           ${ntSvg}
-          <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #1d4ed8;">${i}독 신약</div>
-          <div style="font-size: 9px; color: ${isCurrentCycle ? '#2563eb' : '#60a5fa'}; font-weight: 700;">${isCurrentCycle ? '방금 획득! ✓' : '2026.11.19'}</div>
+          <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #b91c1c;">${i}독 신약</div>
+          <div style="font-size: 9px; color: ${isCurrentCycle ? '#dc2626' : '#f87171'}; font-weight: 700;">${isCurrentCycle ? '방금 획득! ✓' : '2026.11.19'}</div>
         </div>
       `;
     }
 
-    // 구약 뱃지 슬롯 (1독 ~ n독 획득 + n+1독 진행 중)
+    // 구약 뱃지 슬롯 (1독 ~ n독 획득 + n+1독 진행 중 - 푸른색 성경 테마)
     let otBadgeSlotsHtml = '';
     for (let i = 1; i <= n; i++) {
       otBadgeSlotsHtml += `
-        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1.5px solid #fecaca; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
+        <div style="display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 8px 10px; min-width: 72px; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);">
           ${otSvg}
-          <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #b91c1c;">${i}독 구약</div>
-          <div style="font-size: 9px; color: #f87171; font-weight: 600;">2026.11.19</div>
+          <div style="margin-top: 4px; font-size: 10px; font-weight: 800; color: #1d4ed8;">${i}독 구약</div>
+          <div style="font-size: 9px; color: #60a5fa; font-weight: 600;">2026.11.19</div>
         </div>
       `;
     }
     otBadgeSlotsHtml += `
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 8px 10px; min-width: 76px;">
-        <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📕</div>
+        <div style="font-size: 18px; filter: grayscale(1); opacity: 0.4;">📘</div>
         <div style="margin-top: 4px; font-size: 9.5px; font-weight: 800; color: #475569;">${n + 1}독 구약</div>
         <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 4px;">
-          <div style="width: ${demoOtPct}%; height: 100%; background: #ef4444; border-radius: 999px;"></div>
+          <div style="width: ${demoOtPct}%; height: 100%; background: #3b82f6; border-radius: 999px;"></div>
         </div>
-        <div style="margin-top: 2px; font-size: 9.5px; font-weight: 800; color: #dc2626;">${demoOtPct}%</div>
+        <div style="margin-top: 2px; font-size: 9.5px; font-weight: 800; color: #2563eb;">${demoOtPct}%</div>
       </div>
     `;
 
@@ -1008,8 +1008,8 @@ const ItemStudio = {
           </div>
           <div style="display: flex; gap: 6px; font-size: 11px; font-weight: 800;">
             <span style="background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 999px;">🏆 트로피 ${n}</span>
-            <span style="background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 999px;">📘 신약 ${ntCount}</span>
-            <span style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 999px;">📕 구약 ${n}</span>
+            <span style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 999px;">📕 신약 ${ntCount}</span>
+            <span style="background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 999px;">📘 구약 ${n}</span>
           </div>
         </div>
 
@@ -1019,15 +1019,15 @@ const ItemStudio = {
           ${trophySlotsHtml}
         </div>
 
-        <!-- 2단 선반: 신약통독 뱃지 케이스 (분리) -->
-        <div style="font-size: 11.5px; font-weight: 800; color: #1e40af; margin-bottom: 6px;">📘 신약통독 뱃지 선반 (260장)</div>
-        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 4px solid #60a5fa; margin-bottom: 14px;">
+        <!-- 2단 선반: 신약통독 뱃지 케이스 (분리 - 붉은색 테마) -->
+        <div style="font-size: 11.5px; font-weight: 800; color: #991b1b; margin-bottom: 6px;">📕 신약통독 뱃지 선반 (260장)</div>
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 4px solid #f87171; margin-bottom: 14px;">
           ${ntBadgeSlotsHtml}
         </div>
 
-        <!-- 3단 선반: 구약통독 뱃지 케이스 (분리) -->
-        <div style="font-size: 11.5px; font-weight: 800; color: #991b1b; margin-bottom: 6px;">📕 구약통독 뱃지 선반 (929장)</div>
-        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 4px solid #f87171;">
+        <!-- 3단 선반: 구약통독 뱃지 케이스 (분리 - 푸른색 테마) -->
+        <div style="font-size: 11.5px; font-weight: 800; color: #1e40af; margin-bottom: 6px;">📘 구약통독 뱃지 선반 (929장)</div>
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 4px solid #60a5fa;">
           ${otBadgeSlotsHtml}
         </div>
 
