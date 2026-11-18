@@ -1030,6 +1030,7 @@ const App = {
       case 'home':
         this.renderHome();
         this.renderHomeTalents();
+        this.checkHomeBibleGrandPopup();
         break;
       case 'social':
         this.renderSocial();
@@ -2984,6 +2985,49 @@ const App = {
       readerView.classList.remove('active');
     }
     this.renderAll();
+    if (this.activeTab === 'home') {
+      this.checkHomeBibleGrandPopup();
+    }
+  },
+
+  // 구약 완독(929장) 시 메시지함 축하 편지 발송
+  checkCompletionMilestones(wasOTCompleteBefore) {
+    if (typeof StorageService === 'undefined') return;
+    const isNowOTComplete = StorageService.isOTComplete();
+    if (!wasOTCompleteBefore && isNowOTComplete) {
+      const cycle = StorageService.getBibleCycle ? StorageService.getBibleCycle() : 1;
+      const sentKey = StorageService.getUserKey(`ot_msg_sent_c${cycle}`);
+      if (localStorage.getItem(sentKey) !== 'true') {
+        localStorage.setItem(sentKey, 'true');
+        this.addNotification({
+          id: `ot_complete_c${cycle}_${Date.now()}`,
+          icon: '📘',
+          title: `할렐루야! 제${cycle}독 구약 929장 완독을 축하드려요! 🎉`,
+          text: `창세기부터 말라기까지 구약 성경 39권(929장)을 모두 통독하셨습니다! [통계 > 통독 진열장]에 📘 구약통독 뱃지가 진열되었어요. 끝까지 말씀과 함께 승리하시는 성도님을 축복합니다! 🐑✨`,
+          time: '방금 전',
+          read: false,
+          sender: '양떼목장 찰스'
+        });
+        this.showToast('📘 구약 929장 완독! 메세지함에 축하 편지가 도착했어요 💌');
+      }
+    }
+  },
+
+  // 신구약 66권(1,189장) 완독 후 홈 화면 진입 시 특별한 대형 축하 팝업 표시 (회독당 1회)
+  checkHomeBibleGrandPopup() {
+    if (typeof StorageService === 'undefined') return;
+    if (!StorageService.isBibleComplete()) return;
+    const cycle = StorageService.getBibleCycle ? StorageService.getBibleCycle() : 1;
+    const shownKey = StorageService.getUserKey(`bible_home_popup_c${cycle}`);
+    if (localStorage.getItem(shownKey) === 'true') return;
+
+    localStorage.setItem(shownKey, 'true');
+    if (typeof RetroAudio !== 'undefined') RetroAudio.success();
+    this.openGrandCelebrationModal({
+      awardedTrophyType: 'bible_trophy',
+      cycle: cycle,
+      reward: 0
+    });
   },
 
   handleCompleteAndNext() {
@@ -2994,6 +3038,7 @@ const App = {
     if (book.testament === 'OT' && !StorageService.isNTComplete()) return;
 
     const wasNTCompleteBefore = StorageService.isNTComplete();
+    const wasOTCompleteBefore = StorageService.isOTComplete();
 
     // 현재 장 완독 처리
     const alreadyRead = StorageService.isChapterRead(bookId, chapter);
@@ -3015,6 +3060,7 @@ const App = {
       this.updateBookCardProgress(bookId);
       this.renderHome();
       this.renderStats();
+      this.checkCompletionMilestones(wasOTCompleteBefore);
     }
 
     // 데이터 상에서 신약 27권 260장 전체가 방금 완독되었는지 정밀 확인
@@ -3061,6 +3107,7 @@ const App = {
       const book = BIBLE_BOOKS.find(b => b.id === bookId);
       if (book && (book.testament !== 'OT' || StorageService.isNTComplete())) {
         const wasNTCompleteBefore = StorageService.isNTComplete();
+        const wasOTCompleteBefore = StorageService.isOTComplete();
         const alreadyRead = StorageService.isChapterRead(bookId, chapter);
         if (!alreadyRead) {
           this.hasAutoMarkedThisSession = true;
@@ -3080,6 +3127,7 @@ const App = {
           this.updateBookCardProgress(bookId);
           this.renderHome();
           this.renderStats();
+          this.checkCompletionMilestones(wasOTCompleteBefore);
 
           // 데이터 상 신약 260장 전체 완독 달성 확인
           const isNowNTComplete = StorageService.isNTComplete();
@@ -3164,6 +3212,7 @@ const App = {
     if (book.testament === 'OT' && !StorageService.isNTComplete()) return;
 
     const wasNTCompleteBefore = StorageService.isNTComplete();
+    const wasOTCompleteBefore = StorageService.isOTComplete();
     const alreadyRead = StorageService.isChapterRead(bookId, chapter);
     if (!alreadyRead) {
       this.hasAutoMarkedThisSession = true;
@@ -3184,6 +3233,7 @@ const App = {
       this.updateBookCardProgress(bookId);
       this.renderHome();
       this.renderStats();
+      this.checkCompletionMilestones(wasOTCompleteBefore);
 
       // 데이터 상 신약 260장 전체 완독 달성 확인
       const isNowNTComplete = StorageService.isNTComplete();
@@ -3545,7 +3595,7 @@ const App = {
       if (rewardBox) rewardBox.innerHTML = `<span>🎉 대완독 영예 보상:</span> <span>🏆 제${cycle}독 황금 어린양 트로피 진열장 등록!</span>`;
       if (otUnlockEl) {
         otUnlockEl.style.display = 'block';
-        otUnlockEl.textContent = `🔄 [내 정보 > 트로피 진열장]에서 제${cycle + 1}독 새 출발을 시작할 수 있어요!`;
+        otUnlockEl.textContent = `🔄 [통계 > 통독 진열장]에서 제${cycle + 1}독 새 출발을 시작할 수 있어요!`;
       }
     }
 
