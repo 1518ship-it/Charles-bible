@@ -1566,10 +1566,250 @@ const CHURCH_BG_ITEM_PIXELS = {
 };
 
 // ==========================================
+// ❄️ 겨울 & 말씀 신규 출시 컬렉션 픽셀 데이터 (10종)
+// ==========================================
+const WINTER_NEW_ITEM_PIXELS = {
+  'head_santa_hat': {
+    slot: 'head',
+    pixels: [
+      [17, 1, '#18181b'], [18, 1, '#18181b'],
+      [16, 2, '#18181b'], [17, 2, '#ffffff'], [18, 2, '#ffffff'], [19, 2, '#18181b'],
+      [17, 3, '#18181b'], [18, 3, '#18181b'],
+      [12, 1, '#18181b'], [13, 1, '#18181b'],
+      [11, 2, '#18181b'], [12, 2, '#dc2626'], [13, 2, '#dc2626'], [14, 2, '#18181b'],
+      [10, 3, '#18181b'], [11, 3, '#dc2626'], [12, 3, '#ef4444'], [13, 3, '#ef4444'], [14, 3, '#dc2626'], [15, 3, '#18181b'], [16, 3, '#dc2626'],
+      [9, 4, '#18181b'], [10, 4, '#dc2626'], [11, 4, '#ef4444'], [12, 4, '#ef4444'], [13, 4, '#ef4444'], [14, 4, '#ef4444'], [15, 4, '#dc2626'], [16, 4, '#18181b'],
+      [7, 5, '#18181b'], [8, 5, '#ffffff'], [9, 5, '#ffffff'], [10, 5, '#ffffff'], [11, 5, '#ffffff'], [12, 5, '#ffffff'], [13, 5, '#ffffff'], [14, 5, '#ffffff'], [15, 5, '#ffffff'], [16, 5, '#ffffff'], [17, 5, '#18181b'],
+      [7, 6, '#18181b'], [8, 6, '#e2e8f0'], [9, 6, '#e2e8f0'], [10, 6, '#e2e8f0'], [11, 6, '#e2e8f0'], [12, 6, '#e2e8f0'], [13, 6, '#e2e8f0'], [14, 6, '#e2e8f0'], [15, 6, '#e2e8f0'], [16, 6, '#e2e8f0'], [17, 6, '#18181b']
+    ]
+  },
+  'head_snow_earmuffs': {
+    slot: 'head',
+    pixels: [
+      [9, 4, '#38bdf8'], [10, 4, '#38bdf8'], [11, 4, '#38bdf8'], [12, 4, '#38bdf8'], [13, 4, '#38bdf8'],
+      [8, 5, '#0284c7'], [14, 5, '#0284c7'],
+      [7, 6, '#0284c7'], [15, 6, '#0284c7'],
+      [4, 7, '#18181b'], [5, 7, '#ffffff'], [6, 7, '#18181b'],
+      [3, 8, '#18181b'], [4, 8, '#ffffff'], [5, 8, '#bae6fd'], [6, 8, '#ffffff'], [7, 8, '#18181b'],
+      [3, 9, '#18181b'], [4, 9, '#ffffff'], [5, 9, '#38bdf8'], [6, 9, '#ffffff'], [7, 9, '#18181b'],
+      [4, 10, '#18181b'], [5, 10, '#ffffff'], [6, 10, '#18181b'],
+      [16, 7, '#18181b'], [17, 7, '#ffffff'], [18, 7, '#18181b'],
+      [15, 8, '#18181b'], [16, 8, '#ffffff'], [17, 8, '#bae6fd'], [18, 8, '#ffffff'], [19, 8, '#18181b'],
+      [15, 9, '#18181b'], [16, 9, '#ffffff'], [17, 9, '#38bdf8'], [18, 9, '#ffffff'], [19, 9, '#18181b'],
+      [16, 10, '#18181b'], [17, 10, '#ffffff'], [18, 10, '#18181b']
+    ]
+  },
+  'neck_winter_muffler': {
+    slot: 'neck',
+    pixels: [
+      [6, 13, '#18181b'], [7, 13, '#dc2626'], [8, 13, '#ffffff'], [9, 13, '#dc2626'], [10, 13, '#dc2626'], [11, 13, '#ffffff'], [12, 13, '#dc2626'], [13, 13, '#dc2626'], [14, 13, '#ffffff'], [15, 13, '#dc2626'], [16, 13, '#dc2626'], [17, 13, '#18181b'],
+      [6, 14, '#18181b'], [7, 14, '#b91c1c'], [8, 14, '#dc2626'], [9, 14, '#ffffff'], [10, 14, '#dc2626'], [11, 14, '#dc2626'], [12, 14, '#ffffff'], [13, 14, '#dc2626'], [14, 14, '#dc2626'], [15, 14, '#ffffff'], [16, 14, '#b91c1c'], [17, 14, '#18181b'],
+      [7, 15, '#dc2626'], [8, 15, '#ffffff'], [9, 15, '#dc2626'],
+      [7, 16, '#b91c1c'], [8, 16, '#dc2626'], [9, 16, '#ffffff'],
+      [7, 17, '#ffffff'], [8, 17, '#ffffff'], [9, 17, '#ffffff']
+    ]
+  },
+  'hold_hot_cocoa': {
+    slot: 'hold',
+    pixels: [
+      [18, 9, '#e2e8f0'], [17, 10, '#e2e8f0'], [19, 10, '#cbd5e1'], [18, 11, '#94a3b8'],
+      [16, 12, '#ffffff'], [17, 12, '#fed7aa'], [18, 12, '#ffffff'], [19, 12, '#fed7aa'],
+      [15, 13, '#ef4444'], [16, 13, '#dc2626'], [17, 13, '#dc2626'], [18, 13, '#dc2626'], [19, 13, '#dc2626'],
+      [15, 14, '#b91c1c'], [16, 14, '#dc2626'], [17, 14, '#ffffff'], [18, 14, '#dc2626'], [19, 14, '#b91c1c'],
+      [15, 15, '#b91c1c'], [16, 15, '#dc2626'], [17, 15, '#dc2626'], [18, 15, '#dc2626'], [19, 15, '#b91c1c'],
+      [15, 16, '#991b1b'], [16, 16, '#991b1b'], [17, 16, '#991b1b'], [18, 16, '#991b1b'], [19, 16, '#991b1b'],
+      [20, 14, '#ef4444'], [20, 15, '#dc2626'],
+      [14.5, 12.0, '#18181b', 0.5], [14.5, 12.5, '#18181b', 0.5], [14.5, 13.0, '#18181b', 0.5], [14.5, 13.5, '#18181b', 0.5],
+      [14.5, 14.0, '#18181b', 0.5], [14.5, 14.5, '#18181b', 0.5], [14.5, 15.0, '#18181b', 0.5], [14.5, 15.5, '#18181b', 0.5], [14.5, 16.0, '#18181b', 0.5],
+      [14.5, 16.5, '#18181b', 0.5], [15.0, 16.5, '#18181b', 0.5], [15.5, 16.5, '#18181b', 0.5], [16.0, 16.5, '#18181b', 0.5],
+      [16.5, 16.5, '#18181b', 0.5], [17.0, 16.5, '#18181b', 0.5], [17.5, 16.5, '#18181b', 0.5], [18.0, 16.5, '#18181b', 0.5],
+      [18.5, 16.5, '#18181b', 0.5], [19.0, 16.5, '#18181b', 0.5], [19.5, 16.5, '#18181b', 0.5],
+      [20.5, 13.5, '#18181b', 0.5], [21.0, 14.0, '#18181b', 0.5], [21.0, 14.5, '#18181b', 0.5], [21.0, 15.0, '#18181b', 0.5], [21.0, 15.5, '#18181b', 0.5], [20.5, 16.0, '#18181b', 0.5],
+      [19.5, 12.0, '#18181b', 0.5], [19.5, 12.5, '#18181b', 0.5], [19.5, 13.0, '#18181b', 0.5]
+    ].map(p => [
+      parseFloat((14.8 + (p[0] - 14.5) * 0.8).toFixed(2)),
+      parseFloat((13.6 + (p[1] - 12.0) * 0.8).toFixed(2)),
+      p[2],
+      parseFloat(((p[3] || 1) * 0.8).toFixed(2))
+    ])
+  },
+  'hold_five_loaves': {
+    slot: 'hold',
+    pixels: (function() {
+      const s = 0.75, ox = 15.0, oy = 12.2;
+      const raw = [
+        [2, 0, '#94a3b8'], [3, 0, '#cbd5e1'], [5, 0, '#94a3b8'], [6, 0, '#cbd5e1'],
+        [1, 1, '#fde047'], [2, 1, '#f59e0b'], [3, 1, '#fde047'], [4, 1, '#f59e0b'], [5, 1, '#fde047'], [6, 1, '#f59e0b'],
+        [0, 2, '#18181b'], [1, 2, '#d97706'], [2, 2, '#b45309'], [3, 2, '#d97706'], [4, 2, '#b45309'], [5, 2, '#d97706'], [6, 2, '#b45309'], [7, 2, '#18181b'],
+        [1, 3, '#b45309'], [2, 3, '#d97706'], [3, 3, '#b45309'], [4, 3, '#d97706'], [5, 3, '#b45309'], [6, 3, '#d97706'],
+        [1, 4, '#78350f'], [2, 4, '#b45309'], [3, 4, '#d97706'], [4, 4, '#b45309'], [5, 4, '#d97706'], [6, 4, '#78350f'],
+        [2, 5, '#78350f'], [3, 5, '#78350f'], [4, 5, '#78350f'], [5, 5, '#78350f']
+      ];
+      return raw.map(p => [parseFloat((ox + p[0] * s).toFixed(2)), parseFloat((oy + p[1] * s).toFixed(2)), p[2], s]);
+    })()
+  },
+  'side_winter_snowman': {
+    slot: 'side',
+    pixels: [
+      [2, 10, '#ef4444'], [3, 10, '#ef4444'], [4, 10, '#ef4444'],
+      [1.5, 9.5, '#18181b', 0.5], [2.0, 9.5, '#18181b', 0.5], [2.5, 9.5, '#18181b', 0.5],
+      [3.0, 9.5, '#18181b', 0.5], [3.5, 9.5, '#18181b', 0.5], [4.0, 9.5, '#18181b', 0.5], [4.5, 9.5, '#18181b', 0.5],
+      [1.5, 10.0, '#18181b', 0.5], [1.5, 10.5, '#18181b', 0.5], [4.5, 10.0, '#18181b', 0.5], [4.5, 10.5, '#18181b', 0.5],
+      [1, 11, '#ffffff'], [2, 11, '#18181b'], [3, 11, '#ffffff'], [4, 11, '#18181b'], [5, 11, '#ffffff'],
+      [1, 12, '#ffffff'], [2, 12, '#ffffff'], [3, 12, '#f97316'], [4, 12, '#f97316'], [5, 12, '#ffffff'],
+      [1, 13, '#ffffff'], [2, 13, '#ffedd5'], [3, 13, '#ffffff'], [4, 13, '#ffedd5'], [5, 13, '#ffffff'],
+      [0.5, 11.0, '#18181b', 0.5], [0.5, 11.5, '#18181b', 0.5], [0.5, 12.0, '#18181b', 0.5], [0.5, 12.5, '#18181b', 0.5], [0.5, 13.0, '#18181b', 0.5], [0.5, 13.5, '#18181b', 0.5],
+      [5.5, 11.0, '#18181b', 0.5], [5.5, 11.5, '#18181b', 0.5], [5.5, 12.0, '#18181b', 0.5], [5.5, 12.5, '#18181b', 0.5], [5.5, 13.0, '#18181b', 0.5], [5.5, 13.5, '#18181b', 0.5],
+      [1, 14, '#10b981'], [2, 14, '#10b981'], [3, 14, '#10b981'], [4, 14, '#10b981'], [5, 14, '#10b981'], [6, 14, '#10b981'],
+      [0.5, 14.0, '#18181b', 0.5], [0.5, 14.5, '#18181b', 0.5], [6.5, 14.0, '#18181b', 0.5], [6.5, 14.5, '#18181b', 0.5],
+      [0, 15, '#e0f2fe'], [1, 15, '#ffffff'], [2, 15, '#18181b'], [3, 15, '#ffffff'], [4, 15, '#ffffff'], [5, 15, '#ffffff'], [6, 15, '#e0f2fe'],
+      [0, 16, '#e0f2fe'], [1, 16, '#ffffff'], [2, 16, '#ffffff'], [3, 16, '#18181b'], [4, 16, '#ffffff'], [5, 16, '#ffffff'], [6, 16, '#e0f2fe'],
+      [0, 17, '#bae6fd'], [1, 17, '#ffffff'], [2, 17, '#ffffff'], [3, 17, '#ffffff'], [4, 17, '#ffffff'], [5, 17, '#ffffff'], [6, 17, '#bae6fd'],
+      [6.5, 15.0, '#18181b', 0.5], [6.5, 15.5, '#18181b', 0.5], [6.5, 16.0, '#18181b', 0.5], [6.5, 16.5, '#18181b', 0.5], [6.5, 17.0, '#18181b', 0.5], [6.5, 17.5, '#18181b', 0.5],
+      [0.0, 17.5, '#18181b', 0.5], [0.5, 17.5, '#18181b', 0.5], [1.0, 17.5, '#18181b', 0.5], [1.5, 17.5, '#18181b', 0.5],
+      [2.0, 17.5, '#18181b', 0.5], [2.5, 17.5, '#18181b', 0.5], [3.0, 17.5, '#18181b', 0.5], [3.5, 17.5, '#18181b', 0.5],
+      [4.0, 17.5, '#18181b', 0.5], [4.5, 17.5, '#18181b', 0.5], [5.0, 17.5, '#18181b', 0.5], [5.5, 17.5, '#18181b', 0.5], [6.0, 17.5, '#18181b', 0.5]
+    ].map(p => [p[0], p[1] + 1.0, ...p.slice(2)])
+  },
+  'side_blessing_giftbox': {
+    slot: 'side',
+    pixels: [
+      [2, 12, '#facc15'], [3, 12, '#fef08a'], [4, 12, '#fef08a'], [5, 12, '#facc15'],
+      [1, 13, '#dc2626'], [2, 13, '#dc2626'], [3, 13, '#facc15'], [4, 13, '#facc15'], [5, 13, '#dc2626'], [6, 13, '#dc2626'],
+      [2, 14, '#b91c1c'], [3, 14, '#facc15'], [4, 14, '#facc15'], [5, 14, '#b91c1c'],
+      [2, 15, '#b91c1c'], [3, 15, '#facc15'], [4, 15, '#facc15'], [5, 15, '#b91c1c'],
+      [2, 16, '#991b1b'], [3, 16, '#facc15'], [4, 16, '#facc15'], [5, 16, '#991b1b'],
+      [2, 17, '#991b1b'], [3, 17, '#eab308'], [4, 17, '#eab308'], [5, 17, '#991b1b']
+    ]
+  },
+  'side_honey_jar': {
+    slot: 'side',
+    pixels: (function() {
+      const s = 0.75, ox = 1.8, oy = 14.0;
+      const raw = [
+        [1, 0, '#b45309'], [2, 0, '#d97706'], [3, 0, '#d97706'], [4, 0, '#b45309'],
+        [0, 1, '#78350f'], [1, 1, '#f59e0b'], [2, 1, '#fef08a'], [3, 1, '#f59e0b'], [4, 1, '#f59e0b'], [5, 1, '#78350f'],
+        [0, 2, '#b45309'], [1, 2, '#fbbf24'], [2, 2, '#fef08a'], [3, 2, '#b45309'], [4, 2, '#d97706'], [5, 2, '#b45309'],
+        [0, 3, '#92400e'], [1, 3, '#b45309'], [2, 3, '#fbbf24'], [3, 3, '#b45309'], [4, 3, '#b45309'], [5, 3, '#92400e'],
+        [1, 4, '#78350f'], [2, 4, '#92400e'], [3, 4, '#92400e'], [4, 4, '#78350f']
+      ];
+      return raw.map(p => [parseFloat((ox + p[0] * s).toFixed(2)), parseFloat((oy + p[1] * s).toFixed(2)), p[2], s]);
+    })()
+  },
+  'back_snow_carpet': {
+    slot: 'grass',
+    pixels: (function() {
+      const pxs = [];
+      for (let x = 2.0; x <= 20.5; x += 0.5) {
+        if ((x >= 3.0 && x <= 5.0) || (x >= 8.0 && x <= 10.5) || (x >= 13.5 && x <= 16.0) || (x >= 18.0 && x <= 19.5)) {
+          pxs.push([x, 17.0, '#e0f2fe', 0.5]);
+        }
+        pxs.push([x, 17.5, '#f0f9ff', 0.5]);
+      }
+      for (let x = 2.0; x <= 20.5; x += 0.5) {
+        pxs.push([x, 18.0, '#ffffff', 0.5]);
+        pxs.push([x, 18.5, '#f0f9ff', 0.5]);
+      }
+      for (let x = 2.0; x <= 20.5; x += 0.5) {
+        pxs.push([x, 19.0, '#e0f2fe', 0.5]);
+        pxs.push([x, 19.5, '#bae6fd', 0.5]);
+      }
+      return pxs.concat([
+        [4.0, 18.0, '#7dd3fc', 0.5], [3.5, 18.0, '#bae6fd', 0.5], [4.5, 18.0, '#bae6fd', 0.5],
+        [18.5, 18.0, '#7dd3fc', 0.5], [18.0, 18.0, '#bae6fd', 0.5], [19.0, 18.0, '#bae6fd', 0.5]
+      ]);
+    })()
+  },
+  'back_snow_fall': {
+    slot: 'back',
+    pixels: (function() {
+      const math = Math;
+      function makeThinSnowflake(cx, cy, radius, pixelSize, color, hasOuterV = true, hasInnerV = false) {
+        const pixels = new Map();
+        const angles = [0, math.PI/3, 2*math.PI/3, math.PI, 4*math.PI/3, 5*math.PI/3];
+        const step = pixelSize * 0.45;
+        function addPx(x, y, col) {
+          const qx = Math.round(x / pixelSize) * pixelSize;
+          const qy = Math.round(y / pixelSize) * pixelSize;
+          const key = qx.toFixed(3) + '_' + qy.toFixed(3);
+          if (!pixels.has(key)) pixels.set(key, [parseFloat(qx.toFixed(3)), parseFloat(qy.toFixed(3)), col, pixelSize]);
+        }
+        for (const a of angles) {
+          const cosA = math.cos(a), sinA = math.sin(a);
+          for (let d = 0; d <= radius; d += step) addPx(cx + d * cosA, cy + d * sinA, color);
+          if (hasOuterV) {
+            const wPos = radius * 0.62, wLen = radius * 0.34, ox = cx + wPos * cosA, oy = cy + wPos * sinA;
+            for (const wa of [a + math.PI/3, a - math.PI/3]) {
+              const wCos = math.cos(wa), wSin = math.sin(wa);
+              for (let wd = 0; wd <= wLen; wd += step) addPx(ox + wd * wCos, oy + wd * wSin, color);
+            }
+          }
+          if (hasInnerV) {
+            const wPos = radius * 0.36, wLen = radius * 0.24, ox = cx + wPos * cosA, oy = cy + wPos * sinA;
+            for (const wa of [a + math.PI/3, a - math.PI/3]) {
+              const wCos = math.cos(wa), wSin = math.sin(wa);
+              for (let wd = 0; wd <= wLen; wd += step) addPx(ox + wd * wCos, oy + wd * wSin, color);
+            }
+          }
+        }
+        return Array.from(pixels.values());
+      }
+      function makeRingFlake(cx, cy, radius, pixelSize, color) {
+        const pixels = new Map();
+        function addPx(x, y, col) {
+          const qx = Math.round(x / pixelSize) * pixelSize;
+          const qy = Math.round(y / pixelSize) * pixelSize;
+          const key = qx.toFixed(3) + '_' + qy.toFixed(3);
+          if (!pixels.has(key)) pixels.set(key, [parseFloat(qx.toFixed(3)), parseFloat(qy.toFixed(3)), col, pixelSize]);
+        }
+        addPx(cx, cy, color);
+        for (let th = 0; th < 2 * math.PI; th += 0.25) addPx(cx + radius * math.cos(th), cy + radius * math.sin(th), color);
+        return Array.from(pixels.values());
+      }
+      const px = 0.2;
+      return [
+        ...makeThinSnowflake(2.6, 1.4, 1.55, px, '#38bdf8', true, true),
+        ...makeThinSnowflake(20.6, 2.2, 1.55, px, 'rgba(56, 189, 248, 0.72)', true, true),
+        ...makeThinSnowflake(2.8, 13.6, 1.45, px, 'rgba(14, 165, 233, 0.75)', true, true),
+        ...makeThinSnowflake(21.2, 14.2, 1.45, px, '#38bdf8', true, true),
+        ...makeThinSnowflake(11.6, -2.0, 1.05, px, 'rgba(125, 211, 252, 0.75)', true, false),
+        ...makeThinSnowflake(1.2, 7.6, 1.05, px, '#7dd3fc', true, false),
+        ...makeThinSnowflake(22.6, 8.2, 1.05, px, 'rgba(56, 189, 248, 0.55)', true, false),
+        ...makeThinSnowflake(6.2, -1.2, 0.90, px, 'rgba(186, 230, 253, 0.7)', true, false),
+        ...makeThinSnowflake(16.8, -1.4, 0.90, px, 'rgba(125, 211, 252, 0.65)', true, false),
+        ...makeThinSnowflake(4.6, 4.6, 0.65, px, 'rgba(125, 211, 252, 0.5)', false, false),
+        ...makeThinSnowflake(19.2, 5.4, 0.65, px, '#7dd3fc', false, false),
+        ...makeThinSnowflake(3.8, 10.6, 0.65, px, 'rgba(56, 189, 248, 0.45)', false, false),
+        ...makeThinSnowflake(20.4, 11.2, 0.65, px, 'rgba(186, 230, 253, 0.8)', false, false),
+        ...makeThinSnowflake(6.4, 16.4, 0.60, px, 'rgba(125, 211, 252, 0.55)', false, false),
+        ...makeThinSnowflake(18.0, 16.8, 0.60, px, '#7dd3fc', false, false),
+        ...makeRingFlake(0.8, 3.8, 0.42, px, 'rgba(56, 189, 248, 0.7)'),
+        ...makeRingFlake(18.2, 0.4, 0.42, px, 'rgba(125, 211, 252, 0.5)'),
+        ...makeRingFlake(23.0, 4.8, 0.42, px, '#38bdf8'),
+        ...makeRingFlake(1.6, 16.8, 0.42, px, 'rgba(125, 211, 252, 0.65)'),
+        ...makeRingFlake(22.8, 17.2, 0.42, px, 'rgba(56, 189, 248, 0.55)'),
+        [0.4, 0.4, 'rgba(125, 211, 252, 0.7)', 0.25], [4.8, -1.8, '#38bdf8', 0.2],
+        [9.0, -2.4, 'rgba(186, 230, 253, 0.6)', 0.25], [14.2, -2.2, 'rgba(56, 189, 248, 0.5)', 0.2],
+        [22.4, -0.8, '#7dd3fc', 0.25], [0.2, 5.8, 'rgba(186, 230, 253, 0.75)', 0.2],
+        [23.4, 6.4, 'rgba(125, 211, 252, 0.5)', 0.25], [0.6, 11.8, '#38bdf8', 0.2],
+        [23.2, 12.6, 'rgba(186, 230, 253, 0.65)', 0.25], [4.6, 15.2, 'rgba(125, 211, 252, 0.45)', 0.2],
+        [19.2, 15.6, '#38bdf8', 0.25], [11.8, 17.6, 'rgba(186, 230, 253, 0.6)', 0.2],
+        [3.6, -1.6, 'rgba(254, 249, 195, 0.65)', 0.45], [19.4, -1.8, 'rgba(254, 243, 199, 0.6)', 0.45],
+        [1.4, 5.2, 'rgba(255, 251, 235, 0.65)', 0.4], [22.2, 4.6, 'rgba(254, 249, 195, 0.55)', 0.4],
+        [4.2, 12.2, 'rgba(254, 243, 199, 0.55)', 0.4], [19.6, 12.8, 'rgba(255, 251, 235, 0.6)', 0.45]
+      ];
+    })()
+  }
+};
+
+// ==========================================
 // 🎨 통합 아이템 픽셀 도우미 함수 (모든 컬렉션)
 // ==========================================
 function getAnyItemPixels(id) {
   if (!id) return null;
+  if (typeof WINTER_NEW_ITEM_PIXELS !== 'undefined' && WINTER_NEW_ITEM_PIXELS[id]) {
+    return WINTER_NEW_ITEM_PIXELS[id].pixels || WINTER_NEW_ITEM_PIXELS[id];
+  }
   if (typeof CHURCH_BG_ITEM_PIXELS !== 'undefined' && CHURCH_BG_ITEM_PIXELS[id]) {
     return CHURCH_BG_ITEM_PIXELS[id].pixels || CHURCH_BG_ITEM_PIXELS[id];
   }
@@ -1920,6 +2160,23 @@ function getAccessoryIconSvg(itemId) {
       const vb = (minX - pad) + ' ' + (minY - pad) + ' ' + (maxX - minX + pad * 2) + ' ' + (maxY - minY + pad * 2);
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" class="pixel-item-svg" shape-rendering="crispEdges">${renderPixelArrayGeneric(pxs, 1)}</svg>`;
     }
+  } else if (typeof WINTER_NEW_ITEM_PIXELS !== 'undefined' && WINTER_NEW_ITEM_PIXELS[itemId]) {
+    const pxs = WINTER_NEW_ITEM_PIXELS[itemId].pixels || WINTER_NEW_ITEM_PIXELS[itemId];
+    if (pxs && pxs.length > 0) {
+      let minX = 999, maxX = -999, minY = 999, maxY = -999;
+      for (let i = 0; i < pxs.length; i++) {
+        const x = pxs[i][0];
+        const y = pxs[i][1];
+        const sz = pxs[i][3] || 1;
+        if (x < minX) minX = x;
+        if (x + sz > maxX) maxX = x + sz;
+        if (y < minY) minY = y;
+        if (y + sz > maxY) maxY = y + sz;
+      }
+      const pad = 1;
+      const vb = (minX - pad) + ' ' + (minY - pad) + ' ' + (maxX - minX + pad * 2) + ' ' + (maxY - minY + pad * 2);
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" class="pixel-item-svg" shape-rendering="crispEdges">${renderPixelArrayGeneric(pxs, 1)}</svg>`;
+    }
   } else if (typeof PRAISE_MUSIC_ITEM_PIXELS !== 'undefined' && PRAISE_MUSIC_ITEM_PIXELS[itemId]) {
     const pxs = PRAISE_MUSIC_ITEM_PIXELS[itemId].pixels || PRAISE_MUSIC_ITEM_PIXELS[itemId];
     if (pxs && pxs.length > 0) {
@@ -1987,18 +2244,28 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
   const viewBoxMinY = Math.round(-topPaddingGrid * scale);
   const viewBoxHeight = Math.round((canvasHeight + topPaddingGrid + bottomPaddingGrid) * scale);
 
-  // Layer 1: Back / Floor 악세사리 (바닥 잔디/낙엽/눈밭/천사날개/멜로디아우라)
+  // Layer 1: Back / Floor 악세사리 (배경 오라/눈꽃 + 바닥 잔디/낙엽/눈밭 독립 동시 렌더링 지원)
   let backRects = '';
+  let grassRects = '';
+  const isSnowFall = !!(equipped && (equipped.back === 'back_snow_fall' || equipped.grass === 'back_snow_fall'));
   if (equipped) {
-    if (equipped.grass === 'back_maple_carpet' || equipped.back === 'back_maple_carpet' || (equipped.grass === undefined && equipped.back === undefined && equipped.back_maple_carpet)) {
-      backRects += renderAutumnAccessory('back_maple_carpet', scale);
-    } else if (equipped.grass === 'back_daisy_field' || equipped.back === 'back_daisy_field' || (equipped.grass === undefined && equipped.back === undefined && equipped.back_daisy_field)) {
-      backRects += renderAccessoryDaisyField(scale);
-    } else {
-      const backItem = equipped.back || equipped.grass;
-      if (backItem && typeof getAnyItemPixels === 'function' && getAnyItemPixels(backItem)) {
-        backRects += renderPixelArrayGeneric(getAnyItemPixels(backItem), scale);
+    const backId = equipped.back;
+    const grassId = equipped.grass;
+
+    if (backId && backId !== grassId) {
+      if (backId === 'back_maple_carpet') backRects += renderAutumnAccessory('back_maple_carpet', scale);
+      else if (backId === 'back_daisy_field') backRects += renderAccessoryDaisyField(scale);
+      else if (typeof getAnyItemPixels === 'function' && getAnyItemPixels(backId)) {
+        backRects += renderPixelArrayGeneric(getAnyItemPixels(backId), scale);
       }
+    }
+
+    if (grassId === 'back_maple_carpet' || (!grassId && !backId && equipped.back_maple_carpet)) {
+      grassRects += renderAutumnAccessory('back_maple_carpet', scale);
+    } else if (grassId === 'back_daisy_field' || (!grassId && !backId && equipped.back_daisy_field)) {
+      grassRects += renderAccessoryDaisyField(scale);
+    } else if (grassId && typeof getAnyItemPixels === 'function' && getAnyItemPixels(grassId)) {
+      grassRects += renderPixelArrayGeneric(getAnyItemPixels(grassId), scale);
     }
   }
 
@@ -2081,11 +2348,25 @@ function renderSimplePixelGrid(stageOrRows, scale = 9, animClass = 'charles-stat
     bannerRects += renderAccessoryHeaderBanner(bannerId, scale);
   }
 
+  const snowFilterDefs = isSnowFall ? `
+    <defs>
+      <filter id="snow-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="${(scale * 0.14).toFixed(2)}" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+  ` : '';
+
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${viewBoxHeight}" 
          class="charles-svg ${animClass} ${hasBanner ? 'has-charles-banner' : ''}" 
          style="image-rendering: pixelated; shape-rendering: crispEdges; width: 100%; height: auto; max-width: ${hasLeftFullChurch ? '220px' : '150px'}; display: block; margin: 0 auto;">
-      <g class="layer-back">${backRects}</g>
+      ${snowFilterDefs}
+      <g class="layer-back"${isSnowFall ? ' filter="url(#snow-soft-glow)"' : ''}>${backRects}</g>
+      <g class="layer-grass">${grassRects}</g>
       <g class="layer-body">${bodyRects}</g>
       <g class="layer-side">${sideRects}</g>
       <g class="layer-neck">${neckRects}</g>

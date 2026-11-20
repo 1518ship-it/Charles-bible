@@ -1535,14 +1535,10 @@ const App = {
 
     const isTryingOn = this.shopPreviewEquipped[item.slot] === itemId ||
       (item.slot === 'banner' && this.shopPreviewEquipped.banner === itemId) ||
-      (item.slot === 'glasses' && (this.shopPreviewEquipped.glasses === itemId || this.shopPreviewEquipped.head === itemId)) ||
-      (item.slot === 'grass' && (this.shopPreviewEquipped.grass === itemId || this.shopPreviewEquipped.back === itemId)) ||
-      (item.slot === 'back' && (this.shopPreviewEquipped.back === itemId || this.shopPreviewEquipped.grass === itemId));
+      (item.slot === 'glasses' && (this.shopPreviewEquipped.glasses === itemId || this.shopPreviewEquipped.head === itemId));
 
     if (isTryingOn) {
       this.shopPreviewEquipped[item.slot] = null;
-      if (item.slot === 'grass') this.shopPreviewEquipped.back = null;
-      if (item.slot === 'back') this.shopPreviewEquipped.grass = null;
       if (item.slot === 'glasses') {
         this.shopPreviewEquipped.glasses = null;
         if (this.shopPreviewEquipped.head === itemId) this.shopPreviewEquipped.head = null;
@@ -1554,8 +1550,6 @@ const App = {
       this.showToast(`${item.name} 착용을 해제했습니다.`);
     } else {
       this.shopPreviewEquipped[item.slot] = itemId;
-      if (item.slot === 'grass') this.shopPreviewEquipped.back = itemId;
-      if (item.slot === 'back') this.shopPreviewEquipped.grass = itemId;
       if (item.slot === 'glasses' && this.shopPreviewEquipped.head === itemId) this.shopPreviewEquipped.head = null;
       this.showToast(`✨ ${item.name} 착용 미리보기!`);
     }
@@ -1601,8 +1595,6 @@ const App = {
       this.shopPreviewEquipped = {};
     }
     this.shopPreviewEquipped[res.item.slot] = res.item.id;
-    if (res.item.slot === 'grass') this.shopPreviewEquipped.back = res.item.id;
-    if (res.item.slot === 'back') this.shopPreviewEquipped.grass = res.item.id;
     this.renderTalentShop(this.currentShopTab || 'store');
     this.renderHome();
   },

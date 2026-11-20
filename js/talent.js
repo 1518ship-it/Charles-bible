@@ -171,6 +171,98 @@ const TALENT_ITEMS = {
     desc: '성도들의 뜨거운 찬양 소리가 천상의 화음으로 넓게 울려 퍼지는 다채로운 찬양 음표 아우라'
   },
 
+  // ❄️ 겨울 & 말씀 신규 컬렉션 (10종)
+  'head_santa_hat': {
+    id: 'head_santa_hat',
+    slot: 'head',
+    category: '머리',
+    name: '산타 모자',
+    price: 8,
+    icon: '🎅',
+    desc: '성탄의 기쁨을 전하는 따뜻한 붉은 털모자와 하얀 방울'
+  },
+  'head_snow_earmuffs': {
+    id: 'head_snow_earmuffs',
+    slot: 'head',
+    category: '머리',
+    name: '포근한 눈꽃 귀도리',
+    price: 8,
+    icon: '🎧',
+    desc: '겨울 칼바람에도 찰스의 귀를 따스하게 보호해주는 털 귀도리'
+  },
+  'neck_winter_muffler': {
+    id: 'neck_winter_muffler',
+    slot: 'neck',
+    category: '몸통',
+    name: '빨간 체크 방울 목도리',
+    price: 8,
+    icon: '🧣',
+    desc: '찰스의 목둘레를 따스하게 감싸주는 크리스마스 레드 체크 패턴 목도리'
+  },
+  'hold_hot_cocoa': {
+    id: 'hold_hot_cocoa',
+    slot: 'hold',
+    category: '소품',
+    name: '김 솔솔 핫초코 머그잔',
+    price: 9,
+    icon: '☕',
+    desc: '얼어붙은 몸과 마음을 녹여주는 달콤하고 따뜻한 핫초코'
+  },
+  'side_blessing_giftbox': {
+    id: 'side_blessing_giftbox',
+    slot: 'side',
+    category: '소품',
+    name: '선물상자',
+    price: 7,
+    icon: '🎁',
+    desc: '하늘로부터 내려오는 온갖 좋은 은사와 온전한 선물의 상자'
+  },
+  'side_winter_snowman': {
+    id: 'side_winter_snowman',
+    slot: 'side',
+    category: '소품',
+    name: '찰스 꼬마 눈사람',
+    price: 10,
+    icon: '⛄',
+    desc: '찰스를 쏙 빼닮아 방긋 웃고 있는 깜찍한 아기 눈사람'
+  },
+  'back_snow_carpet': {
+    id: 'back_snow_carpet',
+    slot: 'grass',
+    category: '잔디',
+    name: '소복소복 흰 눈밭 카펫',
+    price: 10,
+    icon: '❄️',
+    desc: '찰스의 발걸음마다 뽀드득 맑은 소리가 나는 깨끗하고 포근한 눈밭'
+  },
+  'back_snow_fall': {
+    id: 'back_snow_fall',
+    slot: 'back',
+    category: '이펙트',
+    name: '찰스에도 눈이와요',
+    price: 15,
+    icon: '❄️',
+    desc: '말씀을 사모하는 찰스 위로 가늘고 섬세한 은혜의 눈꽃 결정들이 소복이 내려앉아요'
+  },
+  'hold_five_loaves': {
+    id: 'hold_five_loaves',
+    slot: 'hold',
+    category: '소품',
+    name: '오병이어 바구니',
+    price: 5,
+    icon: '🐟',
+    desc: '감사와 나눔의 기적이 일어나는 풍성한 오병이어 바구니'
+  },
+  'side_honey_jar': {
+    id: 'side_honey_jar',
+    slot: 'side',
+    category: '소품',
+    name: '달콤한 꿀단지',
+    price: 5,
+    icon: '🍯',
+    desc: '주의 말씀의 맛이 내게 어찌 그리 단지요 꿀보다 더 다나이다 (시 119:103)'
+  },
+
   // 🎶 찬양집회 스페셜 컬렉션 머리 위 배너 13종 (특별 이벤트 전용 - 상점 비노출)
   'banner_living_hope': {
     id: 'banner_living_hope',
@@ -574,8 +666,8 @@ const TalentService = {
         hold: equipped.hold || null,
         side: equipped.side || null,
         banner: validBanner,
-        grass: equipped.grass || equipped.back || null,
-        back: equipped.back || equipped.grass || null
+        grass: equipped.grass || null,
+        back: (equipped.back && equipped.back !== equipped.grass) ? equipped.back : null
       };
     } catch (e) {
       return { head: null, glasses: null, neck: null, hold: null, side: null, banner: null, grass: null, back: null };
@@ -597,8 +689,6 @@ const TalentService = {
     if (!item || !this.hasItem(itemId)) return false;
     const equipped = this.getEquipped();
     equipped[item.slot] = itemId;
-    if (item.slot === 'grass') equipped.back = itemId;
-    if (item.slot === 'back') equipped.grass = itemId;
     if (item.slot === 'glasses' && equipped.head === 'head_glasses') {
       equipped.head = null;
     }
