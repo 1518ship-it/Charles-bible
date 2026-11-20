@@ -10,8 +10,9 @@ var PROTOTYPE_ITEM_PIXELS = {
   // 1. 포근한 산타 모자 (Head: 빨간 삼각 모자 + 흰 방울)
   'head_santa_hat': {
     slot: 'head',
-    name: '포근한 산타 모자',
+    name: '산타 모자',
     category: '머리',
+    price: 8,
     icon: '🎅',
     desc: '성탄의 기쁨을 전하는 따뜻한 붉은 털모자와 하얀 방울',
     pixels: [
@@ -35,6 +36,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'head',
     name: '포근한 눈꽃 귀도리',
     category: '머리',
+    price: 8,
     icon: '🎧',
     desc: '겨울 칼바람에도 찰스의 귀를 따스하게 보호해주는 털 귀도리',
     pixels: [
@@ -60,6 +62,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'neck',
     name: '빨간 체크 방울 목도리',
     category: '목',
+    price: 8,
     icon: '🧣',
     desc: '찰스의 목둘레를 따스하게 감싸주는 크리스마스 레드 체크 패턴 목도리',
     pixels: [
@@ -80,6 +83,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'hold',
     name: '김 솔솔 핫초코 머그잔',
     category: '소품',
+    price: 9,
     icon: '☕',
     desc: '얼어붙은 몸과 마음을 녹여주는 달콤하고 따뜻한 핫초코',
     pixels: [
@@ -131,6 +135,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'hold',
     name: '오병이어 바구니',
     category: '소품',
+    price: 5,
     icon: '🐟',
     desc: '감사와 나눔의 기적이 일어나는 풍성한 오병이어 바구니',
     pixels: (function() {
@@ -157,6 +162,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'side',
     name: '찰스 꼬마 눈사람',
     category: '소품',
+    price: 10,
     icon: '⛄',
     desc: '찰스를 쏙 빼닮아 방긋 웃고 있는 깜찍한 아기 눈사람',
     pixels: [
@@ -205,8 +211,9 @@ var PROTOTYPE_ITEM_PIXELS = {
   // 10. 은혜의 선물상자 (Side: 리본 달린 선물상자)
   'side_blessing_giftbox': {
     slot: 'side',
-    name: '은혜의 선물상자',
+    name: '선물상자',
     category: '소품',
+    price: 7,
     icon: '🎁',
     desc: '하늘로부터 내려오는 온갖 좋은 은사와 온전한 선물의 상자',
     pixels: [
@@ -227,6 +234,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'side',
     name: '달콤한 꿀단지',
     category: '소품',
+    price: 5,
     icon: '🍯',
     desc: '주의 말씀의 맛이 내게 어찌 그리 단지요 꿀보다 더 다나이다 (시 119:103)',
     pixels: (function() {
@@ -252,6 +260,7 @@ var PROTOTYPE_ITEM_PIXELS = {
     slot: 'grass',
     name: '소복소복 흰 눈밭 카펫',
     category: '잔디',
+    price: 10,
     icon: '❄️',
     desc: '찰스의 발걸음마다 뽀드득 맑은 소리가 나는 깨끗하고 포근한 눈밭',
     pixels: (function() {
@@ -288,8 +297,9 @@ var PROTOTYPE_ITEM_PIXELS = {
   // 13. 은혜의 흩날리는 눈꽃 배경 (Back: 첨부 이미지 스타일의 가늘고 섬세한 파란/하늘빛 눈꽃 결정 & 미세 눈가루 패턴)
   'back_snow_fall': {
     slot: 'back',
-    name: '은혜의 눈꽃 배경',
+    name: '찰스에도 눈이와요',
     category: '배경',
+    price: 15,
     icon: '❄️',
     desc: '말씀을 사모하는 찰스 위로 가늘고 섬세한 은혜의 눈꽃 결정들이 소복이 내려앉아요',
     pixels: (function() {
@@ -1195,11 +1205,15 @@ const ItemStudio = {
     for (const [id, item] of Object.entries(PROTOTYPE_ITEM_PIXELS)) {
       const isEq = this.isEquipped(id);
       const iconSvg = this.generateItemSvg(item.pixels);
+      const priceBadge = item.price
+        ? `<span style="font-size: 10.5px; font-weight: 800; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 1px 6px; border-radius: 999px;">🪙 ${item.price}</span>`
+        : '';
 
       html += `
         <div class="item-test-card ${isEq ? 'equipped' : ''}" onclick="ItemStudio.toggleEquip('${id}')" id="card-${id}">
           <div class="item-card-top">
             <span class="item-slot-tag" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">신규: ${item.category}</span>
+            ${priceBadge}
             <span class="item-equip-status">${isEq ? '착용중 ✓' : ''}</span>
           </div>
           <div class="item-preview-box">
